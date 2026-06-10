@@ -13,7 +13,7 @@ const testEnv: Env = {
   API_VERSION: '0.1.0-test',
 };
 
-describe('createApp', () => {
+describe('integration: api endpoints', () => {
   const app = createApp(testEnv, createLogger(testEnv));
 
   it('GET /health returns 200', async () => {

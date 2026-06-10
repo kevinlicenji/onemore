@@ -5,7 +5,20 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().int().positive().default(4000),
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url().optional(),
-  JWT_SECRET: z.string().min(32).optional(),
+  JWT_SECRET: z
+    .string()
+    .min(32)
+    .optional()
+    .refine(
+      (value) => {
+        const nodeEnv = process.env.NODE_ENV;
+        if (nodeEnv === 'production') {
+          return value !== undefined && value.length >= 32;
+        }
+        return true;
+      },
+      { message: 'JWT_SECRET is required in production (min 32 characters)' },
+    ),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   API_VERSION: z.string().default('0.1.0'),
 });

@@ -29,4 +29,14 @@ describe('loadEnv', () => {
 
     expect(() => loadEnv()).toThrow('Invalid environment configuration');
   });
+
+  it('requires JWT_SECRET in production', () => {
+    process.env = {
+      NODE_ENV: 'production',
+      API_PORT: '4000',
+      DATABASE_URL: 'postgresql://onemore:onemore_dev@localhost:55432/onemore',
+    };
+
+    expect(() => loadEnv()).toThrow('Invalid environment configuration');
+  });
 });
