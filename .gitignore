@@ -23,6 +23,11 @@ out/
 .turbo/
 *.tsbuildinfo
 
+# Playwright
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/
+
 # Logs
 *.log
 npm-debug.log*

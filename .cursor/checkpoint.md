@@ -21,7 +21,8 @@
 | Prisma schema | MVP-1 tables + partial PR unique indexes |
 | API | `GET /health`, `GET /api/v1` |
 | Web | Home page, IT/EN, API health check |
-| CI | GitHub Actions lint, test, build, audit |
+| CI | lint, typecheck, format, audit, unit/integration/smoke/security, build, E2E |
+| Tests | 24 Vitest + 6 Playwright — see `docs/tests/README.md` |
 
 ---
 
