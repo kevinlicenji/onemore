@@ -1,0 +1,555 @@
+// OneMore Data Model v1.2 — MVP-1 tables
+// See docs/prd/OneMore_Data_Model.md §17
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Enums ---
+
+enum TrainingGoal {
+  mass
+  strength
+  fat_loss
+  recomp
+  fitness
+}
+
+enum TrainingLevel {
+  beginner
+  intermediate
+  advanced
+}
+
+enum TrainingEnvironment {
+  gym
+  home
+}
+
+enum OAuthProvider {
+  apple
+  google
+}
+
+enum AuthorType {
+  self
+  coach
+  template
+}
+
+enum ProgramVersionStatus {
+  draft
+  published
+  archived
+}
+
+enum ProgramVersionChangeReason {
+  manual
+  progression
+  coach_edit
+  suggestion
+}
+
+enum ProgressionMode {
+  linear
+  double
+  volume
+  intensity
+}
+
+enum ProgramAssignmentStatus {
+  active
+  completed
+  paused
+}
+
+enum WorkoutSessionStatus {
+  in_progress
+  completed
+  abandoned
+}
+
+enum SessionType {
+  programmed
+  free
+}
+
+enum ExerciseExecutionStatus {
+  pending
+  in_progress
+  completed
+  skipped
+}
+
+enum PrType {
+  weight_pr
+  volume_pr
+  e1rm_pr
+}
+
+enum BodyWeightSource {
+  manual
+  import
+}
+
+enum NotificationCategory {
+  workout
+  progress
+  pr
+  goal
+  coach
+  system
+}
+
+enum ConsentType {
+  tos
+  privacy
+  fitness_data
+  coach_data_sharing
+  messaging
+  marketing
+  dpa_coach
+}
+
+// --- Auth & identity ---
+
+model User {
+  id                      String              @id @default(uuid()) @db.Uuid
+  email                   String              @unique
+  emailVerifiedAt         DateTime?           @map("email_verified_at")
+  displayName             String?             @map("display_name")
+  username                String?             @unique
+  usernameChangedAt       DateTime?           @map("username_changed_at")
+  birthYear               Int?                @map("birth_year")
+  locale                  String              @default("it")
+  heightCm                Decimal?            @map("height_cm") @db.Decimal(5, 2)
+  weightKg                Decimal?            @map("weight_kg") @db.Decimal(5, 2)
+  timezone                String              @default("Europe/Rome")
+  motivationLevel         Int?                @map("motivation_level")
+  fitnessDataConsentedAt  DateTime?           @map("fitness_data_consented_at")
+  onboardingCompletedAt   DateTime?           @map("onboarding_completed_at")
+  trainingGoal            TrainingGoal?       @map("training_goal")
+  trainingLevel           TrainingLevel?      @map("training_level")
+  trainingEnvironment     TrainingEnvironment? @map("training_environment")
+  trainingDaysPerWeek     Int?                @map("training_days_per_week")
+  isCoach                 Boolean             @default(false) @map("is_coach")
+  mfaEnabled              Boolean             @default(false) @map("mfa_enabled")
+  totpSecretEncrypted     Bytes?              @map("totp_secret_encrypted")
+  settings                Json                @default("{}")
+  deletedAt               DateTime?           @map("deleted_at")
+  createdAt               DateTime            @default(now()) @map("created_at")
+  updatedAt               DateTime            @updatedAt @map("updated_at")
+
+  credential              UserCredential?
+  oauthAccounts           OAuthAccount[]
+  refreshTokens           RefreshToken[]
+  passwordResetTokens     PasswordResetToken[]
+  programs                Program[]
+  programAssignments      ProgramAssignment[] @relation("ClientAssignments")
+  workoutSessions         WorkoutSession[]
+  personalRecords         PersonalRecord[]
+  bodyWeightLogs          BodyWeightLog[]
+  userAchievements        UserAchievement[]
+  notifications           Notification[]
+  consentRecords          ConsentRecord[]
+  auditLogs               AuditLog[]          @relation("AuditActor")
+  customExercises         ExerciseLibrary[]   @relation("CustomExercises")
+
+  @@index([deletedAt])
+  @@index([onboardingCompletedAt])
+  @@map("user")
+}
+
+model UserCredential {
+  userId            String   @id @map("user_id") @db.Uuid
+  passwordHash      String   @map("password_hash")
+  passwordChangedAt DateTime @default(now()) @map("password_changed_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_credential")
+}
+
+model OAuthAccount {
+  id              String        @id @default(uuid()) @db.Uuid
+  userId          String        @map("user_id") @db.Uuid
+  provider        OAuthProvider
+  providerUserId  String        @map("provider_user_id")
+  emailAtProvider String?       @map("email_at_provider")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("oauth_account")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@map("refresh_token")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_token")
+}
+
+// --- Programs ---
+
+model Program {
+  id            String       @id @default(uuid()) @db.Uuid
+  ownerUserId   String       @map("owner_user_id") @db.Uuid
+  name          String
+  description   String?
+  objective     TrainingGoal?
+  durationWeeks Int?         @map("duration_weeks")
+  authorType    AuthorType   @map("author_type")
+  isTemplate    Boolean      @default(false) @map("is_template")
+  deletedAt     DateTime?    @map("deleted_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  owner   User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  versions ProgramVersion[]
+
+  @@index([ownerUserId])
+  @@map("program")
+}
+
+model ProgramVersion {
+  id                String                     @id @default(uuid()) @db.Uuid
+  programId         String                     @map("program_id") @db.Uuid
+  versionNumber     Int                        @map("version_number")
+  previousVersionId String?                    @map("previous_version_id") @db.Uuid
+  status            ProgramVersionStatus
+  publishedAt       DateTime?                  @map("published_at")
+  changeReason      ProgramVersionChangeReason @map("change_reason")
+  createdAt         DateTime                   @default(now()) @map("created_at")
+  updatedAt         DateTime                   @updatedAt @map("updated_at")
+
+  program         Program            @relation(fields: [programId], references: [id], onDelete: Cascade)
+  previousVersion ProgramVersion?    @relation("VersionChain", fields: [previousVersionId], references: [id])
+  nextVersions    ProgramVersion[]   @relation("VersionChain")
+  workoutDays     WorkoutDay[]
+  assignments     ProgramAssignment[]
+
+  @@unique([programId, versionNumber])
+  @@map("program_version")
+}
+
+model WorkoutDay {
+  id               String @id @default(uuid()) @db.Uuid
+  programVersionId String @map("program_version_id") @db.Uuid
+  label            String
+  sortOrder        Int    @map("sort_order")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  programVersion           ProgramVersion     @relation(fields: [programVersionId], references: [id], onDelete: Cascade)
+  programExercises         ProgramExercise[]
+  assignmentsAsLast        ProgramAssignment[] @relation("LastCompletedDay")
+  assignmentsAsNext        ProgramAssignment[] @relation("NextWorkoutDay")
+  workoutSessions          WorkoutSession[]
+
+  @@index([programVersionId, sortOrder])
+  @@map("workout_day")
+}
+
+model ProgramExercise {
+  id                 String          @id @default(uuid()) @db.Uuid
+  workoutDayId       String          @map("workout_day_id") @db.Uuid
+  exerciseLibraryId  String          @map("exercise_library_id") @db.Uuid
+  sortOrder          Int             @map("sort_order")
+  targetSets         Int             @map("target_sets")
+  targetReps         Int             @map("target_reps")
+  targetWeightKg     Decimal?        @map("target_weight_kg") @db.Decimal(8, 2)
+  restSeconds        Int             @map("rest_seconds")
+  targetRpe          Decimal?        @map("target_rpe") @db.Decimal(3, 1)
+  targetRir          Int?            @map("target_rir")
+  progressionMode    ProgressionMode @default(linear) @map("progression_mode")
+  progressionConfig  Json            @default("{}") @map("progression_config")
+  isWarmup           Boolean         @default(false) @map("is_warmup")
+  coachNote          String?         @map("coach_note")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  workoutDay       WorkoutDay        @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  exerciseLibrary  ExerciseLibrary   @relation(fields: [exerciseLibraryId], references: [id])
+  exerciseExecutions ExerciseExecution[]
+
+  @@index([workoutDayId, sortOrder])
+  @@map("program_exercise")
+}
+
+model ProgramAssignment {
+  id                        String                    @id @default(uuid()) @db.Uuid
+  programVersionId          String                    @map("program_version_id") @db.Uuid
+  clientUserId              String                    @map("client_user_id") @db.Uuid
+  assignedByCoachProfileId  String?                   @map("assigned_by_coach_profile_id") @db.Uuid
+  status                    ProgramAssignmentStatus
+  startedAt                 DateTime                  @map("started_at")
+  completedAt               DateTime?                 @map("completed_at")
+  lastCompletedWorkoutDayId String?                   @map("last_completed_workout_day_id") @db.Uuid
+  nextWorkoutDayId          String?                   @map("next_workout_day_id") @db.Uuid
+  createdAt                 DateTime                  @default(now()) @map("created_at")
+  updatedAt                 DateTime                  @updatedAt @map("updated_at")
+
+  programVersion          ProgramVersion @relation(fields: [programVersionId], references: [id])
+  client                  User           @relation("ClientAssignments", fields: [clientUserId], references: [id], onDelete: Cascade)
+  lastCompletedWorkoutDay WorkoutDay?    @relation("LastCompletedDay", fields: [lastCompletedWorkoutDayId], references: [id])
+  nextWorkoutDay          WorkoutDay?    @relation("NextWorkoutDay", fields: [nextWorkoutDayId], references: [id])
+  workoutSessions         WorkoutSession[]
+
+  @@index([clientUserId, status])
+  @@map("program_assignment")
+}
+
+// --- Exercise library ---
+
+model ExerciseLibrary {
+  id              String    @id @default(uuid()) @db.Uuid
+  slug            String    @unique
+  wgerId          Int?      @unique @map("wger_id")
+  names           Json
+  description     Json?
+  category        String
+  primaryMuscles  Json      @map("primary_muscles")
+  secondaryMuscles Json     @default("[]") @map("secondary_muscles")
+  equipment       String
+  isBodyweight    Boolean   @default(false) @map("is_bodyweight")
+  ownerUserId     String?   @map("owner_user_id") @db.Uuid
+  deletedAt       DateTime? @map("deleted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  owner            User?              @relation("CustomExercises", fields: [ownerUserId], references: [id])
+  programExercises ProgramExercise[]
+  exerciseExecutions ExerciseExecution[]
+  substitutedFrom  ExerciseExecution[] @relation("Substitution")
+  personalRecords  PersonalRecord[]
+
+  @@index([category])
+  @@map("exercise_library")
+}
+
+// --- Workout execution ---
+
+model WorkoutSession {
+  id                  String              @id @db.Uuid
+  userId              String              @map("user_id") @db.Uuid
+  programAssignmentId String?             @map("program_assignment_id") @db.Uuid
+  workoutDayId        String?             @map("workout_day_id") @db.Uuid
+  status              WorkoutSessionStatus
+  sessionType         SessionType         @map("session_type")
+  startedAt           DateTime            @map("started_at")
+  completedAt         DateTime?           @map("completed_at")
+  durationSeconds     Int?                @map("duration_seconds")
+  privateNotes        String?             @map("private_notes")
+  coachNotes          String?             @map("coach_notes")
+  ingestedAt          DateTime            @default(now()) @map("ingested_at")
+  clientUpdatedAt     DateTime            @map("client_updated_at")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  programAssignment ProgramAssignment? @relation(fields: [programAssignmentId], references: [id])
+  workoutDay        WorkoutDay?        @relation(fields: [workoutDayId], references: [id])
+  exerciseExecutions ExerciseExecution[]
+
+  @@index([userId, startedAt(sort: Desc)])
+  @@index([userId, completedAt(sort: Desc)])
+  @@index([userId, status])
+  @@map("workout_session")
+}
+
+model ExerciseExecution {
+  id                        String                  @id @db.Uuid
+  workoutSessionId          String                  @map("workout_session_id") @db.Uuid
+  exerciseLibraryId         String                  @map("exercise_library_id") @db.Uuid
+  programExerciseId         String?                 @map("program_exercise_id") @db.Uuid
+  substitutedFromExerciseId String?                 @map("substituted_from_exercise_id") @db.Uuid
+  sortOrder                 Int                     @map("sort_order")
+  status                    ExerciseExecutionStatus
+  prescriptionSnapshot      Json                  @map("prescription_snapshot")
+  createdAt                 DateTime                @default(now()) @map("created_at")
+  updatedAt                 DateTime                @updatedAt @map("updated_at")
+
+  workoutSession          WorkoutSession   @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  exerciseLibrary         ExerciseLibrary  @relation(fields: [exerciseLibraryId], references: [id])
+  programExercise         ProgramExercise? @relation(fields: [programExerciseId], references: [id])
+  substitutedFromExercise ExerciseLibrary? @relation("Substitution", fields: [substitutedFromExerciseId], references: [id])
+  setLogs SetLog[]
+
+  @@index([workoutSessionId, sortOrder])
+  @@map("exercise_execution")
+}
+
+model SetLog {
+  id                  String   @id @db.Uuid
+  exerciseExecutionId String   @map("exercise_execution_id") @db.Uuid
+  setNumber           Int      @map("set_number")
+  weightKg            Decimal? @map("weight_kg") @db.Decimal(8, 2)
+  reps                Int?
+  rpe                 Decimal? @db.Decimal(3, 1)
+  rir                 Int?
+  isWarmup            Boolean  @default(false) @map("is_warmup")
+  isCompleted         Boolean  @default(false) @map("is_completed")
+  isSkipped           Boolean  @default(false) @map("is_skipped")
+  isFailed            Boolean  @default(false) @map("is_failed")
+  clientTimestamp     DateTime @map("client_timestamp")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  exerciseExecution ExerciseExecution @relation(fields: [exerciseExecutionId], references: [id], onDelete: Cascade)
+  personalRecords   PersonalRecord[]
+
+  @@unique([exerciseExecutionId, setNumber])
+  @@map("set_log")
+}
+
+// --- Progress ---
+
+model PersonalRecord {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @map("user_id") @db.Uuid
+  exerciseLibraryId String   @map("exercise_library_id") @db.Uuid
+  prType            PrType   @map("pr_type")
+  reps              Int?
+  value             Decimal  @db.Decimal(10, 2)
+  setLogId          String   @map("set_log_id") @db.Uuid
+  achievedAt        DateTime @map("achieved_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseLibrary ExerciseLibrary @relation(fields: [exerciseLibraryId], references: [id])
+  setLog          SetLog          @relation(fields: [setLogId], references: [id])
+
+  @@index([userId, exerciseLibraryId, prType])
+  @@map("personal_record")
+}
+
+model BodyWeightLog {
+  id         String           @id @default(uuid()) @db.Uuid
+  userId     String           @map("user_id") @db.Uuid
+  weightKg   Decimal          @map("weight_kg") @db.Decimal(5, 2)
+  recordedAt DateTime         @map("recorded_at")
+  source     BodyWeightSource
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, recordedAt(sort: Desc)])
+  @@map("body_weight_log")
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  achievementId String   @map("achievement_id")
+  unlockedAt    DateTime @map("unlocked_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievement")
+}
+
+// --- Notifications ---
+
+model Notification {
+  id           String               @id @default(uuid()) @db.Uuid
+  userId       String               @map("user_id") @db.Uuid
+  category     NotificationCategory
+  title        String
+  body         String
+  payload      Json                 @default("{}")
+  readAt       DateTime?            @map("read_at")
+  scheduledFor DateTime?            @map("scheduled_for")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("notification")
+}
+
+// --- Compliance & system ---
+
+model ConsentRecord {
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String      @map("user_id") @db.Uuid
+  relationshipId String?     @map("relationship_id") @db.Uuid
+  consentType    ConsentType @map("consent_type")
+  consentVersion String      @map("consent_version")
+  granted        Boolean
+  scopes         Json        @default("{}")
+  ipHash         String?     @map("ip_hash")
+  recordedAt     DateTime    @map("recorded_at")
+  revokedAt      DateTime?   @map("revoked_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, consentType])
+  @@map("consent_record")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  actorUserId  String   @map("actor_user_id") @db.Uuid
+  action       String
+  resourceType String   @map("resource_type")
+  resourceId   String   @map("resource_id") @db.Uuid
+  metadata     Json     @default("{}")
+  ipHash       String?  @map("ip_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  actor User @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: Cascade)
+
+  @@index([actorUserId, createdAt(sort: Desc)])
+  @@index([resourceType, resourceId])
+  @@map("audit_log")
+}
+
+model SyncIdempotency {
+  key          String   @id
+  responseBody Json     @map("response_body")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([expiresAt])
+  @@map("sync_idempotency")
+}

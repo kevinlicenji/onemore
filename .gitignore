@@ -21,6 +21,12 @@ dist/
 .next/
 out/
 .turbo/
+*.tsbuildinfo
+
+# Playwright
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/
 
 # Logs
 *.log
@@ -29,8 +35,12 @@ npm-debug.log*
 # Test / coverage (future)
 coverage/
 
-# Prisma (future)
+# Prisma
 services/api/prisma/*.db
+
+# Local env copies
+services/api/.env
+apps/web/.env.local
 
 # Docker local overrides
 docker-compose.override.yml
