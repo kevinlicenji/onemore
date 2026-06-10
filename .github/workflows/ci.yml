@@ -42,8 +42,17 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Test
+      - name: Unit, integration, smoke, and security tests
         run: pnpm test
 
       - name: Build
         run: pnpm build
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @onemore/web exec playwright install --with-deps chromium
+
+      - name: E2E and endpoint tests
+        run: pnpm test:e2e
+        env:
+          CI: 'true'
+          DATABASE_URL: postgresql://onemore:onemore_dev@localhost:55432/onemore
