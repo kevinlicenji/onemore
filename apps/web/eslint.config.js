@@ -4,6 +4,8 @@ import nextConfig from '@onemore/eslint-config/next';
 export default [
   {
     ignores: [
+      'e2e/**',
+      'playwright.config.ts',
       '.next/**',
       'next-env.d.ts',
       'eslint.config.js',
