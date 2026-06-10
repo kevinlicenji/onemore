@@ -1,0 +1,10 @@
+{
+  "Home": {
+    "title": "OneMore",
+    "subtitle": "Fitness training and coaching",
+    "apiStatus": "API status",
+    "apiConnected": "API connected",
+    "apiError": "API unreachable",
+    "switchLanguage": "Switch language"
+  }
+}
