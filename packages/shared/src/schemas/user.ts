@@ -1,0 +1,35 @@
+import { z } from 'zod';
+
+export const trainingGoalSchema = z.enum(['mass', 'strength', 'fat_loss', 'recomp', 'fitness']);
+
+export const trainingLevelSchema = z.enum(['beginner', 'intermediate', 'advanced']);
+
+export const trainingEnvironmentSchema = z.enum(['gym', 'home']);
+
+/**
+ * Public user profile fields returned by GET /users/me.
+ */
+export const userProfileSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  emailVerifiedAt: z.string().datetime().nullable(),
+  displayName: z.string().nullable(),
+  username: z.string().nullable(),
+  locale: z.enum(['it', 'en']),
+  birthYear: z.number().int().nullable(),
+  heightCm: z.number().nullable(),
+  weightKg: z.number().nullable(),
+  timezone: z.string(),
+  motivationLevel: z.number().int().min(1).max(3).nullable(),
+  onboardingCompletedAt: z.string().datetime().nullable(),
+  trainingGoal: trainingGoalSchema.nullable(),
+  trainingLevel: trainingLevelSchema.nullable(),
+  trainingEnvironment: trainingEnvironmentSchema.nullable(),
+  trainingDaysPerWeek: z.number().int().nullable(),
+  isCoach: z.boolean(),
+  mfaEnabled: z.boolean(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export type UserProfile = z.infer<typeof userProfileSchema>;
