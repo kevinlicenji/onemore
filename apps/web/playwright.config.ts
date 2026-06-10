@@ -29,8 +29,7 @@ export default defineConfig({
         NODE_ENV: 'test',
         API_PORT: E2E_API_PORT,
         DATABASE_URL:
-          process.env.DATABASE_URL ??
-          'postgresql://onemore:onemore_dev@localhost:55432/onemore',
+          process.env.DATABASE_URL ?? 'postgresql://onemore:onemore_dev@localhost:55432/onemore',
         LOG_LEVEL: 'error',
         API_VERSION: '0.1.0-e2e',
       },
