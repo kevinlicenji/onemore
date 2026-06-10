@@ -12,6 +12,7 @@ describe('cn', () => {
   });
 
   it('handles conditional classes', () => {
-    expect(cn('base', false && 'hidden', 'visible')).toBe('base visible');
+    const flags: { hidden: boolean } = { hidden: false };
+    expect(cn('base', flags.hidden && 'hidden', 'visible')).toBe('base visible');
   });
 });
