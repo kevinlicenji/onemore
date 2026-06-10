@@ -1,6 +1,6 @@
 # OneMore — Workout Execution NFR & Acceptance Criteria
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Applies from:** MVP-1  
 **Parent document:** [OneMore_PRD_Enterprise_v1.md](../../OneMore_PRD_Enterprise_v1.md)  
 **Architecture:** [Technical Spec v1](../Technical_Spec_v1.md) | [ADR 0001](../adr/0001-web-first-pwa-platform.md)
@@ -114,6 +114,7 @@ sequenceDiagram
 - Badge: "Sync pending" on dashboard (non-blocking)
 - After 24h pending: gentle reminder notification (max 1/day)
 - Data never deleted locally until server ACK
+- **`sync_status` is client-only** (IndexedDB); server stores `ingested_at` on `workout_session` — see Data Model v1.2
 
 **AC-WO-02:** Complete 60-min workout offline → reconnect → all sets visible on server within 10s.
 

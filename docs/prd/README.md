@@ -15,7 +15,7 @@ The original PRD remains the **feature outline**. These documents supersede or e
 | [OneMore_Algorithm_Spec.md](./OneMore_Algorithm_Spec.md) | PRD §9, §14, §16 (Progress Score) | MVP-1 + MVP-3 |
 | [OneMore_RBAC_Privacy.md](./OneMore_RBAC_Privacy.md) | PRD §19, §25 | MVP-2 + MVP-3 |
 | [OneMore_Workout_NFR.md](./OneMore_Workout_NFR.md) | PRD §10 UX targets | MVP-1 |
-| [OneMore_Data_Model.md](./OneMore_Data_Model.md) | PRD §24 | MVP-1 → MVP-3 |
+| [OneMore_Data_Model.md](./OneMore_Data_Model.md) | PRD §24 (v1.2) | MVP-1 → MVP-3 |
 | [OneMore_Motivation_System_Spec.md](./OneMore_Motivation_System_Spec.md) | PRD §6, §16, §21 | MVP-1 + MVP-3 |
 | [OneMore_Analytics_Events.md](./OneMore_Analytics_Events.md) | PRD §2, §26 | MVP-1 → MVP-3 |
 | [OneMore_Coach_Billing_UX.md](./OneMore_Coach_Billing_UX.md) | Coach Pro upgrade gate, Stripe V2 | V2 |

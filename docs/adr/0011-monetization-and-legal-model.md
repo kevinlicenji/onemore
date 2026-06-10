@@ -91,8 +91,10 @@ Coach on free tier (or Pro subscription not `active`) with **3 active clients**:
 
 Add in MVP-2 migration planning (not MVP-1):
 
-- `coach_subscription` (user_id, stripe_customer_id, stripe_subscription_id, status, tier)
+- `coach_subscription` (coach_profile_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, status, tier)
 - `stripe_connect_account` (coach_profile_id, connect_account_id, onboarding_complete) — V4
+
+See [Data Model v1.2](../prd/OneMore_Data_Model.md) §4.3 — no `price_eur_cents` column; price from Stripe/env.
 
 ## Alternatives rejected
 

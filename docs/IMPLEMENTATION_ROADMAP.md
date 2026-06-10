@@ -58,7 +58,7 @@ git tag v0.1.0
 | P0-01 | Init Turborepo: `apps/web`, `services/api`, `packages/shared`, `packages/ui`, `packages/api-client` | Backend+FE | `pnpm dev` starts web + api |
 | P0-02 | TypeScript strict, ESLint, shared eslint-config | FE | CI lint passes |
 | P0-03 | `docker/compose.dev.yml`: postgres, pgbouncer, redis | Backend | `docker compose up` healthy |
-| P0-04 | Prisma schema MVP-1 tables (see Data Model) | Backend | `prisma migrate dev` works |
+| P0-04 | Prisma schema per [Data Model v1.2](./prd/OneMore_Data_Model.md) MVP-1 tables | Backend | `prisma migrate dev` works |
 | P0-05 | Express app skeleton: health, `/api/v1`, error handler, pino | Backend | `GET /health` 200 |
 | P0-06 | Next.js 15 App Router, Tailwind, shadcn init in `packages/ui` | FE | Storybook or demo page |
 | P0-07 | `next-intl`: locales `it`, `en` | FE | Language switch works |

@@ -253,16 +253,26 @@ See [ADR 0006](./adr/0006-authentication-and-identity.md).
 
 ## 8. Data layer
 
-See [ADR 0004](./adr/0004-database-and-persistence.md) and [Data Model](./prd/OneMore_Data_Model.md).
+See [ADR 0004](./adr/0004-database-and-persistence.md) and [Data Model v1.2](./prd/OneMore_Data_Model.md).
 
-### New entities (technical spec)
+Key v1.2 decisions:
+
+- Auth: `user_credential`, `oauth_account`, `refresh_token`, `password_reset_token`
+- Program rotation: `program_assignment.next_workout_day_id`
+- Workout history: `prescription_snapshot` on `exercise_execution`
+- Progress: `body_weight_log`, `user_achievement`; fixed `personal_record` uniqueness
+- Messaging: E2E only (`body_encrypted`); no server `sync_status` on sessions
+- Billing: `coach_subscription` without per-row price (Stripe catalog)
+
+### Supplemental entities
 
 | Entity | Purpose |
 |--------|---------|
-| `system_settings` | Admin media limits, feature flags |
-| `audit_log` | All coach reads + security events |
+| `system_settings` | Admin media limits |
+| `audit_log` | Coach reads + security events |
 | `sync_idempotency` | Idempotency key store |
-| `media_asset` | R2 object metadata MVP-2+ |
+| `media_asset` | R2 metadata MVP-2+ |
+| `progression_proposal` | Coach-approved program changes MVP-3 |
 | `oidc_provider_config` | Enterprise stub |
 
 ---

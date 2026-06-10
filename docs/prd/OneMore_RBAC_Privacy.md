@@ -1,6 +1,6 @@
 # OneMore — RBAC & Privacy (GDPR) Specification
 
-**Version:** 1.2  
+**Version:** 1.3  
 **Applies from:** MVP-2 (coach linking) and MVP-3 (multi-coach)  
 **Parent document:** [OneMore_PRD_Enterprise_v1.md](../../OneMore_PRD_Enterprise_v1.md)  
 **Architecture:** [Technical Spec v1](../Technical_Spec_v1.md) | [ADR 0006](../adr/0006-authentication-and-identity.md)
@@ -211,7 +211,7 @@ On hard delete:
 
 | Control | Requirement |
 |---------|-------------|
-| Authentication | Email + password; Apple + Google OAuth MVP-1; custom auth on VPS |
+| Authentication | Email + password (`user_credential`); Apple/Google (`oauth_account`); refresh tokens in DB |
 | Password | Min 8 chars, Have I Been Pwned breach check |
 | Session | JWT 15min access (memory) + 7d httpOnly refresh cookie; rotate on use |
 | MFA | TOTP optional — recommended for coaches MVP-2 |
