@@ -1,28 +1,29 @@
 # OneMore — Project Checkpoint
 
-**Updated:** 2026-06-10  
+**Updated:** 2026-06-11  
 **Repository:** https://github.com/kevinlicenji/onemore  
-**Branch:** `feat/mvp1-monorepo-bootstrap`
+**Branch:** `main`
 
 ---
 
 ## Latest state
 
-**Phase 0 foundation implemented** — monorepo boots locally with Docker, Prisma MVP-1 schema, Express health API, Next.js demo page.
+**Phase 0 merged** — PR #1 in `main` (`1fc26e8`).
+
+Monorepo, API skeleton, Prisma MVP-1, Next.js demo, Docker dev stack, full test suite + CI green.
 
 ---
 
-## What exists
+## Next step
 
-| Area | Status |
-|------|--------|
-| Turborepo monorepo | `apps/web`, `services/api`, `packages/*` |
-| Docker dev stack | Postgres `:55432`, Redis `:6380`, PgBouncer `:6432` |
-| Prisma schema | MVP-1 tables + partial PR unique indexes |
-| API | `GET /health`, `GET /api/v1` |
-| Web | Home page, IT/EN, API health check |
-| CI | lint, typecheck, format, audit, unit/integration/smoke/security, build, E2E |
-| Tests | 24 Vitest + 6 Playwright — see `docs/tests/README.md` |
+**Phase 1 — Auth & users** on branch `feat/mvp1-auth`.
+
+See [IMPLEMENTATION_ROADMAP.md](../docs/IMPLEMENTATION_ROADMAP.md) § Phase 1.
+
+```bash
+git checkout main && git pull
+git checkout -b feat/mvp1-auth
+```
 
 ---
 
@@ -42,6 +43,10 @@ pnpm dev
 
 ---
 
-## Next step
+## Tests
 
-**Phase 1 — Auth & users** per [IMPLEMENTATION_ROADMAP.md](../docs/IMPLEMENTATION_ROADMAP.md).
+24 Vitest + 6 Playwright — see [docs/tests/README.md](../docs/tests/README.md)
+
+```bash
+pnpm test && pnpm build && pnpm test:e2e
+```
