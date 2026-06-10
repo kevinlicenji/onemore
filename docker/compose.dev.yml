@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: onemore-postgres
+    environment:
+      POSTGRES_USER: onemore
+      POSTGRES_PASSWORD: onemore_dev
+      POSTGRES_DB: onemore
+    ports:
+      - '55432:5432'
+    volumes:
+      - onemore_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U onemore -d onemore']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  pgbouncer:
+    image: edoburu/pgbouncer:1.22.1-p0
+    container_name: onemore-pgbouncer
+    environment:
+      DATABASE_URL: postgres://onemore:onemore_dev@postgres:5432/onemore
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 100
+      DEFAULT_POOL_SIZE: 20
+    ports:
+      - '6432:5432'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    container_name: onemore-redis
+    ports:
+      - '6380:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  onemore_postgres_data:
