@@ -60,10 +60,7 @@ function readStoredE2eSession(): StoredE2eSession | null {
 }
 
 function writeStoredE2eSession(accessToken: string, authUser: AuthUser): void {
-  sessionStorage.setItem(
-    E2E_SESSION_STORAGE_KEY,
-    JSON.stringify({ accessToken, user: authUser }),
-  );
+  sessionStorage.setItem(E2E_SESSION_STORAGE_KEY, JSON.stringify({ accessToken, user: authUser }));
 }
 
 /**
