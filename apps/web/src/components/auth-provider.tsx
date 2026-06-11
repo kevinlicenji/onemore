@@ -14,11 +14,7 @@ import {
 import { fetchUserProfile } from '@/lib/api-auth';
 import { API_BASE_URL } from '@/lib/api-config';
 import { identifyUser } from '@/lib/analytics';
-import {
-  allowInjectedE2eSession,
-  E2E_SESSION_STORAGE_KEY,
-  e2eBypassActive,
-} from '@/lib/e2e-bypass';
+import { allowInjectedE2eSession, E2E_SESSION_STORAGE_KEY } from '@/lib/e2e-bypass';
 
 export interface AuthUser {
   id: string;
