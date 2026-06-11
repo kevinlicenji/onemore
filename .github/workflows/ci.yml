@@ -66,6 +66,9 @@ jobs:
       - name: Format check
         run: pnpm format:check
 
+      - name: Generate Prisma client
+        run: pnpm --filter @onemore/api exec prisma generate
+
       - name: Lint
         run: pnpm lint
 
