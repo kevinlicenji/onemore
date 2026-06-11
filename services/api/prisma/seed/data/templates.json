@@ -1,0 +1,179 @@
+[
+  {
+    "slug": "beginner_full_body_gym",
+    "objective": "fitness",
+    "meta": {
+      "displayName": { "en": "Beginner Full Body", "it": "Full body principiante" },
+      "audience": "beginner, gym",
+      "daysPerWeek": 3
+    },
+    "days": [
+      {
+        "label": "Day A",
+        "exercises": [
+          { "slug": "squat", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "bench-press", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "barbell-row", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "plank", "sets": 3, "reps": 30, "rest": 60, "note": "30 seconds" }
+        ]
+      },
+      {
+        "label": "Day B",
+        "exercises": [
+          { "slug": "romanian-deadlift", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "overhead-press", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "lat-pulldown", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "leg-raise", "sets": 3, "reps": 12, "rest": 60 }
+        ]
+      },
+      {
+        "label": "Day C",
+        "exercises": [
+          { "slug": "leg-press", "sets": 3, "reps": 10, "rest": 90 },
+          { "slug": "incline-dumbbell-press", "sets": 3, "reps": 10, "rest": 90 },
+          { "slug": "cable-row", "sets": 3, "reps": 10, "rest": 90 },
+          { "slug": "pallof-press", "sets": 3, "reps": 12, "rest": 60 }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "beginner_upper_lower_gym",
+    "objective": "fitness",
+    "meta": {
+      "displayName": { "en": "Beginner Upper / Lower", "it": "Upper / Lower principiante" },
+      "audience": "beginner, gym",
+      "daysPerWeek": 4
+    },
+    "days": [
+      {
+        "label": "Upper A",
+        "exercises": [
+          { "slug": "bench-press", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "barbell-row", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "overhead-press", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "biceps-curl", "sets": 2, "reps": 12, "rest": 60 },
+          { "slug": "tricep-pushdown", "sets": 2, "reps": 12, "rest": 60 }
+        ]
+      },
+      {
+        "label": "Lower A",
+        "exercises": [
+          { "slug": "squat", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "romanian-deadlift", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "leg-curl", "sets": 3, "reps": 10, "rest": 60 },
+          { "slug": "calf-raise", "sets": 3, "reps": 15, "rest": 60 }
+        ]
+      },
+      {
+        "label": "Upper B",
+        "exercises": [
+          { "slug": "incline-dumbbell-press", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "pull-up", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "lateral-raise", "sets": 3, "reps": 12, "rest": 60 },
+          { "slug": "hammer-curl", "sets": 2, "reps": 12, "rest": 60 }
+        ]
+      },
+      {
+        "label": "Lower B",
+        "exercises": [
+          { "slug": "leg-press", "sets": 3, "reps": 10, "rest": 90 },
+          { "slug": "bulgarian-split-squat", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "leg-extension", "sets": 3, "reps": 10, "rest": 60 },
+          { "slug": "leg-raise", "sets": 3, "reps": 12, "rest": 60 }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "home_bodyweight_3day",
+    "objective": "fitness",
+    "meta": {
+      "displayName": { "en": "Home Bodyweight", "it": "Corpo libero a casa" },
+      "audience": "beginner–intermediate, home",
+      "daysPerWeek": 3
+    },
+    "days": [
+      {
+        "label": "Day A",
+        "exercises": [
+          { "slug": "push-up", "sets": 3, "reps": 15, "rest": 60, "note": "max reps" },
+          { "slug": "squat", "sets": 3, "reps": 15, "rest": 60 },
+          { "slug": "superman", "sets": 3, "reps": 12, "rest": 60 },
+          { "slug": "plank", "sets": 3, "reps": 45, "rest": 60, "note": "45 seconds" }
+        ]
+      },
+      {
+        "label": "Day B",
+        "exercises": [
+          { "slug": "glute-bridge", "sets": 3, "reps": 15, "rest": 60 },
+          { "slug": "pike-push-up", "sets": 3, "reps": 12, "rest": 60, "note": "max reps" },
+          { "slug": "reverse-lunge", "sets": 3, "reps": 12, "rest": 60 },
+          { "slug": "dead-bug", "sets": 3, "reps": 12, "rest": 60 }
+        ]
+      },
+      {
+        "label": "Day C",
+        "exercises": [
+          { "slug": "burpee", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "jump-squat", "sets": 3, "reps": 12, "rest": 60 },
+          { "slug": "mountain-climber", "sets": 3, "reps": 20, "rest": 60 },
+          {
+            "slug": "side-plank",
+            "sets": 3,
+            "reps": 30,
+            "rest": 60,
+            "note": "30 seconds each side"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "intermediate_upper_lower_gym",
+    "objective": "strength",
+    "meta": {
+      "displayName": { "en": "Intermediate Upper / Lower", "it": "Upper / Lower intermedio" },
+      "audience": "intermediate, gym",
+      "daysPerWeek": 4
+    },
+    "days": [
+      {
+        "label": "Upper A",
+        "exercises": [
+          { "slug": "bench-press", "sets": 4, "reps": 6, "rest": 120 },
+          { "slug": "barbell-row", "sets": 4, "reps": 6, "rest": 120 },
+          { "slug": "overhead-press", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "pull-up", "sets": 3, "reps": 8, "rest": 90 }
+        ]
+      },
+      {
+        "label": "Lower A",
+        "exercises": [
+          { "slug": "squat", "sets": 4, "reps": 6, "rest": 120 },
+          { "slug": "romanian-deadlift", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "leg-press", "sets": 3, "reps": 10, "rest": 90 },
+          { "slug": "leg-curl", "sets": 3, "reps": 10, "rest": 60 }
+        ]
+      },
+      {
+        "label": "Upper B",
+        "exercises": [
+          { "slug": "incline-dumbbell-press", "sets": 4, "reps": 8, "rest": 90 },
+          { "slug": "cable-row", "sets": 4, "reps": 8, "rest": 90 },
+          { "slug": "lateral-raise", "sets": 3, "reps": 12, "rest": 60 },
+          { "slug": "face-pull", "sets": 3, "reps": 15, "rest": 60 }
+        ]
+      },
+      {
+        "label": "Lower B",
+        "exercises": [
+          { "slug": "front-squat", "sets": 4, "reps": 8, "rest": 120 },
+          { "slug": "split-squat", "sets": 3, "reps": 8, "rest": 90 },
+          { "slug": "leg-extension", "sets": 3, "reps": 12, "rest": 60 },
+          { "slug": "calf-raise", "sets": 4, "reps": 12, "rest": 60 }
+        ]
+      }
+    ]
+  }
+]

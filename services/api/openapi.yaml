@@ -38,3 +38,45 @@ paths:
   /onboarding/complete:
     post:
       summary: Complete onboarding with all required fields
+  /exercises:
+    get:
+      summary: Search exercise library (tsvector full-text)
+    post:
+      summary: Create a custom exercise for the current user
+  /programs:
+    get:
+      summary: List programs owned by the current user
+    post:
+      summary: Create a draft program with days and exercises
+  /programs/templates:
+    get:
+      summary: List system program templates
+  /programs/templates/{slug}/apply:
+    post:
+      summary: Clone a template into the user's library and assign it
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+  /programs/{programId}:
+    get:
+      summary: Get program detail with days and exercises
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  /programs/{programId}/publish:
+    post:
+      summary: Publish the latest draft version of a program
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid

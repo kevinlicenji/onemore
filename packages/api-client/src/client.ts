@@ -36,6 +36,43 @@ export class ApiClient {
   }
 
   /**
+   * GET JSON from an API path.
+   *
+   * @param path - Path relative to base URL (e.g. `/api/v1/programs`).
+   * @returns Parsed JSON body.
+   * @throws When the response is not OK.
+   */
+  async getJson<T>(path: string): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      headers: this.buildHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(`GET ${path} failed: ${String(response.status)}`);
+    }
+    return response.json() as Promise<T>;
+  }
+
+  /**
+   * POST JSON to an API path.
+   *
+   * @param path - Path relative to base URL.
+   * @param body - JSON-serializable payload.
+   * @returns Parsed JSON body.
+   * @throws When the response is not OK.
+   */
+  async postJson<T>(path: string, body: unknown): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: 'POST',
+      headers: this.buildHeaders(),
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new Error(`POST ${path} failed: ${String(response.status)}`);
+    }
+    return response.json() as Promise<T>;
+  }
+
+  /**
    * Build request headers including optional Bearer token.
    *
    * @returns Headers for API requests.
