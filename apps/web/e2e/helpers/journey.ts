@@ -12,30 +12,32 @@ export interface RegisteredUser {
 }
 
 /**
- * Register via API and inject an in-memory session through the E2E auth hook.
+ * Register through the web UI so AuthProvider holds a real in-memory session (no storage hook).
  */
 export async function registerAthlete(
   page: Page,
-  request: APIRequestContext,
+  _request: APIRequestContext,
 ): Promise<RegisteredUser> {
   const suffix = String(Date.now());
   const email = `e2e-${suffix}@example.com`;
   const username = `e2e_${suffix.slice(-8)}`;
 
-  const registerResponse = await request.post(`${E2E_API_URL}/api/v1/auth/register`, {
-    data: {
-      email,
-      password: E2E_PASSWORD,
-      username,
-      locale: 'it',
-      birthYear: 1995,
-      timezone: 'Europe/Rome',
-      consents: { tos: true, privacy: true, fitnessData: true },
-    },
-  });
-  if (!registerResponse.ok()) {
-    throw new Error(`Register failed: ${String(registerResponse.status())}`);
-  }
+  await page.goto('/it/register', { waitUntil: 'load' });
+
+  const registerResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/v1/auth/register') &&
+      response.request().method() === 'POST' &&
+      response.ok(),
+    { timeout: 60_000 },
+  );
+
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Username').fill(username);
+  await page.getByLabel('Password').fill(E2E_PASSWORD);
+  await page.getByRole('button', { name: 'Registrati' }).click();
+
+  const registerResponse = await registerResponsePromise;
   const body = (await registerResponse.json()) as {
     accessToken: string;
     user: {
@@ -47,13 +49,7 @@ export async function registerAthlete(
     };
   };
 
-  await page.addInitScript(
-    ({ token, user }) => {
-      sessionStorage.setItem('onemore_e2e_session', JSON.stringify({ accessToken: token, user }));
-    },
-    { token: body.accessToken, user: body.user },
-  );
-  await page.goto('/it/onboarding', { waitUntil: 'domcontentloaded' });
+  await page.waitForURL(/\/it\/onboarding/, { timeout: 60_000 });
   await page.getByRole('heading', { name: 'Qual è il tuo obiettivo principale?' }).waitFor({
     timeout: 60_000,
   });
