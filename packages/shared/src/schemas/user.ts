@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { userSettingsSchema } from './settings.js';
+
 export const trainingGoalSchema = z.enum(['mass', 'strength', 'fat_loss', 'recomp', 'fitness']);
 
 export const trainingLevelSchema = z.enum(['beginner', 'intermediate', 'advanced']);
@@ -32,6 +34,7 @@ export const userProfileSchema = z.object({
   trainingDaysPerWeek: z.number().int().nullable(),
   isCoach: z.boolean(),
   mfaEnabled: z.boolean(),
+  settings: userSettingsSchema,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

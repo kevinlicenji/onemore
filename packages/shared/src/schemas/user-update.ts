@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { trainingEnvironmentSchema, trainingGoalSchema, trainingLevelSchema } from './user.js';
 import { usernameSchema } from './auth.js';
+import { updateUserSettingsSchema } from './settings.js';
 
 export const updateUserProfileSchema = z.object({
   displayName: z.string().min(1).max(100).optional(),
@@ -20,6 +21,7 @@ export const updateUserProfileSchema = z.object({
   trainingLevel: trainingLevelSchema.optional(),
   trainingEnvironment: trainingEnvironmentSchema.optional(),
   trainingDaysPerWeek: z.number().int().min(1).max(7).optional(),
+  settings: updateUserSettingsSchema.optional(),
 });
 
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;

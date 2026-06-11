@@ -147,6 +147,9 @@ export default function DashboardPage(): React.ReactElement {
 
         <div className="flex flex-col gap-2">
           <Button asChild variant="outline">
+            <Link href={`/${locale}/settings`}>{t('settingsLink')}</Link>
+          </Button>
+          <Button asChild variant="outline">
             <Link href={`/${locale}/history`}>{t('historyLink')}</Link>
           </Button>
           <Button asChild variant="outline">

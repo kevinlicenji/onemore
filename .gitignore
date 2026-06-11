@@ -38,6 +38,9 @@ coverage/
 # Prisma
 services/api/prisma/*.db
 
+# GDPR export files (local dev storage)
+services/api/data/exports/
+
 # Local env copies
 services/api/.env
 apps/web/.env.local

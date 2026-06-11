@@ -1,8 +1,10 @@
 import type {
+  AccountDeletionResponse,
   AddWorkoutExerciseInput,
   AnalyticsDashboard,
   CreateCustomExercise,
   CreateProgramInput,
+  DataExportJob,
   ExerciseListItem,
   HistoryListQuery,
   HistoryListResponse,
@@ -11,8 +13,10 @@ import type {
   OnboardingUpdate,
   ProgramDetail,
   ProgramSummary,
+  RequestDataExportResponse,
   StartWorkoutSessionInput,
   TemplateSummary,
+  UpdateUserProfile,
   UpsertSetLogInput,
   UpsertSetResponse,
   UserProfile,
@@ -335,6 +339,63 @@ export async function fetchHistorySessionDetail(
     throw await parseApiError(response, 'Failed to load session');
   }
   return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function patchUserProfile(
+  accessToken: string,
+  payload: UpdateUserProfile,
+): Promise<UserProfile> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
+    method: 'PATCH',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to update profile');
+  }
+  return response.json() as Promise<UserProfile>;
+}
+
+export async function requestDataExport(
+  accessToken: string,
+): Promise<RequestDataExportResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/users/me/export`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to request export');
+  }
+  return response.json() as Promise<RequestDataExportResponse>;
+}
+
+export async function fetchLatestExportJob(
+  accessToken: string,
+): Promise<DataExportJob | null> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/users/me/export/latest`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load export status');
+  }
+  const data = (await response.json()) as { job: DataExportJob | null };
+  return data.job;
+}
+
+export async function deleteAccount(accessToken: string): Promise<AccountDeletionResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
+    method: 'DELETE',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to delete account');
+  }
+  return response.json() as Promise<AccountDeletionResponse>;
 }
 
 export async function fetchAnalyticsDashboard(accessToken: string): Promise<AnalyticsDashboard> {

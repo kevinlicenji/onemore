@@ -17,6 +17,7 @@
     "@onemore/api-client": "workspace:*",
     "@onemore/shared": "workspace:*",
     "@onemore/ui": "workspace:*",
+    "@sentry/nextjs": "9.47.1",
     "dexie": "4.0.11",
     "next": "^15.1.3",
     "next-intl": "^3.26.3",

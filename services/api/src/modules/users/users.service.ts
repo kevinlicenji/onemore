@@ -1,7 +1,8 @@
 import type { PrismaClient } from '@prisma/client';
-import type { UpdateUserProfile } from '@onemore/shared';
+import type { UpdateUserProfile, UserSettings } from '@onemore/shared';
 
 import { HttpError } from '../../lib/errors.js';
+import { mergeUserSettings, parseUserSettings } from '../../lib/settings.js';
 import { assertUsernameChangeAllowed, validateUsernameFormat } from './username.policy.js';
 
 /**
@@ -52,6 +53,10 @@ export class UsersService {
       username = input.username.toLowerCase();
     }
 
+    const nextSettings = input.settings
+      ? mergeUserSettings(parseUserSettings(user.settings), input.settings)
+      : undefined;
+
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -70,6 +75,7 @@ export class UsersService {
         trainingLevel: input.trainingLevel,
         trainingEnvironment: input.trainingEnvironment,
         trainingDaysPerWeek: input.trainingDaysPerWeek,
+        ...(nextSettings ? { settings: nextSettings } : {}),
       },
     });
 
@@ -95,9 +101,11 @@ export class UsersService {
     trainingDaysPerWeek: number | null;
     isCoach: boolean;
     mfaEnabled: boolean;
+    settings: unknown;
     createdAt: Date;
     updatedAt: Date;
   }) {
+    const settings: UserSettings = parseUserSettings(user.settings);
     return {
       id: user.id,
       email: user.email,
@@ -117,6 +125,7 @@ export class UsersService {
       trainingDaysPerWeek: user.trainingDaysPerWeek,
       isCoach: user.isCoach,
       mfaEnabled: user.mfaEnabled,
+      settings,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     };

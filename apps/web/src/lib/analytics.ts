@@ -1,4 +1,7 @@
+import { POSTHOG_EVENTS, type PostHogEventName } from '@onemore/shared';
 import type { PostHog } from 'posthog-js';
+
+export { POSTHOG_EVENTS };
 
 type AnalyticsProperties = Record<string, string | number | boolean | undefined>;
 
@@ -31,7 +34,7 @@ export function identifyUser(userId: string): void {
  * @param event - Event name from the analytics catalog.
  * @param properties - Non-PII event properties.
  */
-export function trackEvent(event: string, properties?: AnalyticsProperties): void {
+export function trackEvent(event: PostHogEventName, properties?: AnalyticsProperties): void {
   if (!posthogClient) {
     return;
   }

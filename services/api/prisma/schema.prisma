@@ -97,6 +97,13 @@ enum BodyWeightSource {
   import
 }
 
+enum DataExportStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
 enum NotificationCategory {
   workout
   progress
@@ -159,6 +166,8 @@ model User {
   consentRecords          ConsentRecord[]
   auditLogs               AuditLog[]          @relation("AuditActor")
   customExercises         ExerciseLibrary[]   @relation("CustomExercises")
+  dataExportJobs          DataExportJob[]
+  pushSubscriptions       PushSubscription[]
 
   @@index([deletedAt])
   @@index([onboardingCompletedAt])
@@ -503,6 +512,41 @@ model Notification {
 
   @@index([userId, readAt])
   @@map("notification")
+}
+
+// --- GDPR & push ---
+
+model DataExportJob {
+  id                String           @id @default(uuid()) @db.Uuid
+  userId            String           @map("user_id") @db.Uuid
+  status            DataExportStatus @default(pending)
+  storageKey        String?          @map("storage_key")
+  downloadTokenHash String?          @map("download_token_hash")
+  expiresAt         DateTime?        @map("expires_at")
+  completedAt       DateTime?        @map("completed_at")
+  errorMessage      String?          @map("error_message")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("data_export_job")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscription")
 }
 
 // --- Compliance & system ---

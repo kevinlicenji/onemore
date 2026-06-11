@@ -1,28 +1,30 @@
 # OneMore — Project Checkpoint
 
-**Updated:** 2026-06-10  
+**Updated:** 2026-06-11  
 **Repository:** https://github.com/kevinlicenji/onemore  
-**Branch:** `feat/mvp1-history-analytics` (PR pending)
+**Branch:** `feat/mvp1-gdpr-observability` (PR pending)
 
 ---
 
 ## Latest state
 
-**Phase 6 — History, PR detection, analytics** on `feat/mvp1-history-analytics`:
+**Phase 7 — GDPR, notifications, observability** on `feat/mvp1-gdpr-observability`:
 
-- PR detection on set completion (`weight_pr`, `volume_pr`, `e1rm_pr`) — online upsert + sync batch
-- e1RM formulas in `@onemore/shared` (AC-e1RM-01)
-- API: `GET /history/sessions`, `GET /history/sessions/:id`, `GET /analytics/dashboard`
-- Web: dashboard widgets (streak, volume, next/last workout, recent PRs)
-- Web: `/history` list + session detail, PR celebration modal + `pr_achieved` PostHog event
+- GDPR export: `POST /users/me/export` → BullMQ (or inline) → JSON+CSV → email link
+- Account deletion: `DELETE /users/me` → soft 30d → `hard-delete-users` cron
+- Web Push VAPID: subscribe/unsubscribe + weekly workout reminder job
+- Settings page: notification prefs, motivation level, export, delete account
+- Sentry: `@sentry/node` (API) + `@sentry/nextjs` (web, when DSN set)
+- PostHog: `POSTHOG_EVENTS` catalog in `@onemore/shared`
+- PII logging: removed password reset URL from logs
 
-**Phase 5** merged in `main` (PR #6).
+**Phase 6** merged in `main` (PR #7).
 
 ---
 
 ## Next step
 
-Merge Phase 6 PR, then **Phase 7 — GDPR export/delete, notifications, Sentry, PostHog catalog** per roadmap.
+Merge Phase 7 PR, then **Phase 8 — Hardening & beta** (E2E, k6, prod compose, deploy).
 
 ---
 

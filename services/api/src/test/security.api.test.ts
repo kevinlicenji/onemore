@@ -20,6 +20,7 @@ function buildTestEnv(): Env {
     API_VERSION: '0.1.0-security',
     WEB_APP_URL: 'http://localhost:3000',
     API_PUBLIC_URL: 'http://localhost:4000',
+    EXPORT_STORAGE_PATH: './data/exports-test',
     REFRESH_COOKIE_NAME: 'onemore_refresh',
     ACCESS_TOKEN_TTL_SECONDS: 900,
     REFRESH_TOKEN_TTL_DAYS: 7,

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import type { NextFunction, Request, Response } from 'express';
 import type { Logger } from 'pino';
 
@@ -30,6 +31,7 @@ export function createErrorHandler(logger: Logger) {
 
     const statusCode = err.statusCode ?? 500;
     if (statusCode >= 500) {
+      Sentry.captureException(err);
       logger.error({ err }, 'Unhandled server error');
     }
 

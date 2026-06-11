@@ -1,3 +1,4 @@
+import { POSTHOG_EVENTS } from '@onemore/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -15,7 +16,10 @@ describe('analytics', () => {
 
   it('does not throw when PostHog is disabled', () => {
     expect(() => {
-      trackEvent('onboarding_step_completed', { step_id: 'goal', step_index: 0 });
+      trackEvent(POSTHOG_EVENTS.ONBOARDING_STEP_COMPLETED, {
+        step_id: 'goal',
+        step_index: 0,
+      });
       identifyUser('user-1');
       trackOnboardingStepCompleted('goal', 0);
       trackOnboardingCompleted(2, 'mass', 'beginner');
