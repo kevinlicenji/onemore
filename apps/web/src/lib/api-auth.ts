@@ -1,13 +1,18 @@
 import type {
+  AddWorkoutExerciseInput,
   CreateCustomExercise,
   CreateProgramInput,
   ExerciseListItem,
+  NextWorkoutPreview,
   OnboardingComplete,
   OnboardingUpdate,
   ProgramDetail,
   ProgramSummary,
+  StartWorkoutSessionInput,
   TemplateSummary,
+  UpsertSetLogInput,
   UserProfile,
+  WorkoutSessionDetail,
 } from '@onemore/shared';
 
 import { API_BASE_URL } from '@/lib/api-config';
@@ -209,4 +214,125 @@ export async function fetchPrograms(accessToken: string): Promise<ProgramSummary
   }
   const data = (await response.json()) as { programs: ProgramSummary[] };
   return data.programs;
+}
+
+export async function fetchNextWorkoutPreview(accessToken: string): Promise<NextWorkoutPreview> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/workouts/next`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load next workout');
+  }
+  return response.json() as Promise<NextWorkoutPreview>;
+}
+
+export async function fetchActiveWorkoutSession(
+  accessToken: string,
+): Promise<WorkoutSessionDetail | null> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/workouts/sessions/active`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load active session');
+  }
+  const data = (await response.json()) as { session: WorkoutSessionDetail | null };
+  return data.session;
+}
+
+export async function startWorkoutSession(
+  accessToken: string,
+  payload: StartWorkoutSessionInput,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/workouts/sessions`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to start workout');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function fetchWorkoutSession(
+  accessToken: string,
+  sessionId: string,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load workout session');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function upsertWorkoutSet(
+  accessToken: string,
+  sessionId: string,
+  payload: UpsertSetLogInput,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/sets`, {
+    method: 'PUT',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to log set');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function addWorkoutExercise(
+  accessToken: string,
+  sessionId: string,
+  payload: AddWorkoutExerciseInput,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/exercises`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to add exercise');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function completeWorkoutSession(
+  accessToken: string,
+  sessionId: string,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/complete`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to complete workout');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function abandonWorkoutSession(
+  accessToken: string,
+  sessionId: string,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/abandon`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to abandon workout');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
 }
