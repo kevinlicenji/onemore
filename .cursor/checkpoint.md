@@ -2,32 +2,28 @@
 
 **Updated:** 2026-06-10  
 **Repository:** https://github.com/kevinlicenji/onemore  
-**Branch:** `feat/mvp1-workouts` (PR pending)
+**Branch:** `feat/mvp1-offline-sync` (PR pending)
 
 ---
 
 ## Latest state
 
-**Phase 4 — Workout execution (online-first)** on `feat/mvp1-workouts`:
+**Phase 5 — Offline sync** on `feat/mvp1-offline-sync`:
 
-- API: start/resume sessions, set logging, complete/abandon, program day rotation
-- Auto-fill weight/reps from last completed session per exercise
-- Web: start page (programmed + free), active workout UI with rest timer
-- Free workout: add exercises via search
+- API: `POST /sync/batch` (idempotent, LWW merges), `GET /sync/delta`
+- Dexie IndexedDB: exercises, sessions, next workout snapshot, sync queue
+- Web: local-first workout client, hydrate on login, flush on reconnect
+- Sync status badge on dashboard with manual retry
+
+**Phase 4** merged in `main` (PR #5).
 
 **Phase 3** merged in `main` (PR #4).
-
-**Phase 2** merged in `main` (PR #3).
-
-**Phase 1** merged in `main` (PR #2).
-
-Phase 0 merged via PR #1.
 
 ---
 
 ## Next step
 
-Merge Phase 4 PR, then **Phase 5 — Offline sync (Dexie + `/sync/batch`)** per roadmap.
+Merge Phase 5 PR, then **Phase 6 — History, PR detection, analytics** per roadmap.
 
 ---
 
@@ -40,9 +36,6 @@ pnpm --filter @onemore/api db:migrate
 pnpm --filter @onemore/api seed
 pnpm dev
 ```
-
-- Web: http://localhost:3000/it
-- API: http://localhost:4000/health
 
 ---
 

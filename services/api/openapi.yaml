@@ -139,3 +139,9 @@ paths:
           schema:
             type: string
             format: uuid
+  /sync/batch:
+    post:
+      summary: Apply ordered offline mutations (requires Idempotency-Key header)
+  /sync/delta:
+    get:
+      summary: Pull server changes since client watermark

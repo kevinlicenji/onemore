@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
+import { SyncStatusBadge } from '@/components/sync-status-badge';
 
 export default function DashboardPage(): React.ReactElement {
   const t = useTranslations('Dashboard');
@@ -40,6 +41,7 @@ export default function DashboardPage(): React.ReactElement {
             </Button>
           </div>
         </div>
+        <SyncStatusBadge />
         <Link className="text-xs text-muted-foreground underline" href={`/${locale}/credits`}>
           {t('creditsLink')}
         </Link>
