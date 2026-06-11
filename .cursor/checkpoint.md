@@ -1,29 +1,26 @@
 # OneMore — Project Checkpoint
 
-**Updated:** 2026-06-11  
+**Updated:** 2026-06-10  
 **Repository:** https://github.com/kevinlicenji/onemore  
-**Branch:** `main`
+**Branch:** `feat/mvp1-auth` (PR pending)
 
 ---
 
 ## Latest state
 
-**Phase 0 merged** — PR #1 in `main` (`1fc26e8`).
+**Phase 1 — Auth & users** implemented on `feat/mvp1-auth`:
 
-Monorepo, API skeleton, Prisma MVP-1, Next.js demo, Docker dev stack, full test suite + CI green.
+- API: register/login/logout/refresh, forgot/reset password, OAuth Google+Apple, `/users/me`, rate limiting, audit log, OpenAPI + Spectral
+- Web: login/register/forgot-password pages, in-memory access token + refresh cookie proxy
+- CI: Postgres + Redis services, integration tests, OpenAPI lint
+
+Phase 0 merged in `main` (`1fc26e8`).
 
 ---
 
 ## Next step
 
-**Phase 1 — Auth & users** on branch `feat/mvp1-auth`.
-
-See [IMPLEMENTATION_ROADMAP.md](../docs/IMPLEMENTATION_ROADMAP.md) § Phase 1.
-
-```bash
-git checkout main && git pull
-git checkout -b feat/mvp1-auth
-```
+Merge Phase 1 PR, then **Phase 2** per [IMPLEMENTATION_ROADMAP.md](../docs/IMPLEMENTATION_ROADMAP.md).
 
 ---
 

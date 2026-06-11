@@ -21,7 +21,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'node ../../services/api/dist/index.js',
+      command: 'node dist/index.js',
+      cwd: '../../services/api',
       url: `${E2E_API_URL}/health`,
       reuseExistingServer: false,
       timeout: 120_000,
@@ -32,6 +33,9 @@ export default defineConfig({
           process.env.DATABASE_URL ?? 'postgresql://onemore:onemore_dev@localhost:55432/onemore',
         LOG_LEVEL: 'error',
         API_VERSION: '0.1.0-e2e',
+        JWT_PRIVATE_KEY_PATH: 'test/fixtures/jwt-private.pem',
+        JWT_PUBLIC_KEY_PATH: 'test/fixtures/jwt-public.pem',
+        WEB_APP_URL: E2E_WEB_URL,
       },
     },
     {

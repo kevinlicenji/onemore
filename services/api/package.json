@@ -7,24 +7,33 @@
     "build": "prisma generate && tsc -p tsconfig.json",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "lint": "eslint src/",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "postinstall": "prisma generate",
+    "lint": "prisma generate && eslint src/",
+    "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "openapi:lint": "spectral lint openapi.yaml"
   },
   "dependencies": {
     "@onemore/shared": "workspace:*",
     "@prisma/client": "^6.1.0",
+    "arctic": "^3.7.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "helmet": "^8.0.0",
+    "ioredis": "^5.4.2",
+    "jose": "^5.9.6",
     "pino": "^9.6.0",
     "pino-http": "^10.3.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.8",
     "@onemore/eslint-config": "workspace:*",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
@@ -35,6 +44,7 @@
     "supertest": "^7.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^3.2.6"
+    "vitest": "^3.2.6",
+    "@stoplight/spectral-cli": "^6.14.3"
   }
 }
