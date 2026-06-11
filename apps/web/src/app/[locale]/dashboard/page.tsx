@@ -31,10 +31,18 @@ export default function DashboardPage(): React.ReactElement {
         </div>
         <div className="w-full rounded-lg border border-dashed p-8">
           <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
-          <Button asChild className="mt-4">
-            <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
-          </Button>
+          <div className="mt-4 flex flex-col gap-2">
+            <Button asChild>
+              <Link href={`/${locale}/programs/templates`}>{t('pickProgramCta')}</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
+            </Button>
+          </div>
         </div>
+        <Link className="text-xs text-muted-foreground underline" href={`/${locale}/credits`}>
+          {t('creditsLink')}
+        </Link>
       </main>
     </RequireAuth>
   );

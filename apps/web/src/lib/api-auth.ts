@@ -1,4 +1,14 @@
-import type { OnboardingComplete, OnboardingUpdate, UserProfile } from '@onemore/shared';
+import type {
+  CreateCustomExercise,
+  CreateProgramInput,
+  ExerciseListItem,
+  OnboardingComplete,
+  OnboardingUpdate,
+  ProgramDetail,
+  ProgramSummary,
+  TemplateSummary,
+  UserProfile,
+} from '@onemore/shared';
 
 import { API_BASE_URL } from '@/lib/api-config';
 
@@ -9,6 +19,13 @@ interface ApiErrorBody {
 async function parseApiError(response: Response, fallback: string): Promise<Error> {
   const err = (await response.json()) as ApiErrorBody;
   return new Error(err.error?.message ?? fallback);
+}
+
+function authHeaders(accessToken: string): HeadersInit {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
+  };
 }
 
 /**
@@ -90,4 +107,106 @@ export function resolveAuthenticatedHomePath(locale: string, profile: UserProfil
     return `/${locale}/dashboard`;
   }
   return `/${locale}/onboarding`;
+}
+
+export async function searchExercises(
+  accessToken: string,
+  query: string,
+): Promise<ExerciseListItem[]> {
+  const params = new URLSearchParams({ q: query, limit: '20' });
+  const response = await fetch(`${API_BASE_URL}/api/v1/exercises?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to search exercises');
+  }
+  const data = (await response.json()) as { exercises: ExerciseListItem[] };
+  return data.exercises;
+}
+
+export async function createCustomExercise(
+  accessToken: string,
+  payload: CreateCustomExercise,
+): Promise<ExerciseListItem> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/exercises`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to create exercise');
+  }
+  return response.json() as Promise<ExerciseListItem>;
+}
+
+export async function fetchProgramTemplates(accessToken: string): Promise<TemplateSummary[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs/templates`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load templates');
+  }
+  const data = (await response.json()) as { templates: TemplateSummary[] };
+  return data.templates;
+}
+
+export async function applyProgramTemplate(
+  accessToken: string,
+  slug: string,
+): Promise<ProgramDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs/templates/${slug}/apply`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to apply template');
+  }
+  return response.json() as Promise<ProgramDetail>;
+}
+
+export async function createProgram(
+  accessToken: string,
+  payload: CreateProgramInput,
+): Promise<ProgramDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to create program');
+  }
+  return response.json() as Promise<ProgramDetail>;
+}
+
+export async function publishProgram(
+  accessToken: string,
+  programId: string,
+): Promise<ProgramDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs/${programId}/publish`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to publish program');
+  }
+  return response.json() as Promise<ProgramDetail>;
+}
+
+export async function fetchPrograms(accessToken: string): Promise<ProgramSummary[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load programs');
+  }
+  const data = (await response.json()) as { programs: ProgramSummary[] };
+  return data.programs;
 }

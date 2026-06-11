@@ -1,30 +1,33 @@
 # OneMore — Project Checkpoint
 
-**Updated:** 2026-06-11  
+**Updated:** 2026-06-10  
 **Repository:** https://github.com/kevinlicenji/onemore  
-**Branch:** `feat/mvp1-onboarding` (PR pending)
+**Branch:** `feat/mvp1-programs` (PR pending)
 
 ---
 
 ## Latest state
 
-**Phase 2 — Onboarding** on `feat/mvp1-onboarding`:
+**Phase 3 — Programs & exercise library** on `feat/mvp1-programs`:
 
-- API: PATCH `/onboarding`, POST `/onboarding/complete`
-- Web: 5-step wizard, choose-program, empty dashboard, PostHog events
-- Phase 1 merged in `main` (`7e065c8`):
+- API: exercises list/search (tsvector), custom exercises, programs CRUD, publish, templates + apply
+- Migration: `search_vector` on `exercise_library`
+- Seed: 34 exercises + 4 program templates (`pnpm --filter @onemore/api seed`)
+- Web: template picker, single-day program builder, credits page, dashboard links
+- Shared schemas + api-client `ProgramsApi` / `ExercisesApi`
+- CI: seed step after migrations
 
-- API: register/login/logout/refresh, forgot/reset password, OAuth Google+Apple, `/users/me`, rate limiting, audit log, OpenAPI + Spectral
-- Web: login/register/forgot-password pages, in-memory access token + refresh cookie proxy
-- CI: Postgres + Redis services, integration tests, OpenAPI lint
+**Phase 2** merged in `main` (PR #3).
 
-Phase 0 merged via PR #1 (`1fc26e8`).
+**Phase 1** merged in `main` (PR #2).
+
+Phase 0 merged via PR #1.
 
 ---
 
 ## Next step
 
-Merge Phase 2 PR, then **Phase 3 — Programs & exercise library**.
+Merge Phase 3 PR, then **Phase 4 — Workouts**.
 
 ---
 
@@ -36,6 +39,7 @@ cp services/api/.env.example services/api/.env
 cp apps/web/.env.example apps/web/.env.local
 pnpm install
 pnpm --filter @onemore/api db:migrate
+pnpm --filter @onemore/api seed
 pnpm dev
 ```
 
@@ -45,8 +49,6 @@ pnpm dev
 ---
 
 ## Tests
-
-24 Vitest + 6 Playwright — see [docs/tests/README.md](../docs/tests/README.md)
 
 ```bash
 pnpm test && pnpm build && pnpm test:e2e

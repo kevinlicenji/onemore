@@ -1,0 +1,311 @@
+[
+  {
+    "slug": "squat",
+    "wgerId": 1,
+    "names": { "en": "Squat", "it": "Squat" },
+    "category": "legs",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["glutes"],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "bench-press",
+    "wgerId": 2,
+    "names": { "en": "Bench Press", "it": "Panca piana" },
+    "category": "chest",
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["triceps"],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "barbell-row",
+    "wgerId": 3,
+    "names": { "en": "Barbell Row", "it": "Rematore con bilanciere" },
+    "category": "back",
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps"],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "plank",
+    "names": { "en": "Plank", "it": "Plank" },
+    "category": "core",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "romanian-deadlift",
+    "names": { "en": "Romanian Deadlift", "it": "Stacco rumeno" },
+    "category": "legs",
+    "primaryMuscles": ["hamstrings"],
+    "secondaryMuscles": ["glutes"],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "overhead-press",
+    "names": { "en": "Overhead Press", "it": "Lento avanti" },
+    "category": "shoulders",
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["triceps"],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "lat-pulldown",
+    "names": { "en": "Lat Pulldown", "it": "Lat machine" },
+    "category": "back",
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps"],
+    "equipment": "cable",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leg-raise",
+    "names": { "en": "Leg Raise", "it": "Alzata delle gambe" },
+    "category": "core",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "leg-press",
+    "names": { "en": "Leg Press", "it": "Pressa" },
+    "category": "legs",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["glutes"],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "incline-dumbbell-press",
+    "names": { "en": "Incline Dumbbell Press", "it": "Panca inclinata manubri" },
+    "category": "chest",
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["triceps"],
+    "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "cable-row",
+    "names": { "en": "Cable Row", "it": "Rematore cavo" },
+    "category": "back",
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps"],
+    "equipment": "cable",
+    "isBodyweight": false
+  },
+  {
+    "slug": "pallof-press",
+    "names": { "en": "Pallof Press", "it": "Pallof press" },
+    "category": "core",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "cable",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leg-curl",
+    "names": { "en": "Leg Curl", "it": "Leg curl" },
+    "category": "legs",
+    "primaryMuscles": ["hamstrings"],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "calf-raise",
+    "names": { "en": "Calf Raise", "it": "Calf raise" },
+    "category": "legs",
+    "primaryMuscles": ["calves"],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "pull-up",
+    "names": { "en": "Pull-up", "it": "Trazioni" },
+    "category": "back",
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["biceps"],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "lateral-raise",
+    "names": { "en": "Lateral Raise", "it": "Alzate laterali" },
+    "category": "shoulders",
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": [],
+    "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "tricep-pushdown",
+    "names": { "en": "Tricep Pushdown", "it": "Pushdown tricipiti" },
+    "category": "arms",
+    "primaryMuscles": ["triceps"],
+    "secondaryMuscles": [],
+    "equipment": "cable",
+    "isBodyweight": false
+  },
+  {
+    "slug": "biceps-curl",
+    "names": { "en": "Biceps Curl", "it": "Curl bicipiti" },
+    "category": "arms",
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": [],
+    "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "hammer-curl",
+    "names": { "en": "Hammer Curl", "it": "Hammer curl" },
+    "category": "arms",
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": [],
+    "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "bulgarian-split-squat",
+    "names": { "en": "Bulgarian Split Squat", "it": "Squat bulgaro" },
+    "category": "legs",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["glutes"],
+    "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leg-extension",
+    "names": { "en": "Leg Extension", "it": "Leg extension" },
+    "category": "legs",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "push-up",
+    "names": { "en": "Push-up", "it": "Piegamenti" },
+    "category": "chest",
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["triceps"],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "glute-bridge",
+    "names": { "en": "Glute Bridge", "it": "Bridge glutei" },
+    "category": "legs",
+    "primaryMuscles": ["glutes"],
+    "secondaryMuscles": ["hamstrings"],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "pike-push-up",
+    "names": { "en": "Pike Push-up", "it": "Pike push-up" },
+    "category": "shoulders",
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["triceps"],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "reverse-lunge",
+    "names": { "en": "Reverse Lunge", "it": "Affondi indietro" },
+    "category": "legs",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["glutes"],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "dead-bug",
+    "names": { "en": "Dead Bug", "it": "Dead bug" },
+    "category": "core",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "burpee",
+    "names": { "en": "Burpee", "it": "Burpee" },
+    "category": "cardio",
+    "primaryMuscles": ["full_body"],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "jump-squat",
+    "names": { "en": "Jump Squat", "it": "Squat con salto" },
+    "category": "legs",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["glutes"],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "mountain-climber",
+    "names": { "en": "Mountain Climber", "it": "Mountain climber" },
+    "category": "cardio",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "side-plank",
+    "names": { "en": "Side Plank", "it": "Side plank" },
+    "category": "core",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "face-pull",
+    "names": { "en": "Face Pull", "it": "Face pull" },
+    "category": "shoulders",
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["back"],
+    "equipment": "cable",
+    "isBodyweight": false
+  },
+  {
+    "slug": "front-squat",
+    "names": { "en": "Front Squat", "it": "Front squat" },
+    "category": "legs",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["glutes"],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "split-squat",
+    "names": { "en": "Split Squat", "it": "Split squat" },
+    "category": "legs",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["glutes"],
+    "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "superman",
+    "names": { "en": "Superman", "it": "Superman" },
+    "category": "back",
+    "primaryMuscles": ["back"],
+    "secondaryMuscles": ["glutes"],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  }
+]

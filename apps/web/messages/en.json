@@ -99,13 +99,31 @@
     "title": "Your dashboard",
     "emptySubtitle": "No workouts yet — let's get moving.",
     "emptyBody": "Create a program or start a workout to see your activity here.",
-    "startWorkoutCta": "Start your first workout"
+    "pickProgramCta": "Pick or build a program",
+    "startWorkoutCta": "Start your first workout",
+    "creditsLink": "Credits & attributions"
   },
   "Programs": {
-    "templatesStubTitle": "Program templates",
-    "manualStubTitle": "Program builder",
-    "phase3Coming": "Coming in Phase 3 — programs & exercise library.",
+    "templatesTitle": "Choose a template",
+    "templatesSubtitle": "Start with a preset matched to your profile.",
+    "templateMeta": "{days} days/week · {audience}",
+    "buildManual": "Build my own program",
+    "builderTitle": "Program builder",
+    "programName": "Program name",
+    "dayLabel": "Day label",
+    "searchExercises": "Search exercises",
+    "search": "Search",
+    "saveAndPublish": "Save and publish",
+    "useTemplate": "Use a template instead",
+    "loadError": "Could not load templates.",
+    "applyError": "Could not apply template.",
+    "createError": "Could not create program.",
     "backToDashboard": "Back to dashboard"
+  },
+  "Credits": {
+    "title": "Credits",
+    "wgerAttribution": "Exercise data from wger.de, licensed under CC-BY-SA 3.0.",
+    "back": "Back to dashboard"
   },
   "Workouts": {
     "startStubTitle": "Start workout",

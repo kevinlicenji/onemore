@@ -78,6 +78,9 @@ jobs:
       - name: Apply database migrations
         run: pnpm --filter @onemore/api exec prisma migrate deploy
 
+      - name: Seed exercises and program templates
+        run: pnpm --filter @onemore/api seed
+
       - name: Unit, integration, smoke, and security tests
         run: pnpm test
         env:

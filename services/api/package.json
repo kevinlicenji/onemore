@@ -14,6 +14,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
+    "seed": "tsx prisma/seed/index.ts",
+    "seed:exercises": "tsx prisma/seed/exercises.seed.ts",
+    "seed:templates": "tsx prisma/seed/templates.seed.ts",
     "openapi:lint": "spectral lint openapi.yaml"
   },
   "dependencies": {
