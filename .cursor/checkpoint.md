@@ -1,26 +1,30 @@
 # OneMore — Project Checkpoint
 
-**Updated:** 2026-06-10  
+**Updated:** 2026-06-11  
 **Repository:** https://github.com/kevinlicenji/onemore  
-**Branch:** `feat/mvp1-auth` (PR pending)
+**Branch:** `feat/mvp1-onboarding` (PR pending)
 
 ---
 
 ## Latest state
 
-**Phase 1 — Auth & users** implemented on `feat/mvp1-auth`:
+**Phase 2 — Onboarding** on `feat/mvp1-onboarding`:
+
+- API: PATCH `/onboarding`, POST `/onboarding/complete`
+- Web: 5-step wizard, choose-program, empty dashboard, PostHog events
+- Phase 1 merged in `main` (`7e065c8`):
 
 - API: register/login/logout/refresh, forgot/reset password, OAuth Google+Apple, `/users/me`, rate limiting, audit log, OpenAPI + Spectral
 - Web: login/register/forgot-password pages, in-memory access token + refresh cookie proxy
 - CI: Postgres + Redis services, integration tests, OpenAPI lint
 
-Phase 0 merged in `main` (`1fc26e8`).
+Phase 0 merged via PR #1 (`1fc26e8`).
 
 ---
 
 ## Next step
 
-Merge Phase 1 PR, then **Phase 2** per [IMPLEMENTATION_ROADMAP.md](../docs/IMPLEMENTATION_ROADMAP.md).
+Merge Phase 2 PR, then **Phase 3 — Programs & exercise library**.
 
 ---
 

@@ -6,6 +6,10 @@ export const trainingLevelSchema = z.enum(['beginner', 'intermediate', 'advanced
 
 export const trainingEnvironmentSchema = z.enum(['gym', 'home']);
 
+export type TrainingGoal = z.infer<typeof trainingGoalSchema>;
+export type TrainingLevel = z.infer<typeof trainingLevelSchema>;
+export type TrainingEnvironment = z.infer<typeof trainingEnvironmentSchema>;
+
 /**
  * Public user profile fields returned by GET /users/me.
  */
