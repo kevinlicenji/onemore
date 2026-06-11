@@ -145,3 +145,19 @@ paths:
   /sync/delta:
     get:
       summary: Pull server changes since client watermark
+  /history/sessions:
+    get:
+      summary: List completed workout sessions with pagination and date filters
+  /history/sessions/{sessionId}:
+    get:
+      summary: Get completed session detail with exercises and sets
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  /analytics/dashboard:
+    get:
+      summary: Dashboard analytics — streak, weekly volume, next/last workout, recent PRs

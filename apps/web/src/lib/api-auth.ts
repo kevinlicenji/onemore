@@ -1,8 +1,11 @@
 import type {
   AddWorkoutExerciseInput,
+  AnalyticsDashboard,
   CreateCustomExercise,
   CreateProgramInput,
   ExerciseListItem,
+  HistoryListQuery,
+  HistoryListResponse,
   NextWorkoutPreview,
   OnboardingComplete,
   OnboardingUpdate,
@@ -11,6 +14,7 @@ import type {
   StartWorkoutSessionInput,
   TemplateSummary,
   UpsertSetLogInput,
+  UpsertSetResponse,
   UserProfile,
   WorkoutSessionDetail,
 } from '@onemore/shared';
@@ -275,7 +279,7 @@ export async function upsertWorkoutSet(
   accessToken: string,
   sessionId: string,
   payload: UpsertSetLogInput,
-): Promise<WorkoutSessionDetail> {
+): Promise<UpsertSetResponse> {
   const response = await fetch(`${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/sets`, {
     method: 'PUT',
     headers: authHeaders(accessToken),
@@ -285,7 +289,63 @@ export async function upsertWorkoutSet(
   if (!response.ok) {
     throw await parseApiError(response, 'Failed to log set');
   }
+  return response.json() as Promise<UpsertSetResponse>;
+}
+
+export async function fetchHistorySessions(
+  accessToken: string,
+  query: HistoryListQuery = { limit: 20 },
+): Promise<HistoryListResponse> {
+  const params = new URLSearchParams();
+  if (query.from) {
+    params.set('from', query.from);
+  }
+  if (query.to) {
+    params.set('to', query.to);
+  }
+  if (query.cursor) {
+    params.set('cursor', query.cursor);
+  }
+  if (query.limit) {
+    params.set('limit', String(query.limit));
+  }
+  const qs = params.toString();
+  const url = qs
+    ? `${API_BASE_URL}/api/v1/history/sessions?${qs}`
+    : `${API_BASE_URL}/api/v1/history/sessions`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load history');
+  }
+  return response.json() as Promise<HistoryListResponse>;
+}
+
+export async function fetchHistorySessionDetail(
+  accessToken: string,
+  sessionId: string,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/history/sessions/${sessionId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load session');
+  }
   return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function fetchAnalyticsDashboard(accessToken: string): Promise<AnalyticsDashboard> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/analytics/dashboard`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load analytics');
+  }
+  return response.json() as Promise<AnalyticsDashboard>;
 }
 
 export async function addWorkoutExercise(

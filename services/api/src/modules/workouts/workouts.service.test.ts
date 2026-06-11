@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { PrDetectionService } from '../progress/pr-detection.service.js';
 import { WorkoutsService } from './workouts.service.js';
 
 function createMockPrisma() {
@@ -20,7 +21,7 @@ function createMockPrisma() {
 describe('WorkoutsService', () => {
   it('returns empty next workout when no assignment exists', async () => {
     const prisma = createMockPrisma();
-    const service = new WorkoutsService(prisma as never);
+    const service = new WorkoutsService(prisma as never, new PrDetectionService());
 
     const preview = await service.getNextWorkoutPreview('user-1');
 
@@ -30,7 +31,7 @@ describe('WorkoutsService', () => {
 
   it('returns null when no active session exists', async () => {
     const prisma = createMockPrisma();
-    const service = new WorkoutsService(prisma as never);
+    const service = new WorkoutsService(prisma as never, new PrDetectionService());
 
     const session = await service.getActiveSession('user-1');
 

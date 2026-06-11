@@ -33,7 +33,12 @@ describe('SyncService', () => {
       getNextWorkoutPreview: vi.fn(),
       getSession: vi.fn(),
     };
-    const service = new SyncService(prisma as never, workoutsService as never);
+    const prDetection = { evaluateCompletedSet: vi.fn(() => Promise.resolve([])) };
+    const service = new SyncService(
+      prisma as never,
+      workoutsService as never,
+      prDetection as never,
+    );
 
     const result = await service.processBatch('user-1', 'idem-1', {
       clientSyncId: '550e8400-e29b-41d4-a716-446655440099',

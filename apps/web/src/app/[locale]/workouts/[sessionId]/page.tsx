@@ -1,6 +1,6 @@
 'use client';
 
-import type { WorkoutSessionDetail } from '@onemore/shared';
+import type { PersonalRecordSummary, WorkoutSessionDetail } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { PrCelebration } from '@/components/pr-celebration';
 import { RestTimer } from '@/components/rest-timer';
 import { RequireAuth } from '@/components/require-auth';
 import { useSync } from '@/components/sync-provider';
@@ -38,6 +39,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   const [searchResults, setSearchResults] = useState<Array<{ id: string; names: { en: string } }>>(
     [],
   );
+  const [newPrs, setNewPrs] = useState<PersonalRecordSummary[]>([]);
   const { refreshPendingCount } = useSync();
 
   const loadSession = useCallback(async (): Promise<void> => {
@@ -76,7 +78,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     setLoading(true);
     setError(null);
     try {
-      const updated = await upsertWorkoutSetClient(accessToken, session.id, {
+      const result = await upsertWorkoutSetClient(accessToken, session.id, {
         id: setId,
         exerciseExecutionId: currentExercise.id,
         setNumber,
@@ -88,7 +90,17 @@ export default function ActiveWorkoutPage(): React.ReactElement {
         isWarmup: set.isWarmup,
         clientTimestamp: new Date().toISOString(),
       });
-      setSession(updated);
+      setSession(result.session);
+      if (result.personalRecords.length > 0) {
+        setNewPrs(result.personalRecords);
+        for (const record of result.personalRecords) {
+          trackEvent('pr_achieved', {
+            pr_type: record.prType,
+            exercise_id: record.exerciseLibraryId,
+            value: record.value,
+          });
+        }
+      }
       await refreshPendingCount();
       setRestSeconds(currentExercise.prescription.restSeconds);
       trackEvent('set_completed', {
@@ -114,7 +126,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
     setLoading(true);
     try {
-      const updated = await upsertWorkoutSetClient(accessToken, session.id, {
+      const result = await upsertWorkoutSetClient(accessToken, session.id, {
         id: setId,
         exerciseExecutionId: currentExercise.id,
         setNumber,
@@ -126,7 +138,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
         isWarmup: set.isWarmup,
         clientTimestamp: new Date().toISOString(),
       });
-      setSession(updated);
+      setSession(result.session);
       await refreshPendingCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('setError'));
@@ -228,6 +240,14 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
   return (
     <RequireAuth>
+      {newPrs.length > 0 && (
+        <PrCelebration
+          records={newPrs}
+          onDismiss={() => {
+            setNewPrs([]);
+          }}
+        />
+      )}
       <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 p-6 pb-24">
         <div>
           <h1 className="text-xl font-bold">{session.workoutDayLabel ?? t('freeWorkoutTitle')}</h1>
