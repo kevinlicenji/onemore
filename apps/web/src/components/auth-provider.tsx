@@ -128,14 +128,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   }, [clearSession, setSession, setProfile]);
 
   useEffect(() => {
-    const persisted = readStoredE2eSession();
-    if (persisted) {
-      setSession(persisted.accessToken, persisted.user);
-      setIsLoading(false);
-      return;
-    }
+    const bypass = allowInjectedE2eSession();
 
-    if (allowInjectedE2eSession()) {
+    if (bypass) {
       (
         window as Window & {
           __e2eSetSession?: (token: string, authUser: AuthUser) => void;
@@ -145,7 +140,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         setSession(token, authUser);
         setIsLoading(false);
       };
+    }
+
+    const persisted = readStoredE2eSession();
+    if (persisted) {
+      setSession(persisted.accessToken, persisted.user);
       setIsLoading(false);
+      return;
+    }
+
+    if (bypass) {
       return;
     }
 
