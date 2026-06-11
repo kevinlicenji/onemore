@@ -4,6 +4,7 @@ import type {
   NextWorkoutPreview,
   StartWorkoutSessionInput,
   UpsertSetLogInput,
+  UpsertSetResponse,
   WorkoutSessionDetail,
 } from '@onemore/shared';
 
@@ -238,12 +239,12 @@ export async function upsertWorkoutSetClient(
   accessToken: string,
   sessionId: string,
   payload: UpsertSetLogInput,
-): Promise<WorkoutSessionDetail> {
+): Promise<UpsertSetResponse> {
   if (isBrowserOnline()) {
-    const session = await upsertWorkoutSet(accessToken, sessionId, payload);
-    await offlineDb.sessions.put(session);
+    const result = await upsertWorkoutSet(accessToken, sessionId, payload);
+    await offlineDb.sessions.put(result.session);
     await syncIfOnline(accessToken);
-    return session;
+    return result;
   }
 
   const session = await offlineDb.sessions.get(sessionId);
@@ -289,7 +290,7 @@ export async function upsertWorkoutSetClient(
     op: 'upsert',
     payload,
   });
-  return updatedSession;
+  return { session: updatedSession, personalRecords: [] };
 }
 
 export async function addWorkoutExerciseClient(

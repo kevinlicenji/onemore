@@ -67,8 +67,8 @@ export function createWorkoutsRouter(workoutsService: WorkoutsService): Router {
       const authReq = req as AuthenticatedRequest;
       const sessionId = requireRouteParam(req.params.sessionId, 'sessionId');
       const body = upsertSetLogSchema.parse(req.body);
-      const session = await workoutsService.upsertSet(authReq.userId ?? '', sessionId, body);
-      res.json(session);
+      const result = await workoutsService.upsertSet(authReq.userId ?? '', sessionId, body);
+      res.json(result);
     }),
   );
 

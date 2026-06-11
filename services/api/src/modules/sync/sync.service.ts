@@ -7,6 +7,7 @@ import type {
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
+import type { PrDetectionService } from '../progress/pr-detection.service.js';
 import type { WorkoutsService } from '../workouts/workouts.service.js';
 import { shouldAcceptSessionUpdate, shouldAcceptSetLogUpdate } from './sync-merge.js';
 
@@ -19,10 +20,12 @@ export class SyncService {
   /**
    * @param prisma - Database client.
    * @param workoutsService - Workout read helpers for delta responses.
+   * @param prDetection - PR evaluation on synced set completions.
    */
   constructor(
     private readonly prisma: PrismaClient,
     private readonly workoutsService: WorkoutsService,
+    private readonly prDetection: PrDetectionService,
   ) {}
 
   /**
@@ -344,6 +347,20 @@ export class SyncService {
       where: { id: execution.workoutSessionId },
       data: { clientUpdatedAt: incomingTimestamp },
     });
+
+    if (payload.isCompleted) {
+      await this.prDetection.evaluateCompletedSet(tx, {
+        userId,
+        setLogId: payload.id,
+        exerciseLibraryId: execution.exerciseLibraryId,
+        weightKg: payload.weightKg ?? 0,
+        reps: payload.reps ?? 0,
+        isWarmup: payload.isWarmup,
+        isCompleted: payload.isCompleted,
+        sessionId: execution.workoutSessionId,
+        achievedAt: incomingTimestamp,
+      });
+    }
 
     return true;
   }

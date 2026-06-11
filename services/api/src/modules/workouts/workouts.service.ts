@@ -4,6 +4,7 @@ import type {
   PrescriptionSnapshot,
   StartWorkoutSessionInput,
   UpsertSetLogInput,
+  UpsertSetResponse,
   WorkoutSessionDetail,
 } from '@onemore/shared';
 import { randomUUID } from 'node:crypto';
@@ -11,6 +12,7 @@ import { randomUUID } from 'node:crypto';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
+import type { PrDetectionService } from '../progress/pr-detection.service.js';
 
 interface PreviousSetValues {
   weightKg: number | null;
@@ -23,8 +25,12 @@ interface PreviousSetValues {
 export class WorkoutsService {
   /**
    * @param prisma - Database client.
+   * @param prDetection - Personal record evaluator on set completion.
    */
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly prDetection: PrDetectionService,
+  ) {}
 
   /**
    * Preview the next programmed workout day for the user's active assignment.
@@ -193,7 +199,7 @@ export class WorkoutsService {
     userId: string,
     sessionId: string,
     input: UpsertSetLogInput,
-  ): Promise<WorkoutSessionDetail> {
+  ): Promise<UpsertSetResponse> {
     const session = await this.requireInProgressSession(userId, sessionId);
 
     const execution = session.exerciseExecutions.find(
@@ -202,6 +208,8 @@ export class WorkoutsService {
     if (!execution) {
       throw new HttpError(404, 'Exercise execution not found', 'EXECUTION_NOT_FOUND');
     }
+
+    let personalRecords: UpsertSetResponse['personalRecords'] = [];
 
     await this.prisma.$transaction(async (tx) => {
       await tx.setLog.upsert({
@@ -249,9 +257,24 @@ export class WorkoutsService {
         where: { id: sessionId },
         data: { clientUpdatedAt: new Date(input.clientTimestamp) },
       });
+
+      if (input.isCompleted) {
+        personalRecords = await this.prDetection.evaluateCompletedSet(tx, {
+          userId,
+          setLogId: input.id,
+          exerciseLibraryId: execution.exerciseLibraryId,
+          weightKg: input.weightKg ?? 0,
+          reps: input.reps ?? 0,
+          isWarmup: input.isWarmup,
+          isCompleted: input.isCompleted,
+          sessionId,
+          achievedAt: new Date(input.clientTimestamp),
+        });
+      }
     });
 
-    return this.getSession(userId, sessionId);
+    const updatedSession = await this.getSession(userId, sessionId);
+    return { session: updatedSession, personalRecords };
   }
 
   /**
@@ -542,6 +565,10 @@ export class WorkoutsService {
     });
   }
 
+  /**
+   * Next programmed day from assignment rotation (P6-07).
+   * Rotation advances in {@link advanceProgramRotation} when a programmed session completes.
+   */
   private resolveWorkoutDay(
     assignment: NonNullable<Awaited<ReturnType<WorkoutsService['findActiveAssignment']>>>,
   ) {

@@ -3,6 +3,7 @@ import type {
   NextWorkoutPreview,
   StartWorkoutSessionInput,
   UpsertSetLogInput,
+  UpsertSetResponse,
   WorkoutSessionDetail,
 } from '@onemore/shared';
 
@@ -36,8 +37,8 @@ export class WorkoutsApi {
     return this.client.getJson<WorkoutSessionDetail>(`/api/v1/workouts/sessions/${sessionId}`);
   }
 
-  async upsertSet(sessionId: string, payload: UpsertSetLogInput): Promise<WorkoutSessionDetail> {
-    return this.client.putJson<WorkoutSessionDetail>(
+  async upsertSet(sessionId: string, payload: UpsertSetLogInput): Promise<UpsertSetResponse> {
+    return this.client.putJson<UpsertSetResponse>(
       `/api/v1/workouts/sessions/${sessionId}/sets`,
       payload,
     );
