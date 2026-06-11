@@ -129,6 +129,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
 
   useEffect(() => {
     const persisted = readStoredE2eSession();
+    if (persisted) {
+      setSession(persisted.accessToken, persisted.user);
+      setIsLoading(false);
+      return;
+    }
+
     if (allowInjectedE2eSession()) {
       (
         window as Window & {
@@ -139,11 +145,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         setSession(token, authUser);
         setIsLoading(false);
       };
-
-      if (persisted) {
-        setSession(persisted.accessToken, persisted.user);
-      }
-      // E2E tests inject the session via __e2eSetSession — unblock RequireAuth once the hook exists.
       setIsLoading(false);
       return;
     }
