@@ -100,7 +100,7 @@ jobs:
         run: pnpm --filter @onemore/web exec playwright install --with-deps chromium
 
       - name: E2E and endpoint tests
-        run: env -u REDIS_URL pnpm test:e2e
+        run: env -u REDIS_URL E2E_SKIP_WEB_BUILD=1 pnpm test:e2e
         env:
           CI: 'true'
           DATABASE_URL: postgresql://onemore:onemore_test@localhost:5432/onemore_test

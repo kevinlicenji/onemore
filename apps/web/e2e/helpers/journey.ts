@@ -1,7 +1,7 @@
 import type { APIRequestContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-import { E2E_API_URL, E2E_SESSION_STORAGE_KEY } from '../test-env';
+import { E2E_API_URL } from '../test-env';
 
 export const E2E_PASSWORD = 'zQ8!mKp2vLn9Wx4rE2eTest';
 
@@ -12,7 +12,7 @@ export interface RegisteredUser {
 }
 
 /**
- * Register via API then seed sessionStorage before the first app navigation.
+ * Register via API, then sign in through the login UI (same-origin `/api/v1` proxy).
  */
 export async function registerAthlete(
   page: Page,
@@ -48,17 +48,11 @@ export async function registerAthlete(
     };
   };
 
-  await page.context().addInitScript(
-    ({ storageKey, session }) => {
-      sessionStorage.setItem(storageKey, JSON.stringify(session));
-    },
-    {
-      storageKey: E2E_SESSION_STORAGE_KEY,
-      session: { accessToken: body.accessToken, user: body.user },
-    },
-  );
-
-  await page.goto('/it/onboarding', { waitUntil: 'domcontentloaded' });
+  await page.goto('/it/login');
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password').fill(E2E_PASSWORD);
+  await page.getByRole('button', { name: 'Accedi' }).click();
+  await page.waitForURL(/\/it\/onboarding$/);
   await page.getByRole('heading', { name: 'Qual è il tuo obiettivo principale?' }).waitFor({
     timeout: 60_000,
   });

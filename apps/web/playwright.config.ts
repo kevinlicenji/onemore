@@ -49,6 +49,7 @@ export default defineConfig({
       env: {
         PORT: E2E_WEB_PORT,
         HOSTNAME: '0.0.0.0',
+        NEXT_PUBLIC_API_URL: E2E_API_URL,
         NEXT_PUBLIC_E2E_BYPASS: 'true',
       },
     },

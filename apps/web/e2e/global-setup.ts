@@ -45,16 +45,18 @@ export default function globalSetup(): void {
   }
 
   // Always rebuild web with E2E env — turbo cache may serve a build without NEXT_PUBLIC_* vars.
-  execSync('pnpm build', {
-    cwd: webRoot,
-    stdio: 'inherit',
-    env: {
-      ...process.env,
-      TURBO_FORCE: 'true',
-      NEXT_PUBLIC_API_URL: E2E_API_URL,
-      NEXT_PUBLIC_E2E_BYPASS: 'true',
-    },
-  });
+  if (process.env.E2E_SKIP_WEB_BUILD !== '1') {
+    execSync('pnpm build', {
+      cwd: webRoot,
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        TURBO_FORCE: 'true',
+        NEXT_PUBLIC_API_URL: E2E_API_URL,
+        NEXT_PUBLIC_E2E_BYPASS: 'true',
+      },
+    });
+  }
 
   syncStandaloneAssets();
 }
