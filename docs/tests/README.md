@@ -21,6 +21,9 @@
 | Type | When | Reference |
 |------|------|-----------|
 | **Full pentest** | Before public launch | ADR 0008, roadmap Phase 8 |
+| **E2E athlete journey** | CI + nightly | `apps/web/e2e/athlete-journey.spec.ts` |
+| **k6 load** | Weekly / pre-launch | `tests/load/` |
+| **WCAG workout spot-check** | Pre-beta | `docs/tests/wcag-workout-spot-check.md` |
 | **Load test (k6)** | Before public launch | ADR 0008 |
 | **OpenAPI contract lint** | Phase 1+ when OpenAPI spec ships | Technical Spec §5.3 |
 

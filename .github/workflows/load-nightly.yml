@@ -1,0 +1,28 @@
+name: Load Test Nightly
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+jobs:
+  k6-health:
+    runs-on: ubuntu-latest
+    if: vars.LOAD_BASE_URL != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run k6 health load test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/load/health.js
+        env:
+          LOAD_BASE_URL: ${{ vars.LOAD_BASE_URL }}
+
+      - name: Upload summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-health-summary
+          path: summary.json
+          if-no-files-found: ignore

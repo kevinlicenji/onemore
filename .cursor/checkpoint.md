@@ -2,29 +2,29 @@
 
 **Updated:** 2026-06-11  
 **Repository:** https://github.com/kevinlicenji/onemore  
-**Branch:** `feat/mvp1-gdpr-observability` (PR pending)
+**Branch:** `feat/mvp1-hardening-beta` (PR pending)
 
 ---
 
 ## Latest state
 
-**Phase 7 — GDPR, notifications, observability** on `feat/mvp1-gdpr-observability`:
+**Phase 8 — Hardening & beta** on `feat/mvp1-hardening-beta`:
 
-- GDPR export: `POST /users/me/export` → BullMQ (or inline) → JSON+CSV → email link
-- Account deletion: `DELETE /users/me` → soft 30d → `hard-delete-users` cron
-- Web Push VAPID: subscribe/unsubscribe + weekly workout reminder job
-- Settings page: notification prefs, motivation level, export, delete account
-- Sentry: `@sentry/node` (API) + `@sentry/nextjs` (web, when DSN set)
-- PostHog: `POSTHOG_EVENTS` catalog in `@onemore/shared`
-- PII logging: removed password reset URL from logs
+- E2E: `athlete-journey.spec.ts` (register → onboarding → template → workout → offline sync)
+- A11y: touch-target spot-check + `docs/tests/wcag-workout-spot-check.md`
+- k6: `tests/load/health.js`, `authenticated-read.js`
+- Docker: `services/api/Dockerfile`, `apps/web/Dockerfile`, `docker/compose.prod.yml`
+- CI/CD: `.github/workflows/deploy.yml` (GHCR), `e2e-nightly.yml`, `load-nightly.yml`
+- Runbooks: deploy, restore, incident, GDPR export, sync
+- Beta checklist: `docs/infra/beta-launch-checklist.md`
 
-**Phase 6** merged in `main` (PR #7).
+**Phase 7** merged in `main` (PR #8).
 
 ---
 
 ## Next step
 
-Merge Phase 7 PR, then **Phase 8 — Hardening & beta** (E2E, k6, prod compose, deploy).
+Merge Phase 8 PR → configure VPS/staging → beta cohort → tag **`v0.1.0`**.
 
 ---
 
@@ -44,4 +44,5 @@ pnpm dev
 
 ```bash
 pnpm test && pnpm build && pnpm test:e2e
+k6 run tests/load/health.js
 ```
