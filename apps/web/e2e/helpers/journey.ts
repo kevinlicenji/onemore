@@ -1,7 +1,7 @@
 import type { APIRequestContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-import { E2E_API_URL, E2E_SESSION_STORAGE_KEY } from '../test-env';
+import { E2E_API_URL } from '../test-env';
 
 export const E2E_PASSWORD = 'zQ8!mKp2vLn9Wx4rE2eTest';
 
@@ -12,31 +12,33 @@ export interface RegisteredUser {
 }
 
 /**
- * Register via API (reliable in CI) then inject session into AuthProvider before onboarding.
+ * Register through the UI so the browser holds the refresh cookie and in-memory session.
+ * API calls go through same-origin `/api/v1` rewrites (see next.config.ts).
  */
 export async function registerAthlete(
   page: Page,
-  request: APIRequestContext,
+  _request: APIRequestContext,
 ): Promise<RegisteredUser> {
   const suffix = String(Date.now());
   const email = `e2e-${suffix}@example.com`;
   const username = `e2e_${suffix.slice(-8)}`;
 
-  const registerResponse = await request.post(`${E2E_API_URL}/api/v1/auth/register`, {
-    data: {
-      email,
-      password: E2E_PASSWORD,
-      username,
-      locale: 'it',
-      birthYear: 1995,
-      timezone: 'Europe/Rome',
-      consents: { tos: true, privacy: true, fitnessData: true },
-    },
-  });
-  if (!registerResponse.ok()) {
-    throw new Error(`Register failed: ${String(registerResponse.status())}`);
-  }
+  await page.goto('/it/register', { waitUntil: 'domcontentloaded' });
 
+  const registerResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/v1/auth/register') &&
+      response.request().method() === 'POST' &&
+      response.ok(),
+    { timeout: 60_000 },
+  );
+
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Username').fill(username);
+  await page.getByLabel('Password').fill(E2E_PASSWORD);
+  await page.getByRole('button', { name: 'Registrati' }).click();
+
+  const registerResponse = await registerResponsePromise;
   const body = (await registerResponse.json()) as {
     accessToken: string;
     user: {
@@ -48,53 +50,12 @@ export async function registerAthlete(
     };
   };
 
-  await bootstrapBrowserSession(page, body.accessToken, body.user);
-
-  await page.goto('/it/onboarding', { waitUntil: 'domcontentloaded' });
+  await page.waitForURL(/\/it\/onboarding/, { timeout: 60_000 });
   await page.getByRole('heading', { name: 'Qual è il tuo obiettivo principale?' }).waitFor({
     timeout: 60_000,
   });
 
   return { email, username, accessToken: body.accessToken };
-}
-
-interface AuthSessionUser {
-  id: string;
-  email: string;
-  username: string | null;
-  displayName: string | null;
-  locale: string;
-}
-
-/**
- * Hydrate AuthProvider via the E2E hook exposed on loopback hosts.
- */
-async function bootstrapBrowserSession(
-  page: Page,
-  accessToken: string,
-  user: AuthSessionUser,
-): Promise<void> {
-  await page.goto('/it', { waitUntil: 'domcontentloaded' });
-
-  await page.waitForFunction(() => {
-    return typeof (window as Window & { __e2eSetSession?: unknown }).__e2eSetSession === 'function';
-  });
-
-  await page.evaluate(
-    ({ storageKey, accessToken: token, user: authUser }) => {
-      sessionStorage.setItem(storageKey, JSON.stringify({ accessToken: token, user: authUser }));
-      const setSession = (
-        window as Window & {
-          __e2eSetSession?: (token: string, authUser: typeof authUser) => void;
-        }
-      ).__e2eSetSession;
-      if (!setSession) {
-        throw new Error('__e2eSetSession hook is not available');
-      }
-      setSession(token, authUser);
-    },
-    { storageKey: E2E_SESSION_STORAGE_KEY, accessToken, user },
-  );
 }
 
 /**

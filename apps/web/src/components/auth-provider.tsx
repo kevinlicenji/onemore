@@ -110,7 +110,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     const response = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
     if (!response.ok) {
       // Keep an in-memory token from login/register when refresh cookie is unavailable.
-      if (!accessTokenRef.current) {
+      const hasInjectedSession = readStoredE2eSession() !== null;
+      if (!accessTokenRef.current && !hasInjectedSession) {
         clearSession();
       }
       return false;
