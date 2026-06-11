@@ -158,5 +158,10 @@
     "completeError": "Could not complete workout.",
     "abandonError": "Could not abandon workout.",
     "backToDashboard": "Back to dashboard"
+  },
+  "Sync": {
+    "pending": "{count, plural, one {# change pending sync} other {# changes pending sync}}",
+    "syncing": "Syncing…",
+    "retry": "Retry"
   }
 }

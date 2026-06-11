@@ -10,14 +10,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { RestTimer } from '@/components/rest-timer';
 import { RequireAuth } from '@/components/require-auth';
+import { useSync } from '@/components/sync-provider';
 import {
-  abandonWorkoutSession,
-  addWorkoutExercise,
-  completeWorkoutSession,
-  fetchWorkoutSession,
-  searchExercises,
-  upsertWorkoutSet,
-} from '@/lib/api-auth';
+  abandonWorkoutSessionClient,
+  addWorkoutExerciseClient,
+  completeWorkoutSessionClient,
+  getWorkoutSessionClient,
+  searchExercisesClient,
+  upsertWorkoutSetClient,
+} from '@/lib/offline/workout-client';
 import { trackEvent } from '@/lib/analytics';
 
 export default function ActiveWorkoutPage(): React.ReactElement {
@@ -37,12 +38,13 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   const [searchResults, setSearchResults] = useState<Array<{ id: string; names: { en: string } }>>(
     [],
   );
+  const { refreshPendingCount } = useSync();
 
   const loadSession = useCallback(async (): Promise<void> => {
     if (!accessToken || !sessionId) {
       return;
     }
-    const data = await fetchWorkoutSession(accessToken, sessionId);
+    const data = await getWorkoutSessionClient(accessToken, sessionId);
     setSession(data);
   }, [accessToken, sessionId]);
 
@@ -74,7 +76,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     setLoading(true);
     setError(null);
     try {
-      const updated = await upsertWorkoutSet(accessToken, session.id, {
+      const updated = await upsertWorkoutSetClient(accessToken, session.id, {
         id: setId,
         exerciseExecutionId: currentExercise.id,
         setNumber,
@@ -87,6 +89,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
         clientTimestamp: new Date().toISOString(),
       });
       setSession(updated);
+      await refreshPendingCount();
       setRestSeconds(currentExercise.prescription.restSeconds);
       trackEvent('set_completed', {
         session_id: session.id,
@@ -111,7 +114,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
     setLoading(true);
     try {
-      const updated = await upsertWorkoutSet(accessToken, session.id, {
+      const updated = await upsertWorkoutSetClient(accessToken, session.id, {
         id: setId,
         exerciseExecutionId: currentExercise.id,
         setNumber,
@@ -124,6 +127,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
         clientTimestamp: new Date().toISOString(),
       });
       setSession(updated);
+      await refreshPendingCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('setError'));
     } finally {
@@ -154,7 +158,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     if (!accessToken || search.trim().length < 2) {
       return;
     }
-    const exercises = await searchExercises(accessToken, search.trim());
+    const exercises = await searchExercisesClient(accessToken, search.trim());
     setSearchResults(exercises);
   }
 
@@ -164,7 +168,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
     setLoading(true);
     try {
-      const updated = await addWorkoutExercise(accessToken, session.id, {
+      const updated = await addWorkoutExerciseClient(accessToken, session.id, {
         exerciseLibraryId,
         targetSets: 3,
         targetReps: 10,
@@ -187,7 +191,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
     setLoading(true);
     try {
-      await completeWorkoutSession(accessToken, session.id);
+      await completeWorkoutSessionClient(accessToken, session.id);
       trackEvent('workout_completed', { session_id: session.id });
       router.push(`/${locale}/dashboard`);
     } catch (err) {
@@ -203,7 +207,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
     setLoading(true);
     try {
-      await abandonWorkoutSession(accessToken, session.id);
+      await abandonWorkoutSessionClient(accessToken, session.id);
       router.push(`/${locale}/dashboard`);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('abandonError'));

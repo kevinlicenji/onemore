@@ -72,10 +72,20 @@ export class ApiClient {
     return response.json() as Promise<T>;
   }
 
-  async postJson<T>(path: string, body: unknown): Promise<T> {
+  async postJson<T>(
+    path: string,
+    body: unknown,
+    extraHeaders?: Record<string, string>,
+  ): Promise<T> {
+    const headers = this.buildHeaders();
+    if (extraHeaders) {
+      for (const [key, value] of Object.entries(extraHeaders)) {
+        headers.set(key, value);
+      }
+    }
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: 'POST',
-      headers: this.buildHeaders(),
+      headers,
       body: JSON.stringify(body),
     });
     if (!response.ok) {

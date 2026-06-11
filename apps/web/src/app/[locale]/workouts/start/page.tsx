@@ -10,10 +10,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
 import {
-  fetchActiveWorkoutSession,
-  fetchNextWorkoutPreview,
-  startWorkoutSession,
-} from '@/lib/api-auth';
+  getActiveWorkoutSessionClient,
+  getNextWorkoutPreviewClient,
+  startWorkoutSessionClient,
+} from '@/lib/offline/workout-client';
+import { useSync } from '@/components/sync-provider';
 import { trackEvent } from '@/lib/analytics';
 
 export default function StartWorkoutPage(): React.ReactElement {
@@ -27,12 +28,16 @@ export default function StartWorkoutPage(): React.ReactElement {
   const [activeSession, setActiveSession] = useState<WorkoutSessionDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { refreshPendingCount } = useSync();
 
   useEffect(() => {
     if (!accessToken) {
       return;
     }
-    void Promise.all([fetchNextWorkoutPreview(accessToken), fetchActiveWorkoutSession(accessToken)])
+    void Promise.all([
+      getNextWorkoutPreviewClient(accessToken),
+      getActiveWorkoutSessionClient(accessToken),
+    ])
       .then(([nextWorkout, session]) => {
         setPreview(nextWorkout);
         setActiveSession(session);
@@ -49,7 +54,7 @@ export default function StartWorkoutPage(): React.ReactElement {
     setLoading(true);
     setError(null);
     try {
-      const session = await startWorkoutSession(accessToken, {
+      const session = await startWorkoutSessionClient(accessToken, {
         id: crypto.randomUUID(),
         sessionType,
         programAssignmentId:
@@ -61,6 +66,7 @@ export default function StartWorkoutPage(): React.ReactElement {
         session_id: session.id,
         session_type: sessionType,
       });
+      await refreshPendingCount();
       router.push(`/${locale}/workouts/${session.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('startError'));

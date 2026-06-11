@@ -41,6 +41,7 @@ export class WorkoutsService {
         workoutDayLabel: null,
         exerciseCount: 0,
         programName: null,
+        exercises: [],
       };
     }
 
@@ -53,11 +54,14 @@ export class WorkoutsService {
         workoutDayLabel: null,
         exerciseCount: 0,
         programName: assignment.programVersion.program.name,
+        exercises: [],
       };
     }
 
-    const exerciseCount = await this.prisma.programExercise.count({
+    const programExercises = await this.prisma.programExercise.findMany({
       where: { workoutDayId: day.id },
+      orderBy: { sortOrder: 'asc' },
+      include: { exerciseLibrary: true },
     });
 
     return {
@@ -65,8 +69,23 @@ export class WorkoutsService {
       programAssignmentId: assignment.id,
       workoutDayId: day.id,
       workoutDayLabel: day.label,
-      exerciseCount,
+      exerciseCount: programExercises.length,
       programName: assignment.programVersion.program.name,
+      exercises: programExercises.map((item) => ({
+        programExerciseId: item.id,
+        exerciseLibraryId: item.exerciseLibraryId,
+        sortOrder: item.sortOrder,
+        targetSets: item.targetSets,
+        targetReps: item.targetReps,
+        targetWeightKg: item.targetWeightKg ? Number(item.targetWeightKg) : null,
+        restSeconds: item.restSeconds,
+        coachNote: item.coachNote,
+        exercise: {
+          id: item.exerciseLibrary.id,
+          slug: item.exerciseLibrary.slug,
+          names: item.exerciseLibrary.names as { en: string; it?: string },
+        },
+      })),
     };
   }
 

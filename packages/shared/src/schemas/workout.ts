@@ -91,6 +91,22 @@ export const workoutSessionDetailSchema = z.object({
   exercises: z.array(workoutExerciseSchema),
 });
 
+export const nextWorkoutDayExerciseSchema = z.object({
+  programExerciseId: z.string().uuid(),
+  exerciseLibraryId: z.string().uuid(),
+  sortOrder: z.number().int(),
+  targetSets: z.number().int(),
+  targetReps: z.number().int(),
+  targetWeightKg: z.number().nullable(),
+  restSeconds: z.number().int(),
+  coachNote: z.string().nullable(),
+  exercise: z.object({
+    id: z.string().uuid(),
+    slug: z.string(),
+    names: z.object({ en: z.string(), it: z.string().optional() }),
+  }),
+});
+
 export const nextWorkoutPreviewSchema = z.object({
   hasActiveAssignment: z.boolean(),
   programAssignmentId: z.string().uuid().nullable(),
@@ -98,6 +114,7 @@ export const nextWorkoutPreviewSchema = z.object({
   workoutDayLabel: z.string().nullable(),
   exerciseCount: z.number().int(),
   programName: z.string().nullable(),
+  exercises: z.array(nextWorkoutDayExerciseSchema),
 });
 
 export type PrescriptionSnapshot = z.infer<typeof prescriptionSnapshotSchema>;

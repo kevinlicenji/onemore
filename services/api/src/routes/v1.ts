@@ -8,6 +8,7 @@ import { OAuthService } from '../modules/auth/oauth.service.js';
 import { ExercisesService } from '../modules/exercises/exercises.service.js';
 import { OnboardingService } from '../modules/onboarding/onboarding.service.js';
 import { ProgramsService } from '../modules/programs/programs.service.js';
+import { SyncService } from '../modules/sync/sync.service.js';
 import { WorkoutsService } from '../modules/workouts/workouts.service.js';
 import type { UsersService } from '../modules/users/users.service.js';
 import { createAuthenticateMiddleware } from '../middleware/authenticate.js';
@@ -15,6 +16,7 @@ import { createAuthRouter } from './auth.routes.js';
 import { createExercisesRouter } from './exercises.routes.js';
 import { createOnboardingRouter } from './onboarding.routes.js';
 import { createProgramsRouter } from './programs.routes.js';
+import { createSyncRouter } from './sync.routes.js';
 import { createWorkoutsRouter } from './workouts.routes.js';
 import { createUsersRouter } from './users.routes.js';
 
@@ -36,6 +38,7 @@ export function createV1Router(deps: V1RouterDeps): Router {
   const exercisesService = new ExercisesService(prisma);
   const programsService = new ProgramsService(prisma);
   const workoutsService = new WorkoutsService(prisma);
+  const syncService = new SyncService(prisma, workoutsService);
 
   router.get('/', (_req, res) => {
     res.json({ message: 'OneMore API v1' });
@@ -60,6 +63,8 @@ export function createV1Router(deps: V1RouterDeps): Router {
   router.use('/programs', authenticate, createProgramsRouter(programsService));
 
   router.use('/workouts', authenticate, createWorkoutsRouter(workoutsService));
+
+  router.use('/sync', authenticate, createSyncRouter(syncService));
 
   return router;
 }

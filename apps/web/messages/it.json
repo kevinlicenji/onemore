@@ -158,5 +158,10 @@
     "completeError": "Impossibile completare il workout.",
     "abandonError": "Impossibile abbandonare il workout.",
     "backToDashboard": "Torna alla dashboard"
+  },
+  "Sync": {
+    "pending": "{count, plural, one {# modifica in attesa di sync} other {# modifiche in attesa di sync}}",
+    "syncing": "Sincronizzazione…",
+    "retry": "Riprova"
   }
 }
