@@ -11,7 +11,12 @@ COPY packages/ui/package.json packages/ui/
 COPY packages/api-client/package.json packages/api-client/
 COPY packages/eslint-config/package.json packages/eslint-config/
 COPY apps/web/package.json apps/web/
-RUN pnpm install --frozen-lockfile --filter @onemore/web...
+RUN pnpm install --frozen-lockfile --ignore-scripts \
+  --filter @onemore/web \
+  --filter @onemore/shared \
+  --filter @onemore/ui \
+  --filter @onemore/api-client \
+  --filter @onemore/eslint-config
 
 FROM base AS build
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
@@ -21,7 +26,7 @@ COPY --from=deps /app/packages ./packages
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY packages ./packages
 COPY apps/web ./apps/web
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 RUN pnpm --filter @onemore/web... build
 
 FROM node:22-alpine AS runner
