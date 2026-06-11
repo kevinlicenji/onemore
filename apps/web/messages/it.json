@@ -1,4 +1,23 @@
 {
+  "Auth": {
+    "loginTitle": "Accedi",
+    "registerTitle": "Crea account",
+    "forgotTitle": "Password dimenticata",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "birthYear": "Anno di nascita",
+    "loginSubmit": "Accedi",
+    "registerSubmit": "Registrati",
+    "forgotSubmit": "Invia link",
+    "goRegister": "Crea account",
+    "goLogin": "Torna al login",
+    "goForgotPassword": "Password dimenticata?",
+    "loginError": "Credenziali non valide",
+    "registerError": "Registrazione non riuscita",
+    "forgotError": "Richiesta non riuscita",
+    "forgotSuccess": "Se l'email esiste, riceverai un link di reset."
+  },
   "Home": {
     "title": "OneMore",
     "subtitle": "Allenamento e coaching fitness",

@@ -1,4 +1,23 @@
 {
+  "Auth": {
+    "loginTitle": "Sign in",
+    "registerTitle": "Create account",
+    "forgotTitle": "Forgot password",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "birthYear": "Birth year",
+    "loginSubmit": "Sign in",
+    "registerSubmit": "Register",
+    "forgotSubmit": "Send reset link",
+    "goRegister": "Create account",
+    "goLogin": "Back to login",
+    "goForgotPassword": "Forgot password?",
+    "loginError": "Invalid credentials",
+    "registerError": "Registration failed",
+    "forgotError": "Request failed",
+    "forgotSuccess": "If the email exists, you will receive a reset link."
+  },
   "Home": {
     "title": "OneMore",
     "subtitle": "Fitness training and coaching",

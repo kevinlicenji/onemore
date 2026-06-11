@@ -13,7 +13,15 @@
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "env": [
+        "RUN_INTEGRATION_TESTS",
+        "DATABASE_URL",
+        "REDIS_URL",
+        "JWT_PRIVATE_KEY_PATH",
+        "JWT_PUBLIC_KEY_PATH",
+        "WEB_APP_URL"
+      ]
     },
     "typecheck": {
       "dependsOn": ["^build"]

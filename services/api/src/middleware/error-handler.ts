@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { Logger } from 'pino';
 
+import { HttpError } from '../lib/errors.js';
+
 export interface ApiError extends Error {
   statusCode?: number;
   code?: string;
@@ -19,6 +21,13 @@ export function createErrorHandler(logger: Logger) {
     // Express requires 4-arg signature for error middleware.
     _next: NextFunction,
   ): void => {
+    if (err instanceof HttpError) {
+      res.status(err.statusCode).json({
+        error: { message: err.message, code: err.code },
+      });
+      return;
+    }
+
     const statusCode = err.statusCode ?? 500;
     if (statusCode >= 500) {
       logger.error({ err }, 'Unhandled server error');
