@@ -49,10 +49,7 @@ export async function registerAthlete(
 
   await page.addInitScript(
     ({ token, user }) => {
-      sessionStorage.setItem(
-        'onemore_e2e_session',
-        JSON.stringify({ accessToken: token, user }),
-      );
+      sessionStorage.setItem('onemore_e2e_session', JSON.stringify({ accessToken: token, user }));
     },
     { token: body.accessToken, user: body.user },
   );
