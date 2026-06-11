@@ -25,8 +25,20 @@ function createMockPrisma() {
     motivationLevel: null,
   };
 
+  type UserUpdateArgs = {
+    where: { id: string };
+    data: {
+      trainingGoal?: string;
+      trainingLevel?: string;
+      trainingEnvironment?: string;
+      trainingDaysPerWeek?: number;
+      motivationLevel?: number;
+      onboardingCompletedAt?: Date;
+    };
+  };
+
   const findUnique = vi.fn(() => Promise.resolve(user));
-  const update = vi.fn(() =>
+  const update = vi.fn((_args: UserUpdateArgs) =>
     Promise.resolve({
       ...user,
       trainingGoal: 'mass',
@@ -92,11 +104,10 @@ describe('OnboardingService', () => {
       motivationLevel: 3,
     });
 
-    const updateArg = vi.mocked(prisma.user.update).mock.calls[0]?.[0] as {
-      data: { trainingGoal: string; onboardingCompletedAt: Date };
-    };
-    expect(updateArg.data.trainingGoal).toBe('strength');
-    expect(updateArg.data.onboardingCompletedAt).toBeInstanceOf(Date);
+    const updateCall = vi.mocked(prisma.user.update).mock.calls[0];
+    expect(updateCall).toBeDefined();
+    expect(updateCall?.[0].data.trainingGoal).toBe('strength');
+    expect(updateCall?.[0].data.onboardingCompletedAt).toBeInstanceOf(Date);
   });
 
   it('rejects completeFromStored when fields are missing', async () => {
