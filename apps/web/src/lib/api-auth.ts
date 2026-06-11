@@ -357,9 +357,7 @@ export async function patchUserProfile(
   return response.json() as Promise<UserProfile>;
 }
 
-export async function requestDataExport(
-  accessToken: string,
-): Promise<RequestDataExportResponse> {
+export async function requestDataExport(accessToken: string): Promise<RequestDataExportResponse> {
   const response = await fetch(`${API_BASE_URL}/api/v1/users/me/export`, {
     method: 'POST',
     headers: authHeaders(accessToken),
@@ -372,9 +370,7 @@ export async function requestDataExport(
   return response.json() as Promise<RequestDataExportResponse>;
 }
 
-export async function fetchLatestExportJob(
-  accessToken: string,
-): Promise<DataExportJob | null> {
+export async function fetchLatestExportJob(accessToken: string): Promise<DataExportJob | null> {
   const response = await fetch(`${API_BASE_URL}/api/v1/users/me/export/latest`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     credentials: 'include',
