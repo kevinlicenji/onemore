@@ -60,6 +60,18 @@ export class ApiClient {
    * @returns Parsed JSON body.
    * @throws When the response is not OK.
    */
+  async putJson<T>(path: string, body: unknown): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: 'PUT',
+      headers: this.buildHeaders(),
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new Error(`PUT ${path} failed: ${String(response.status)}`);
+    }
+    return response.json() as Promise<T>;
+  }
+
   async postJson<T>(path: string, body: unknown): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: 'POST',

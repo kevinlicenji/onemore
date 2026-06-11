@@ -2,20 +2,20 @@
 
 **Updated:** 2026-06-10  
 **Repository:** https://github.com/kevinlicenji/onemore  
-**Branch:** `feat/mvp1-programs` (PR pending)
+**Branch:** `feat/mvp1-workouts` (PR pending)
 
 ---
 
 ## Latest state
 
-**Phase 3 — Programs & exercise library** on `feat/mvp1-programs`:
+**Phase 4 — Workout execution (online-first)** on `feat/mvp1-workouts`:
 
-- API: exercises list/search (tsvector), custom exercises, programs CRUD, publish, templates + apply
-- Migration: `search_vector` on `exercise_library`
-- Seed: 34 exercises + 4 program templates (`pnpm --filter @onemore/api seed`)
-- Web: template picker, single-day program builder, credits page, dashboard links
-- Shared schemas + api-client `ProgramsApi` / `ExercisesApi`
-- CI: seed step after migrations
+- API: start/resume sessions, set logging, complete/abandon, program day rotation
+- Auto-fill weight/reps from last completed session per exercise
+- Web: start page (programmed + free), active workout UI with rest timer
+- Free workout: add exercises via search
+
+**Phase 3** merged in `main` (PR #4).
 
 **Phase 2** merged in `main` (PR #3).
 
@@ -27,7 +27,7 @@ Phase 0 merged via PR #1.
 
 ## Next step
 
-Merge Phase 3 PR, then **Phase 4 — Workouts**.
+Merge Phase 4 PR, then **Phase 5 — Offline sync (Dexie + `/sync/batch`)** per roadmap.
 
 ---
 
@@ -35,8 +35,6 @@ Merge Phase 3 PR, then **Phase 4 — Workouts**.
 
 ```bash
 docker compose -f docker/compose.dev.yml up -d
-cp services/api/.env.example services/api/.env
-cp apps/web/.env.example apps/web/.env.local
 pnpm install
 pnpm --filter @onemore/api db:migrate
 pnpm --filter @onemore/api seed

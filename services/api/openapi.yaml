@@ -80,3 +80,62 @@ paths:
           schema:
             type: string
             format: uuid
+  /workouts/next:
+    get:
+      summary: Preview the next programmed workout day
+  /workouts/sessions/active:
+    get:
+      summary: Get the user's in-progress workout session
+  /workouts/sessions:
+    post:
+      summary: Start a programmed or free workout session
+  /workouts/sessions/{sessionId}:
+    get:
+      summary: Get workout session detail with sets
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  /workouts/sessions/{sessionId}/sets:
+    put:
+      summary: Upsert a set log for an exercise execution
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  /workouts/sessions/{sessionId}/exercises:
+    post:
+      summary: Add an exercise to a free workout session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  /workouts/sessions/{sessionId}/complete:
+    post:
+      summary: Complete a workout and advance program rotation
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  /workouts/sessions/{sessionId}/abandon:
+    post:
+      summary: Abandon an in-progress workout session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
