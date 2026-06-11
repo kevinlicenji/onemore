@@ -5,6 +5,8 @@ import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 
+import type { Queue } from 'bullmq';
+
 import type { Env } from './config/env.js';
 import { prisma } from './lib/prisma.js';
 import { createRedisClient, type RedisClient } from './lib/redis.js';
@@ -19,6 +21,7 @@ export interface AppDeps {
   authService?: AuthService;
   usersService?: UsersService;
   redis?: RedisClient | null;
+  jobQueue?: Queue | null;
 }
 
 /**
@@ -43,7 +46,17 @@ export function createApp(env: Env, logger: Logger, deps?: AppDeps): express.App
   app.use(express.json({ limit: '1mb' }));
 
   app.use(createHealthRouter(env));
-  app.use(API_VERSION_PREFIX, createV1Router({ env, authService, usersService, redis }));
+  app.use(
+    API_VERSION_PREFIX,
+    createV1Router({
+      env,
+      authService,
+      usersService,
+      redis,
+      jobQueue: deps?.jobQueue ?? null,
+      logger,
+    }),
+  );
 
   app.use(createErrorHandler(logger));
 

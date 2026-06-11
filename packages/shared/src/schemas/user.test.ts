@@ -22,6 +22,16 @@ describe('userProfileSchema', () => {
     trainingDaysPerWeek: 4,
     isCoach: false,
     mfaEnabled: false,
+    settings: {
+      units: 'metric' as const,
+      notifications: {
+        workoutReminders: true,
+        progressUpdates: true,
+        prCelebrations: true,
+        quietHoursStart: null,
+        quietHoursEnd: null,
+      },
+    },
     createdAt: '2026-06-10T12:00:00.000Z',
     updatedAt: '2026-06-10T12:00:00.000Z',
   };

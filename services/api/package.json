@@ -22,8 +22,10 @@
   "dependencies": {
     "@onemore/shared": "workspace:*",
     "@prisma/client": "^6.1.0",
+    "@sentry/node": "9.47.1",
     "arctic": "^3.7.0",
     "bcrypt": "^6.0.0",
+    "bullmq": "5.34.5",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^4.21.2",
@@ -32,22 +34,24 @@
     "jose": "^5.9.6",
     "pino": "^9.6.0",
     "pino-http": "^10.3.0",
+    "web-push": "3.6.7",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@onemore/eslint-config": "workspace:*",
+    "@stoplight/spectral-cli": "^6.14.3",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.8",
-    "@onemore/eslint-config": "workspace:*",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
     "@types/supertest": "^6.0.2",
+    "@types/web-push": "3.6.4",
     "eslint": "^9.17.0",
     "prisma": "^6.1.0",
     "supertest": "^7.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^3.2.6",
-    "@stoplight/spectral-cli": "^6.14.3"
+    "vitest": "^3.2.6"
   }
 }

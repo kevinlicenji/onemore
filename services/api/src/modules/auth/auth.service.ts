@@ -118,7 +118,7 @@ export class AuthService {
       include: { credential: true },
     });
 
-    if (!user?.credential) {
+    if (!user?.credential || user.deletedAt) {
       throw new HttpError(401, 'Invalid email or password', 'INVALID_CREDENTIALS');
     }
 
@@ -142,7 +142,7 @@ export class AuthService {
       include: { user: true },
     });
 
-    if (!stored) {
+    if (!stored || stored.user.deletedAt) {
       throw new HttpError(401, 'Invalid refresh token', 'INVALID_REFRESH_TOKEN');
     }
 
@@ -203,8 +203,7 @@ export class AuthService {
       },
     });
 
-    const resetUrl = `${this.env.WEB_APP_URL}/reset-password?token=${rawToken}`;
-    this.logger.info({ userId: user.id, resetUrl }, 'Password reset link (dev log)');
+    this.logger.info({ userId: user.id }, 'Password reset requested');
 
     await this.writeAudit(user.id, 'auth.password_reset_requested', 'user', user.id, ipHash);
   }
@@ -274,8 +273,18 @@ export class AuthService {
   async verifyAccessToken(token: string): Promise<{ userId: string; roles: string[] }> {
     try {
       const payload = await this.tokenService.verifyAccessToken(token);
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { deletedAt: true },
+      });
+      if (!user || user.deletedAt) {
+        throw new HttpError(401, 'Invalid access token', 'INVALID_ACCESS_TOKEN');
+      }
       return { userId: payload.sub, roles: payload.roles };
-    } catch {
+    } catch (error) {
+      if (error instanceof HttpError) {
+        throw error;
+      }
       throw new HttpError(401, 'Invalid access token', 'INVALID_ACCESS_TOKEN');
     }
   }

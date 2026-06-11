@@ -32,6 +32,8 @@ paths:
       summary: Get current user profile
     patch:
       summary: Update current user profile
+    delete:
+      summary: Request account deletion (30-day soft delete before hard purge)
   /onboarding:
     patch:
       summary: Save partial onboarding wizard progress
@@ -161,3 +163,28 @@ paths:
   /analytics/dashboard:
     get:
       summary: Dashboard analytics — streak, weekly volume, next/last workout, recent PRs
+  /users/me/export:
+    post:
+      summary: Request GDPR data export (async job, email when ready)
+  /users/me/export/latest:
+    get:
+      summary: Latest export job status for current user
+  /users/me/export/{jobId}/download:
+    get:
+      summary: Download export file with signed token
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  /notifications/push/vapid-public-key:
+    get:
+      summary: VAPID public key for Web Push subscription
+  /notifications/push/subscribe:
+    post:
+      summary: Register browser push subscription
+  /notifications/push/unsubscribe:
+    post:
+      summary: Remove push subscription endpoint

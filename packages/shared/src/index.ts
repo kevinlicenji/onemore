@@ -12,3 +12,6 @@ export * from './schemas/progress.js';
 export * from './schemas/history.js';
 export * from './schemas/analytics.js';
 export * from './pr/e1rm.js';
+export * from './schemas/settings.js';
+export * from './schemas/gdpr.js';
+export * from './analytics/events.js';
