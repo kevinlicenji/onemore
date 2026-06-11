@@ -25,5 +25,91 @@
     "apiConnected": "API connessa",
     "apiError": "API non raggiungibile",
     "switchLanguage": "Cambia lingua"
+  },
+  "Onboarding": {
+    "progress": "Passo {current} di {total}",
+    "back": "Indietro",
+    "continue": "Continua",
+    "finish": "Completa",
+    "error": "Impossibile salvare le risposte. Riprova.",
+    "steps": {
+      "goal": {
+        "title": "Qual è il tuo obiettivo principale?",
+        "subtitle": "Personalizziamo l'esperienza in base a questo."
+      },
+      "level": {
+        "title": "Qual è il tuo livello?",
+        "subtitle": "Sii realistico — i programmi crescono con te."
+      },
+      "availability": {
+        "title": "Quanti giorni puoi allenarti?",
+        "subtitle": "Scegli un ritmo sostenibile."
+      },
+      "environment": {
+        "title": "Dove ti alleni di solito?",
+        "subtitle": "Palestra completa o setup a casa."
+      },
+      "motivation": {
+        "title": "Quanto supporto vuoi?",
+        "subtitle": "Puoi cambiarlo dopo nelle impostazioni."
+      }
+    },
+    "goals": {
+      "mass": "Massa muscolare",
+      "strength": "Forza",
+      "fat_loss": "Definizione",
+      "recomp": "Ricompizione",
+      "fitness": "Fitness generale"
+    },
+    "levels": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzato"
+    },
+    "daysPerWeek": "{count} giorni a settimana",
+    "environments": {
+      "gym": "Palestra",
+      "home": "Casa"
+    },
+    "motivation": {
+      "1": {
+        "title": "Tracker silenzioso",
+        "description": "Registra gli allenamenti con minime interruzioni."
+      },
+      "2": {
+        "title": "Guidato",
+        "description": "Promemoria se salti e celebrazione dei progressi."
+      },
+      "3": {
+        "title": "Supporto intensivo",
+        "description": "Incoraggiamenti frequenti e check-in."
+      }
+    },
+    "chooseProgram": {
+      "title": "Come vuoi iniziare?",
+      "subtitle": "Scegli un template o crea il tuo programma.",
+      "templateTitle": "Usa un template",
+      "templateDescription": "Split pronti in linea con il tuo profilo.",
+      "manualTitle": "Crea il mio programma",
+      "manualDescription": "Scegli esercizi, serie e ripetizioni.",
+      "skipToDashboard": "Vai alla dashboard"
+    }
+  },
+  "Dashboard": {
+    "title": "La tua dashboard",
+    "emptySubtitle": "Ancora nessun allenamento.",
+    "emptyBody": "Crea un programma o inizia un workout per vedere l'attività qui.",
+    "startWorkoutCta": "Inizia il primo workout"
+  },
+  "Programs": {
+    "templatesStubTitle": "Template di programma",
+    "manualStubTitle": "Builder programma",
+    "phase3Coming": "Arriva in Fase 3 — programmi e libreria esercizi.",
+    "backToDashboard": "Torna alla dashboard"
+  },
+  "Workouts": {
+    "startStubTitle": "Inizia workout",
+    "phase4Coming": "Arriva in Fase 4 — esecuzione workout.",
+    "backToDashboard": "Torna alla dashboard"
   }
 }

@@ -32,3 +32,9 @@ paths:
       summary: Get current user profile
     patch:
       summary: Update current user profile
+  /onboarding:
+    patch:
+      summary: Save partial onboarding wizard progress
+  /onboarding/complete:
+    post:
+      summary: Complete onboarding with all required fields

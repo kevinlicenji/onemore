@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 
 import { AuthProvider } from '@/components/auth-provider';
+import { PostHogProvider } from '@/components/posthog-provider';
 import { routing } from '@/i18n/routing';
 
 import '../globals.css';
@@ -31,7 +32,9 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <NextIntlClientProvider messages={messages}>
-          <AuthProvider>{children}</AuthProvider>
+          <PostHogProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </PostHogProvider>
         </NextIntlClientProvider>
       </body>
     </html>

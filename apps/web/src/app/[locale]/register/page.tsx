@@ -7,13 +7,15 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { registerAccount, useAuth } from '@/components/auth-provider';
+import { fetchUserProfile, resolveAuthenticatedHomePath } from '@/lib/api-auth';
+import { identifyUser } from '@/lib/analytics';
 
 export default function RegisterPage(): React.ReactElement {
   const t = useTranslations('Auth');
   const router = useRouter();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
-  const { setSession } = useAuth();
+  const { setSession, setProfile } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -36,7 +38,10 @@ export default function RegisterPage(): React.ReactElement {
         consents: { tos: true, privacy: true, fitnessData: true },
       });
       setSession(result.accessToken, result.user);
-      router.push(`/${locale}`);
+      const profile = await fetchUserProfile(result.accessToken);
+      setProfile(profile);
+      identifyUser(profile.id);
+      router.push(resolveAuthenticatedHomePath(locale, profile));
     } catch (err) {
       setError(err instanceof Error ? err.message : t('registerError'));
     } finally {

@@ -25,5 +25,91 @@
     "apiConnected": "API connected",
     "apiError": "API unreachable",
     "switchLanguage": "Switch language"
+  },
+  "Onboarding": {
+    "progress": "Step {current} of {total}",
+    "back": "Back",
+    "continue": "Continue",
+    "finish": "Finish",
+    "error": "Could not save your answers. Try again.",
+    "steps": {
+      "goal": {
+        "title": "What's your main goal?",
+        "subtitle": "We'll tailor your experience around this."
+      },
+      "level": {
+        "title": "What's your training level?",
+        "subtitle": "Be honest — programs scale with you."
+      },
+      "availability": {
+        "title": "How many days can you train?",
+        "subtitle": "Pick a realistic weekly schedule."
+      },
+      "environment": {
+        "title": "Where do you usually train?",
+        "subtitle": "Gym equipment or home setup."
+      },
+      "motivation": {
+        "title": "How much support do you want?",
+        "subtitle": "You can change this later in settings."
+      }
+    },
+    "goals": {
+      "mass": "Build muscle",
+      "strength": "Get stronger",
+      "fat_loss": "Lose fat",
+      "recomp": "Recomposition",
+      "fitness": "General fitness"
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "daysPerWeek": "{count} days per week",
+    "environments": {
+      "gym": "Gym",
+      "home": "Home"
+    },
+    "motivation": {
+      "1": {
+        "title": "Quiet tracker",
+        "description": "Log workouts with minimal interruptions."
+      },
+      "2": {
+        "title": "Guided",
+        "description": "Reminders when you slip and wins celebrated."
+      },
+      "3": {
+        "title": "High support",
+        "description": "Frequent encouragement and check-ins."
+      }
+    },
+    "chooseProgram": {
+      "title": "How do you want to start?",
+      "subtitle": "Pick a template or build your own program.",
+      "templateTitle": "Use a program template",
+      "templateDescription": "Ready-made splits matched to your profile.",
+      "manualTitle": "Build my own program",
+      "manualDescription": "Choose exercises, sets, and reps yourself.",
+      "skipToDashboard": "Go to dashboard"
+    }
+  },
+  "Dashboard": {
+    "title": "Your dashboard",
+    "emptySubtitle": "No workouts yet — let's get moving.",
+    "emptyBody": "Create a program or start a workout to see your activity here.",
+    "startWorkoutCta": "Start your first workout"
+  },
+  "Programs": {
+    "templatesStubTitle": "Program templates",
+    "manualStubTitle": "Program builder",
+    "phase3Coming": "Coming in Phase 3 — programs & exercise library.",
+    "backToDashboard": "Back to dashboard"
+  },
+  "Workouts": {
+    "startStubTitle": "Start workout",
+    "phase4Coming": "Coming in Phase 4 — workout execution.",
+    "backToDashboard": "Back to dashboard"
   }
 }
