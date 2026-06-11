@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
 
   useEffect(() => {
     const persisted = readStoredE2eSession();
-    if (allowInjectedE2eSession(persisted !== null)) {
+    if (allowInjectedE2eSession()) {
       (
         window as Window & {
           __e2eSetSession?: (token: string, authUser: AuthUser) => void;

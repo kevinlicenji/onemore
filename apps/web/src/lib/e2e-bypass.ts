@@ -34,8 +34,8 @@ export function e2eBypassActive(): boolean {
 }
 
 /**
- * True when AuthProvider should honour a session written to sessionStorage by Playwright.
+ * True when AuthProvider should honour Playwright session injection on loopback hosts.
  */
-export function allowInjectedE2eSession(hasPersistedSession: boolean): boolean {
-  return e2eBypassActive() || (hasPersistedSession && isLocalTestHost());
+export function allowInjectedE2eSession(): boolean {
+  return e2eBypassActive() || isLocalTestHost();
 }

@@ -48,21 +48,53 @@ export async function registerAthlete(
     };
   };
 
-  const session = { accessToken: body.accessToken, user: body.user };
+  await bootstrapBrowserSession(page, body.accessToken, body.user);
 
-  await page.addInitScript(
-    ({ storageKey, payload }) => {
-      sessionStorage.setItem(storageKey, JSON.stringify(payload));
-    },
-    { storageKey: E2E_SESSION_STORAGE_KEY, payload: session },
-  );
-
-  await page.goto('/it/onboarding', { waitUntil: 'load' });
+  await page.goto('/it/onboarding', { waitUntil: 'domcontentloaded' });
   await page.getByRole('heading', { name: 'Qual è il tuo obiettivo principale?' }).waitFor({
     timeout: 60_000,
   });
 
   return { email, username, accessToken: body.accessToken };
+}
+
+interface AuthSessionUser {
+  id: string;
+  email: string;
+  username: string | null;
+  displayName: string | null;
+  locale: string;
+}
+
+/**
+ * Hydrate AuthProvider via the E2E hook exposed on loopback hosts.
+ */
+async function bootstrapBrowserSession(
+  page: Page,
+  accessToken: string,
+  user: AuthSessionUser,
+): Promise<void> {
+  await page.goto('/it', { waitUntil: 'domcontentloaded' });
+
+  await page.waitForFunction(() => {
+    return typeof (window as Window & { __e2eSetSession?: unknown }).__e2eSetSession === 'function';
+  });
+
+  await page.evaluate(
+    ({ storageKey, accessToken: token, user: authUser }) => {
+      sessionStorage.setItem(storageKey, JSON.stringify({ accessToken: token, user: authUser }));
+      const setSession = (
+        window as Window & {
+          __e2eSetSession?: (token: string, authUser: typeof authUser) => void;
+        }
+      ).__e2eSetSession;
+      if (!setSession) {
+        throw new Error('__e2eSetSession hook is not available');
+      }
+      setSession(token, authUser);
+    },
+    { storageKey: E2E_SESSION_STORAGE_KEY, accessToken, user },
+  );
 }
 
 /**
