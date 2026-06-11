@@ -54,5 +54,7 @@ jobs:
       - run: pnpm build
         env:
           NEXT_PUBLIC_API_URL: http://127.0.0.1:4010
+          NEXT_PUBLIC_E2E_BYPASS: 'true'
+          TURBO_FORCE: 'true'
       - run: pnpm --filter @onemore/web exec playwright install --with-deps chromium
       - run: env -u REDIS_URL pnpm test:e2e

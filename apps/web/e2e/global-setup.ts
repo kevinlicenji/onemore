@@ -50,6 +50,7 @@ export default function globalSetup(): void {
     stdio: 'inherit',
     env: {
       ...process.env,
+      TURBO_FORCE: 'true',
       NEXT_PUBLIC_API_URL: E2E_API_URL,
       NEXT_PUBLIC_E2E_BYPASS: 'true',
     },

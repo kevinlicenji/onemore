@@ -47,27 +47,19 @@ export async function registerAthlete(
     };
   };
 
-  await page.goto('/it/onboarding');
-  await page.waitForLoadState('networkidle');
-  await page.waitForFunction(
-    () => typeof (window as Window & { __e2eSetSession?: unknown }).__e2eSetSession === 'function',
-    { timeout: 30_000 },
-  );
-  await page.evaluate(
+  await page.addInitScript(
     ({ token, user }) => {
-      const setSession = (
-        window as Window & {
-          __e2eSetSession?: (accessToken: string, authUser: typeof user) => void;
-        }
-      ).__e2eSetSession;
-      if (!setSession) {
-        throw new Error('E2E session bootstrap is not available');
-      }
-      setSession(token, user);
+      sessionStorage.setItem(
+        'onemore_e2e_session',
+        JSON.stringify({ accessToken: token, user }),
+      );
     },
     { token: body.accessToken, user: body.user },
   );
-  await page.getByRole('heading', { name: 'Qual è il tuo obiettivo principale?' }).waitFor();
+  await page.goto('/it/onboarding', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('heading', { name: 'Qual è il tuo obiettivo principale?' }).waitFor({
+    timeout: 60_000,
+  });
 
   return { email, username, accessToken: body.accessToken };
 }

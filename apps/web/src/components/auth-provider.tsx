@@ -14,6 +14,7 @@ import {
 import { fetchUserProfile } from '@/lib/api-auth';
 import { API_BASE_URL } from '@/lib/api-config';
 import { identifyUser } from '@/lib/analytics';
+import { e2eBypassActive } from '@/lib/e2e-bypass';
 
 export interface AuthUser {
   id: string;
@@ -89,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   }, []);
 
   const clearSession = useCallback(() => {
-    if (process.env.NEXT_PUBLIC_E2E_BYPASS === 'true') {
+    if (e2eBypassActive()) {
       sessionStorage.removeItem(E2E_SESSION_STORAGE_KEY);
     }
     accessTokenRef.current = null;
@@ -128,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   }, [clearSession, setSession, setProfile]);
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_E2E_BYPASS === 'true') {
+    if (e2eBypassActive()) {
       (
         window as Window & {
           __e2eSetSession?: (token: string, authUser: AuthUser) => void;
@@ -142,8 +143,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
       const persisted = readStoredE2eSession();
       if (persisted) {
         setSession(persisted.accessToken, persisted.user);
-        setIsLoading(false);
       }
+      // E2E tests inject the session via __e2eSetSession — unblock RequireAuth once the hook exists.
+      setIsLoading(false);
       return;
     }
 
