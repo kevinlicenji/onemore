@@ -41,16 +41,14 @@ export default defineConfig({
       },
     },
     {
-      command: 'node apps/web/server.js',
-      cwd: '../../apps/web/.next/standalone',
+      // Use `next start` (not standalone) so static chunks are always served — matches CI build output.
+      command: `pnpm exec next start -p ${E2E_WEB_PORT} -H 0.0.0.0`,
+      cwd: '.',
       url: E2E_WEB_URL,
       reuseExistingServer: false,
       timeout: 120_000,
       env: {
-        PORT: E2E_WEB_PORT,
-        HOSTNAME: '0.0.0.0',
         NEXT_PUBLIC_API_URL: E2E_API_URL,
-        NEXT_PUBLIC_E2E_BYPASS: 'true',
       },
     },
   ],
