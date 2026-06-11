@@ -14,7 +14,11 @@ import {
 import { fetchUserProfile } from '@/lib/api-auth';
 import { API_BASE_URL } from '@/lib/api-config';
 import { identifyUser } from '@/lib/analytics';
-import { e2eBypassActive } from '@/lib/e2e-bypass';
+import {
+  allowInjectedE2eSession,
+  E2E_SESSION_STORAGE_KEY,
+  e2eBypassActive,
+} from '@/lib/e2e-bypass';
 
 export interface AuthUser {
   id: string;
@@ -37,8 +41,6 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-const E2E_SESSION_STORAGE_KEY = 'onemore_e2e_session';
 
 interface StoredE2eSession {
   accessToken: string;
@@ -90,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   }, []);
 
   const clearSession = useCallback(() => {
-    if (e2eBypassActive()) {
+    if (typeof window !== 'undefined' && sessionStorage.getItem(E2E_SESSION_STORAGE_KEY)) {
       sessionStorage.removeItem(E2E_SESSION_STORAGE_KEY);
     }
     accessTokenRef.current = null;
@@ -129,7 +131,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   }, [clearSession, setSession, setProfile]);
 
   useEffect(() => {
-    if (e2eBypassActive()) {
+    const persisted = readStoredE2eSession();
+    if (allowInjectedE2eSession(persisted !== null)) {
       (
         window as Window & {
           __e2eSetSession?: (token: string, authUser: AuthUser) => void;
@@ -140,7 +143,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         setIsLoading(false);
       };
 
-      const persisted = readStoredE2eSession();
       if (persisted) {
         setSession(persisted.accessToken, persisted.user);
       }

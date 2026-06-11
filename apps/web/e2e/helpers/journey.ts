@@ -1,7 +1,7 @@
 import type { APIRequestContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-import { E2E_API_URL } from '../test-env';
+import { E2E_API_URL, E2E_SESSION_STORAGE_KEY } from '../test-env';
 
 export const E2E_PASSWORD = 'zQ8!mKp2vLn9Wx4rE2eTest';
 
@@ -12,32 +12,31 @@ export interface RegisteredUser {
 }
 
 /**
- * Register through the web UI so AuthProvider holds a real in-memory session (no storage hook).
+ * Register via API (reliable in CI) then inject session into AuthProvider before onboarding.
  */
 export async function registerAthlete(
   page: Page,
-  _request: APIRequestContext,
+  request: APIRequestContext,
 ): Promise<RegisteredUser> {
   const suffix = String(Date.now());
   const email = `e2e-${suffix}@example.com`;
   const username = `e2e_${suffix.slice(-8)}`;
 
-  await page.goto('/it/register', { waitUntil: 'load' });
+  const registerResponse = await request.post(`${E2E_API_URL}/api/v1/auth/register`, {
+    data: {
+      email,
+      password: E2E_PASSWORD,
+      username,
+      locale: 'it',
+      birthYear: 1995,
+      timezone: 'Europe/Rome',
+      consents: { tos: true, privacy: true, fitnessData: true },
+    },
+  });
+  if (!registerResponse.ok()) {
+    throw new Error(`Register failed: ${String(registerResponse.status())}`);
+  }
 
-  const registerResponsePromise = page.waitForResponse(
-    (response) =>
-      response.url().includes('/api/v1/auth/register') &&
-      response.request().method() === 'POST' &&
-      response.ok(),
-    { timeout: 60_000 },
-  );
-
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Username').fill(username);
-  await page.getByLabel('Password').fill(E2E_PASSWORD);
-  await page.getByRole('button', { name: 'Registrati' }).click();
-
-  const registerResponse = await registerResponsePromise;
   const body = (await registerResponse.json()) as {
     accessToken: string;
     user: {
@@ -49,7 +48,16 @@ export async function registerAthlete(
     };
   };
 
-  await page.waitForURL(/\/it\/onboarding/, { timeout: 60_000 });
+  const session = { accessToken: body.accessToken, user: body.user };
+
+  await page.addInitScript(
+    ({ storageKey, payload }) => {
+      sessionStorage.setItem(storageKey, JSON.stringify(payload));
+    },
+    { storageKey: E2E_SESSION_STORAGE_KEY, payload: session },
+  );
+
+  await page.goto('/it/onboarding', { waitUntil: 'load' });
   await page.getByRole('heading', { name: 'Qual è il tuo obiettivo principale?' }).waitFor({
     timeout: 60_000,
   });
