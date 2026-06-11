@@ -133,7 +133,7 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
       const provider = req.params.provider;
       if (provider !== 'google' && provider !== 'apple') {
         res.status(400).json({ error: { message: 'Invalid provider', code: 'INVALID_PROVIDER' } });
-        return;
+        return Promise.resolve();
       }
       const { url, state, codeVerifier } = deps.oauthService.start(provider);
       res.cookie('oauth_state', state, { httpOnly: true, sameSite: 'lax', maxAge: 600_000 });
@@ -146,6 +146,7 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
         });
       }
       res.redirect(url);
+      return Promise.resolve();
     }),
   );
 
