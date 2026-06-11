@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 
-import { API_BASE_URL } from '@/lib/api-config';
+import { SERVER_API_BASE_URL } from '@/lib/api-config';
 
 /**
  * Proxy refresh token cookie to API and return access token JSON to the client.
  */
 export async function POST(request: Request): Promise<NextResponse> {
   const cookie = request.headers.get('cookie') ?? '';
-  const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+  const response = await fetch(`${SERVER_API_BASE_URL}/api/v1/auth/refresh`, {
     method: 'POST',
     headers: { cookie },
   });

@@ -1,0 +1,15 @@
+node_modules
+.next
+dist
+.turbo
+.git
+.github
+.cursor
+coverage
+data
+*.log
+.env
+.env.*
+!.env.example
+apps/web/.next
+services/api/data

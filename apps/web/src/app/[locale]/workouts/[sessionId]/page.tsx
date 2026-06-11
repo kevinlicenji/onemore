@@ -353,7 +353,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                 {!set.isCompleted && !set.isSkipped && (
                   <div className="mt-2 flex gap-2">
                     <Button
-                      className="flex-1"
+                      className="min-h-11 flex-1"
                       disabled={loading}
                       type="button"
                       onClick={() => {
@@ -407,7 +407,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
         <div className="fixed bottom-0 left-0 right-0 border-t bg-background p-4">
           <div className="mx-auto flex max-w-md gap-2">
             <Button
-              className="flex-1"
+              className="min-h-11 flex-1"
               disabled={loading || session.exercises.length === 0}
               type="button"
               onClick={() => {

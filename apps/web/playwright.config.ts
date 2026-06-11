@@ -4,10 +4,11 @@ import { E2E_API_PORT, E2E_API_URL, E2E_WEB_PORT, E2E_WEB_URL } from './e2e/test
 
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
+  globalSetup: './e2e/global-setup.ts',
+  fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: E2E_WEB_URL,
@@ -31,6 +32,7 @@ export default defineConfig({
         API_PORT: E2E_API_PORT,
         DATABASE_URL:
           process.env.DATABASE_URL ?? 'postgresql://onemore:onemore_dev@localhost:55432/onemore',
+        REDIS_URL: '',
         LOG_LEVEL: 'error',
         API_VERSION: '0.1.0-e2e',
         JWT_PRIVATE_KEY_PATH: 'test/fixtures/jwt-private.pem',
@@ -39,12 +41,13 @@ export default defineConfig({
       },
     },
     {
-      command: 'pnpm start',
+      // Use `next start` (not standalone) so static chunks are always served — matches CI build output.
+      command: `pnpm exec next start -p ${E2E_WEB_PORT} -H 0.0.0.0`,
+      cwd: '.',
       url: E2E_WEB_URL,
       reuseExistingServer: false,
       timeout: 120_000,
       env: {
-        PORT: E2E_WEB_PORT,
         NEXT_PUBLIC_API_URL: E2E_API_URL,
       },
     },
