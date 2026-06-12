@@ -1,6 +1,6 @@
 'use client';
 
-import type { DataExportJob, UserProfile, UserSettings } from '@onemore/shared';
+import type { DataExportJob, UserSettings } from '@onemore/shared';
 import { POSTHOG_EVENTS } from '@onemore/shared';
 import { Button, Card, CardContent } from '@onemore/ui';
 import Link from 'next/link';
@@ -23,7 +23,6 @@ import { useIsDesktop } from '@/hooks/use-is-desktop';
 import {
   deleteAccount,
   fetchLatestExportJob,
-  fetchUserProfile,
   patchUserProfile,
   requestDataExport,
 } from '@/lib/api-auth';
@@ -32,36 +31,31 @@ import { subscribeToPushNotifications } from '@/lib/push-notifications';
 
 export default function SettingsPage(): React.ReactElement {
   const t = useTranslations('Settings');
-  const { accessToken, clearSession } = useAuth();
+  const { accessToken, clearSession, profile, setProfile } = useAuth();
   const router = useRouter();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const isDesktop = useIsDesktop();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [exportJob, setExportJob] = useState<DataExportJob | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
-  const load = useCallback(async (): Promise<void> => {
+  const loadExportJob = useCallback(async (): Promise<void> => {
     if (!accessToken) {
       return;
     }
-    const [user, latestExport] = await Promise.all([
-      fetchUserProfile(accessToken),
-      fetchLatestExportJob(accessToken),
-    ]);
-    setProfile(user);
+    const latestExport = await fetchLatestExportJob(accessToken);
     setExportJob(latestExport);
   }, [accessToken]);
 
   useEffect(() => {
-    void load().catch(() => {
+    void loadExportJob().catch(() => {
       setError(t('loadError'));
     });
-  }, [load, t]);
+  }, [loadExportJob, t]);
 
   async function saveNotifications(patch: Partial<UserSettings['notifications']>): Promise<void> {
     if (!accessToken || !profile) {

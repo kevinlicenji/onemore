@@ -1,5 +1,12 @@
 import { API_BASE_URL } from '@/lib/api-config';
 
+/**
+ * Service workers are production-only to avoid stale caches on localhost dev.
+ */
+export function shouldRegisterServiceWorker(): boolean {
+  return process.env.NODE_ENV === 'production';
+}
+
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -17,6 +24,10 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
  * @param accessToken - JWT access token.
  */
 export async function subscribeToPushNotifications(accessToken: string): Promise<boolean> {
+  if (!shouldRegisterServiceWorker()) {
+    return false;
+  }
+
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     return false;
   }
