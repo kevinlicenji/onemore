@@ -48,50 +48,51 @@ export class WorkoutsService {
         exerciseCount: 0,
         programName: null,
         exercises: [],
+        days: [],
       };
     }
 
-    const day = this.resolveWorkoutDay(assignment);
-    if (!day) {
+    const workoutDays = assignment.programVersion.workoutDays;
+    const dayIds = workoutDays.map((workoutDay) => workoutDay.id);
+    const allExercises =
+      dayIds.length === 0
+        ? []
+        : await this.prisma.programExercise.findMany({
+            where: { workoutDayId: { in: dayIds } },
+            orderBy: [{ workoutDayId: 'asc' }, { sortOrder: 'asc' }],
+            include: { exerciseLibrary: true },
+          });
+
+    const exercisesByDay = new Map<string, typeof allExercises>();
+    for (const exercise of allExercises) {
+      const bucket = exercisesByDay.get(exercise.workoutDayId) ?? [];
+      bucket.push(exercise);
+      exercisesByDay.set(exercise.workoutDayId, bucket);
+    }
+
+    const days = workoutDays.map((workoutDay) => {
+      const dayExercises = exercisesByDay.get(workoutDay.id) ?? [];
       return {
-        hasActiveAssignment: true,
-        programAssignmentId: assignment.id,
-        workoutDayId: null,
-        workoutDayLabel: null,
-        exerciseCount: 0,
-        programName: assignment.programVersion.program.name,
-        exercises: [],
+        workoutDayId: workoutDay.id,
+        label: workoutDay.label,
+        exerciseCount: dayExercises.length,
+        exercises: dayExercises.map((item) => this.mapProgramExercise(item)),
       };
-    }
-
-    const programExercises = await this.prisma.programExercise.findMany({
-      where: { workoutDayId: day.id },
-      orderBy: { sortOrder: 'asc' },
-      include: { exerciseLibrary: true },
     });
+
+    const suggestedDay = this.resolveWorkoutDay(assignment);
+    const suggested =
+      days.find((day) => day.workoutDayId === suggestedDay?.id) ?? days[0] ?? null;
 
     return {
       hasActiveAssignment: true,
       programAssignmentId: assignment.id,
-      workoutDayId: day.id,
-      workoutDayLabel: day.label,
-      exerciseCount: programExercises.length,
+      workoutDayId: suggested?.workoutDayId ?? null,
+      workoutDayLabel: suggested?.label ?? null,
+      exerciseCount: suggested?.exerciseCount ?? 0,
       programName: assignment.programVersion.program.name,
-      exercises: programExercises.map((item) => ({
-        programExerciseId: item.id,
-        exerciseLibraryId: item.exerciseLibraryId,
-        sortOrder: item.sortOrder,
-        targetSets: item.targetSets,
-        targetReps: item.targetReps,
-        targetWeightKg: item.targetWeightKg ? Number(item.targetWeightKg) : null,
-        restSeconds: item.restSeconds,
-        coachNote: item.coachNote,
-        exercise: {
-          id: item.exerciseLibrary.id,
-          slug: item.exerciseLibrary.slug,
-          names: item.exerciseLibrary.names as { en: string; it?: string },
-        },
-      })),
+      exercises: suggested?.exercises ?? [],
+      days,
     };
   }
 
@@ -329,7 +330,7 @@ export class WorkoutsService {
         },
       });
 
-      await this.createInitialSets(tx, execution.id, prescription, previousSet);
+      await this.createInitialSets(tx, execution.id, prescription, previousSet, true);
       await tx.workoutSession.update({
         where: { id: sessionId },
         data: { clientUpdatedAt: new Date() },
@@ -483,9 +484,37 @@ export class WorkoutsService {
         });
 
         const previousSet = previousByExercise.get(programExercise.exerciseLibraryId) ?? null;
-        await this.createInitialSets(tx, execution.id, prescription, previousSet);
+        await this.createInitialSets(tx, execution.id, prescription, previousSet, false);
       }
     });
+  }
+
+  private mapProgramExercise(item: {
+    id: string;
+    exerciseLibraryId: string;
+    sortOrder: number;
+    targetSets: number;
+    targetReps: number;
+    targetWeightKg: { toString(): string } | null;
+    restSeconds: number;
+    coachNote: string | null;
+    exerciseLibrary: { id: string; slug: string; names: unknown };
+  }) {
+    return {
+      programExerciseId: item.id,
+      exerciseLibraryId: item.exerciseLibraryId,
+      sortOrder: item.sortOrder,
+      targetSets: item.targetSets,
+      targetReps: item.targetReps,
+      targetWeightKg: item.targetWeightKg ? Number(item.targetWeightKg) : null,
+      restSeconds: item.restSeconds,
+      coachNote: item.coachNote,
+      exercise: {
+        id: item.exerciseLibrary.id,
+        slug: item.exerciseLibrary.slug,
+        names: item.exerciseLibrary.names as { en: string; it?: string },
+      },
+    };
   }
 
   private async createInitialSets(
@@ -493,9 +522,14 @@ export class WorkoutsService {
     executionId: string,
     prescription: PrescriptionSnapshot,
     previousSet: PreviousSetValues | null,
+    prefillFromPrescription: boolean,
   ): Promise<void> {
-    const weightKg = previousSet?.weightKg ?? prescription.targetWeightKg ?? null;
-    const reps = previousSet?.reps ?? prescription.targetReps;
+    const weightKg = prefillFromPrescription
+      ? (previousSet?.weightKg ?? prescription.targetWeightKg ?? null)
+      : (previousSet?.weightKg ?? null);
+    const reps = prefillFromPrescription
+      ? (previousSet?.reps ?? prescription.targetReps)
+      : (previousSet?.reps ?? null);
 
     for (let setNumber = 1; setNumber <= prescription.targetSets; setNumber += 1) {
       await tx.setLog.create({

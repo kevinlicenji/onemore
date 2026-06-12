@@ -34,6 +34,7 @@ export const programSummarySchema = z.object({
   latestVersionStatus: z.enum(['draft', 'published', 'archived']).nullable(),
   latestVersionNumber: z.number().int().nullable(),
   daysCount: z.number().int(),
+  isActive: z.boolean(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -61,7 +62,8 @@ export const workoutDaySchema = z.object({
   exercises: z.array(programExerciseSchema),
 });
 
-export const programDetailSchema = programSummarySchema.extend({
+export const programDetailSchema = programSummarySchema.omit({ isActive: true }).extend({
+  isActive: z.boolean(),
   versionId: z.string().uuid().nullable(),
   versionNumber: z.number().int().nullable(),
   versionStatus: z.enum(['draft', 'published', 'archived']).nullable(),

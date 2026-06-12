@@ -102,17 +102,23 @@ export async function completeOnboardingWizard(page: Page): Promise<void> {
 }
 
 /**
- * Apply the beginner full-body gym template.
+ * Customize and save the beginner full-body gym template.
  */
 export async function applyBeginnerTemplate(page: Page): Promise<void> {
   if (page.url().includes('/dashboard')) {
     await page.getByRole('link', { name: 'Scegli o crea un programma' }).click();
+    await page.waitForURL(/\/it\/programs$/);
+    await page.getByRole('link', { name: /Sfoglia template/i }).click();
   } else {
     await page.getByRole('link', { name: /Usa un template/i }).click();
   }
   await page.waitForURL(/\/it\/programs\/templates$/);
-  await page.getByRole('button', { name: 'Beginner Full Body' }).click();
-  await page.waitForURL(/\/it\/dashboard$/);
+  await page.getByRole('link', { name: 'Beginner Full Body' }).click();
+  await page.waitForURL(/\/it\/programs\/templates\//);
+  await page.getByRole('link', { name: /Personalizza e salva/i }).click();
+  await page.waitForURL(/\/it\/programs\/new\?template=/);
+  await page.getByRole('button', { name: 'Salva e pubblica' }).click();
+  await page.waitForURL(/\/it\/programs\/[0-9a-f-]+$/);
 }
 
 /**
@@ -129,7 +135,8 @@ export async function startProgrammedWorkout(page: Page): Promise<string> {
         res.request().method() === 'POST' &&
         res.ok(),
     ),
-    page.getByRole('button', { name: 'Inizia prossimo giorno' }).click(),
+    page.getByRole('button', { name: 'Day A' }).click(),
+    page.getByRole('button', { name: 'Inizia giorno selezionato' }).click(),
   ]);
 
   const session = (await response.json()) as { id: string };

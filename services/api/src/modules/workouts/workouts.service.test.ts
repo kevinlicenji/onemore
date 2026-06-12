@@ -27,6 +27,7 @@ describe('WorkoutsService', () => {
 
     expect(preview.hasActiveAssignment).toBe(false);
     expect(preview.workoutDayId).toBeNull();
+    expect(preview.days).toEqual([]);
   });
 
   it('returns null when no active session exists', async () => {

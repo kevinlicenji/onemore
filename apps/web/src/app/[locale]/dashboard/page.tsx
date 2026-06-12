@@ -131,29 +131,30 @@ export default function DashboardPage(): React.ReactElement {
           </div>
         )}
 
-        {!hasActivity && (
+        {!hasActivity && !dashboard?.nextWorkout.hasActiveAssignment && (
           <div className="w-full rounded-lg border border-dashed p-8 text-center">
             <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
-            <div className="mt-4 flex flex-col gap-2">
-              <Button asChild>
-                <Link href={`/${locale}/programs/templates`}>{t('pickProgramCta')}</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
-              </Button>
-            </div>
+            <Button asChild className="mt-4">
+              <Link href={`/${locale}/programs`}>{t('pickProgramCta')}</Link>
+            </Button>
           </div>
         )}
 
+        {!dashboard?.nextWorkout.hasActiveAssignment && hasActivity && (
+          <Button asChild>
+            <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
+          </Button>
+        )}
+
         <div className="flex flex-col gap-2">
+          <Button asChild variant="outline">
+            <Link href={`/${locale}/programs`}>{t('myProgramsLink')}</Link>
+          </Button>
           <Button asChild variant="outline">
             <Link href={`/${locale}/settings`}>{t('settingsLink')}</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href={`/${locale}/history`}>{t('historyLink')}</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
           </Button>
         </div>
 

@@ -39,15 +39,20 @@ function buildLocalProgrammedSession(
   preview: NextWorkoutPreview,
 ): WorkoutSessionDetail {
   const startedAt = new Date().toISOString();
-  const dayExercises = preview.exercises;
+  const selectedDayId = input.workoutDayId ?? preview.workoutDayId;
+  const selectedDay =
+    preview.days.find((day) => day.workoutDayId === selectedDayId) ??
+    preview.days[0] ??
+    null;
+  const dayExercises = selectedDay?.exercises ?? preview.exercises;
 
   return {
     id: input.id,
     status: 'in_progress',
     sessionType: 'programmed',
     programAssignmentId: preview.programAssignmentId,
-    workoutDayId: preview.workoutDayId,
-    workoutDayLabel: preview.workoutDayLabel,
+    workoutDayId: selectedDay?.workoutDayId ?? preview.workoutDayId,
+    workoutDayLabel: selectedDay?.label ?? preview.workoutDayLabel,
     startedAt,
     completedAt: null,
     durationSeconds: null,
@@ -70,8 +75,8 @@ function buildLocalProgrammedSession(
         sets: Array.from({ length: item.targetSets }, (_, setIndex) => ({
           id: crypto.randomUUID(),
           setNumber: setIndex + 1,
-          weightKg: item.targetWeightKg,
-          reps: item.targetReps,
+          weightKg: null,
+          reps: null,
           isWarmup: false,
           isCompleted: false,
           isSkipped: false,
@@ -159,6 +164,7 @@ export async function getNextWorkoutPreviewClient(
     exerciseCount: cached.exerciseCount,
     programName: cached.programName,
     exercises: cached.exercises,
+    days: cached.days ?? [],
   };
 }
 
