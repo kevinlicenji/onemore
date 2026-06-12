@@ -1,13 +1,16 @@
 'use client';
 
 import type { ProgramDetail } from '@onemore/shared';
+import { cn } from '@onemore/ui';
 import { useTranslations } from 'next-intl';
 
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
+import { formatProgramExerciseSummary } from '@/lib/program-exercise-display';
 
 interface ProgramDayListProps {
   days: ProgramDetail['days'];
   locale: string;
+  className?: string;
 }
 
 function exerciseName(names: { en: string; it?: string }, locale: string): string {
@@ -20,12 +23,12 @@ function exerciseName(names: { en: string; it?: string }, locale: string): strin
 /**
  * Read-only day-by-day program breakdown (exercises, sets, reps, rest).
  */
-export function ProgramDayList({ days, locale }: ProgramDayListProps): React.ReactElement {
+export function ProgramDayList({ days, locale, className }: ProgramDayListProps): React.ReactElement {
   const t = useTranslations('Programs');
   const tMuscle = useTranslations('MuscleGroups');
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={cn('flex flex-col gap-4', className)}>
       {days.map((day) => (
         <section key={day.id} className="rounded-lg border p-4">
           <h2 className="font-semibold">
@@ -42,12 +45,13 @@ export function ProgramDayList({ days, locale }: ProgramDayListProps): React.Rea
               <li key={row.id} className="text-sm">
                 <p className="font-medium">{exerciseName(row.exercise.names, locale)}</p>
                 <p className="text-muted-foreground">
-                  {t('exercisePrescription', {
-                    sets: row.targetSets,
-                    reps: row.targetReps,
-                    rest: row.restSeconds,
-                    weight: row.targetWeightKg !== null ? `${String(row.targetWeightKg)} kg` : '—',
-                  })}
+                  {formatProgramExerciseSummary(
+                    row.targetSets,
+                    row.targetReps,
+                    row.targetWeightKg,
+                    row.restSeconds,
+                    t('failureReps'),
+                  )}
                 </p>
                 {row.coachNote && (
                   <p className="mt-1 text-xs text-muted-foreground">{row.coachNote}</p>

@@ -1,14 +1,17 @@
 'use client';
 
-import type { CreateProgramInput, ExerciseListItem, MuscleGroup } from '@onemore/shared';
+import type { CreateProgramInput, MuscleGroup } from '@onemore/shared';
 import { aggregateMuscleGroups } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { MuscleGroupFilter } from '@/components/muscle-group-filter';
+import {
+  AddProgramExerciseModal,
+  type ProgramExerciseDraft,
+} from '@/components/add-program-exercise-modal';
+import { ProgramBuilderExerciseRow } from '@/components/program-builder-exercise-row';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
-import { fetchExercises } from '@/lib/api-auth';
 
 export interface BuilderExercise {
   exerciseLibraryId: string;
@@ -46,7 +49,7 @@ function dayMuscleLabel(day: BuilderDay, translate: (key: MuscleGroup) => string
 }
 
 /**
- * Multi-day program editor with exercise search and per-exercise prescription fields.
+ * Multi-day program editor with modal exercise picker and shared metric inputs.
  */
 export function ProgramBuilder({
   accessToken,
@@ -63,41 +66,14 @@ export function ProgramBuilder({
     initialDays && initialDays.length > 0 ? initialDays : [emptyDay(0)],
   );
   const [dayIndex, setDayIndex] = useState(0);
-  const [search, setSearch] = useState('');
-  const [muscle, setMuscle] = useState<MuscleGroup | ''>('');
-  const [results, setResults] = useState<ExerciseListItem[]>([]);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const currentDay = days[dayIndex] ?? days[0];
 
-  useEffect(() => {
-    const trimmed = search.trim();
-    if (trimmed.length < 2 && muscle === '') {
-      setResults([]);
-      return;
-    }
-
-    const handle = window.setTimeout(() => {
-      void fetchExercises(accessToken, {
-        ...(trimmed.length >= 2 ? { q: trimmed } : {}),
-        ...(muscle ? { muscle } : {}),
-        limit: 25,
-      })
-        .then(setResults)
-        .catch(() => {
-          setResults([]);
-        });
-    }, 300);
-
-    return () => {
-      window.clearTimeout(handle);
-    };
-  }, [accessToken, muscle, search]);
-
-  function addExercise(exercise: ExerciseListItem): void {
-    const displayName =
-      locale === 'it' && exercise.names.it ? exercise.names.it : exercise.names.en;
+  function addExercise(draft: ProgramExerciseDraft): void {
     setDays((prev) =>
       prev.map((day, index) =>
         index === dayIndex
@@ -106,21 +82,19 @@ export function ProgramBuilder({
               exercises: [
                 ...day.exercises,
                 {
-                  exerciseLibraryId: exercise.id,
-                  name: displayName,
-                  primaryMuscles: exercise.primaryMuscles,
-                  targetSets: 3,
-                  targetReps: 8,
-                  restSeconds: 90,
-                  targetWeightKg: null,
+                  exerciseLibraryId: draft.exerciseLibraryId,
+                  name: draft.name,
+                  primaryMuscles: draft.primaryMuscles,
+                  targetSets: draft.targetSets,
+                  targetReps: draft.targetReps,
+                  restSeconds: draft.restSeconds,
+                  targetWeightKg: draft.targetWeightKg,
                 },
               ],
             }
           : day,
       ),
     );
-    setResults([]);
-    setSearch('');
   }
 
   function updateExercise(
@@ -145,6 +119,9 @@ export function ProgramBuilder({
   }
 
   function removeExercise(exerciseIndex: number): void {
+    setEditingExerciseIndex((current) =>
+      current === exerciseIndex ? null : current !== null && current > exerciseIndex ? current - 1 : current,
+    );
     setDays((prev) =>
       prev.map((day, index) =>
         index === dayIndex
@@ -216,6 +193,7 @@ export function ProgramBuilder({
               variant={index === dayIndex ? 'default' : 'outline'}
               onClick={() => {
                 setDayIndex(index);
+                setEditingExerciseIndex(null);
               }}
             >
               {day.label}
@@ -245,115 +223,75 @@ export function ProgramBuilder({
         )}
       </label>
 
-      <MuscleGroupFilter
-        value={muscle}
-        onChange={(nextMuscle) => {
-          setMuscle(nextMuscle);
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => {
+          setAddModalOpen(true);
         }}
-      />
-
-      <input
-        className="w-full rounded-md border px-3 py-2 text-sm"
-        placeholder={t('searchExercises')}
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-        }}
-      />
-
-      {results.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {results.map((exercise) => (
-            <button
-              key={exercise.id}
-              type="button"
-              className="rounded border p-2 text-left text-sm"
-              onClick={() => {
-                addExercise(exercise);
-              }}
-            >
-              {locale === 'it' && exercise.names.it ? exercise.names.it : exercise.names.en}
-            </button>
-          ))}
-        </div>
-      )}
+      >
+        {t('addExercise')}
+      </Button>
 
       {(currentDay?.exercises.length ?? 0) > 0 && (
         <ul className="flex flex-col gap-3">
           {currentDay?.exercises.map((row, exerciseIndex) => (
-            <li
+            <ProgramBuilderExerciseRow
               key={`${row.exerciseLibraryId}-${String(exerciseIndex)}`}
-              className="rounded border p-3"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-medium">{row.name}</p>
-                <button
-                  type="button"
-                  className="text-xs text-red-600"
-                  onClick={() => {
-                    removeExercise(exerciseIndex);
-                  }}
-                >
-                  {t('removeExercise')}
-                </button>
-              </div>
-              <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                <label className="flex flex-col gap-1">
-                  {t('targetSets')}
-                  <input
-                    className="rounded border px-2 py-1"
-                    type="number"
-                    min={1}
-                    value={row.targetSets}
-                    onChange={(e) => {
-                      updateExercise(exerciseIndex, 'targetSets', Number(e.target.value));
-                    }}
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  {t('targetReps')}
-                  <input
-                    className="rounded border px-2 py-1"
-                    type="number"
-                    min={1}
-                    value={row.targetReps}
-                    onChange={(e) => {
-                      updateExercise(exerciseIndex, 'targetReps', Number(e.target.value));
-                    }}
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  {t('restSeconds')}
-                  <input
-                    className="rounded border px-2 py-1"
-                    type="number"
-                    min={0}
-                    value={row.restSeconds}
-                    onChange={(e) => {
-                      updateExercise(exerciseIndex, 'restSeconds', Number(e.target.value));
-                    }}
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  {t('targetWeight')}
-                  <input
-                    className="rounded border px-2 py-1"
-                    type="number"
-                    min={0}
-                    value={row.targetWeightKg ?? ''}
-                    onChange={(e) => {
-                      const value = e.target.value === '' ? null : Number(e.target.value);
-                      updateExercise(exerciseIndex, 'targetWeightKg', value);
-                    }}
-                  />
-                </label>
-              </div>
-            </li>
+              exercise={row}
+              isEditing={editingExerciseIndex === exerciseIndex}
+              labels={{
+                failureReps: t('failureReps'),
+                editExercise: t('editExercise'),
+                removeExercise: t('removeExercise'),
+                doneEditing: t('doneEditing'),
+                targetSets: t('targetSets'),
+                targetReps: t('targetReps'),
+                targetWeight: t('targetWeight'),
+                restSeconds: t('restSeconds'),
+              }}
+              onDone={() => {
+                setEditingExerciseIndex(null);
+              }}
+              onEdit={() => {
+                setEditingExerciseIndex(exerciseIndex);
+              }}
+              onRemove={() => {
+                removeExercise(exerciseIndex);
+              }}
+              onUpdate={(field, value) => {
+                updateExercise(exerciseIndex, field, value);
+              }}
+            />
           ))}
         </ul>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <AddProgramExerciseModal
+        accessToken={accessToken}
+        labels={{
+          title: t('addExerciseModalTitle'),
+          search: t('searchExercises'),
+          noResults: t('searchNoResults'),
+          searching: t('searchingExercises'),
+          add: t('addExerciseConfirm'),
+          cancel: t('cancel'),
+          targetSets: t('targetSets'),
+          targetReps: t('targetReps'),
+          restSeconds: t('restSeconds'),
+          targetWeight: t('targetWeight'),
+          failureReps: t('failureReps'),
+        }}
+        locale={locale}
+        open={addModalOpen}
+        translateMuscle={tMuscle}
+        onAdd={addExercise}
+        onClose={() => {
+          setAddModalOpen(false);
+        }}
+      />
+
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       <Button
         type="button"
