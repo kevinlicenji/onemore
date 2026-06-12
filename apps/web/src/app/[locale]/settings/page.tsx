@@ -159,8 +159,8 @@ export default function SettingsPage(): React.ReactElement {
       <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 p-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/${locale}/dashboard`}>{t('backToDashboard')}</Link>
+          <Button asChild className="w-fit" size="sm" variant="outline">
+            <Link href={`/${locale}/exercises`}>{t('exercisesLink')}</Link>
           </Button>
         </div>
 

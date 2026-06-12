@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
 import { fetchHistorySessions } from '@/lib/api-auth';
+import { buildHistoryDateRange, type HistoryDatePreset } from '@/lib/history-filters';
 
 function formatDate(iso: string, locale: string): string {
   return new Date(iso).toLocaleDateString(locale, {
@@ -18,6 +19,8 @@ function formatDate(iso: string, locale: string): string {
     year: 'numeric',
   });
 }
+
+const PRESETS: HistoryDatePreset[] = ['all', '7d', '30d', '90d', 'custom'];
 
 export default function HistoryPage(): React.ReactElement {
   const t = useTranslations('History');
@@ -29,20 +32,25 @@ export default function HistoryPage(): React.ReactElement {
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [preset, setPreset] = useState<HistoryDatePreset>('all');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
 
   const loadPage = useCallback(
-    async (nextCursor?: string): Promise<void> => {
+    async (nextCursor?: string, replace = false): Promise<void> => {
       if (!accessToken) {
         return;
       }
       setLoading(true);
       setError(null);
       try {
+        const dateRange = buildHistoryDateRange(preset, customFrom, customTo);
         const result = await fetchHistorySessions(accessToken, {
           limit: 20,
+          ...dateRange,
           ...(nextCursor ? { cursor: nextCursor } : {}),
         });
-        setItems((prev) => (nextCursor ? [...prev, ...result.items] : result.items));
+        setItems((prev) => (replace ? result.items : [...prev, ...result.items]));
         setCursor(result.nextCursor);
       } catch (err) {
         setError(err instanceof Error ? err.message : t('loadError'));
@@ -50,22 +58,73 @@ export default function HistoryPage(): React.ReactElement {
         setLoading(false);
       }
     },
-    [accessToken, t],
+    [accessToken, customFrom, customTo, preset, t],
   );
 
   useEffect(() => {
-    void loadPage();
+    void loadPage(undefined, true);
   }, [loadPage]);
 
   return (
     <RequireAuth>
       <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-4 p-6">
-        <div className="flex items-center justify-between">
+        <div>
           <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/${locale}/dashboard`}>{t('backToDashboard')}</Link>
-          </Button>
+          <p className="mt-1 text-sm text-muted-foreground">{t('filterSubtitle')}</p>
         </div>
+
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.map((value) => (
+            <Button
+              key={value}
+              size="sm"
+              type="button"
+              variant={preset === value ? 'default' : 'outline'}
+              onClick={() => {
+                setPreset(value);
+              }}
+            >
+              {t(`filter_${value}`)}
+            </Button>
+          ))}
+        </div>
+
+        {preset === 'custom' && (
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-xs">
+              {t('filterFrom')}
+              <input
+                className="min-h-11 rounded-md border px-3 text-sm"
+                type="date"
+                value={customFrom}
+                onChange={(e) => {
+                  setCustomFrom(e.target.value);
+                }}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs">
+              {t('filterTo')}
+              <input
+                className="min-h-11 rounded-md border px-3 text-sm"
+                type="date"
+                value={customTo}
+                onChange={(e) => {
+                  setCustomTo(e.target.value);
+                }}
+              />
+            </label>
+            <Button
+              className="col-span-2 min-h-11"
+              type="button"
+              variant="outline"
+              onClick={() => {
+                void loadPage(undefined, true);
+              }}
+            >
+              {t('filterApply')}
+            </Button>
+          </div>
+        )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -80,8 +139,13 @@ export default function HistoryPage(): React.ReactElement {
                 className="block rounded-lg border p-4 transition hover:bg-muted/50"
                 href={`/${locale}/history/${session.id}`}
               >
-                <p className="font-medium">{session.workoutDayLabel ?? t('freeWorkout')}</p>
-                <p className="text-sm text-muted-foreground">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-medium">{session.workoutDayLabel ?? t('freeWorkout')}</p>
+                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs">
+                    {session.sessionType === 'free' ? t('typeFree') : t('typeProgrammed')}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
                   {session.completedAt
                     ? formatDate(session.completedAt, locale)
                     : formatDate(session.startedAt, locale)}
@@ -90,6 +154,8 @@ export default function HistoryPage(): React.ReactElement {
                     sets: session.totalSets,
                     volume: session.totalVolumeKg,
                   })}
+                  {session.durationSeconds !== null &&
+                    ` · ${String(Math.round(session.durationSeconds / 60))} min`}
                 </p>
               </Link>
             </li>
@@ -98,6 +164,7 @@ export default function HistoryPage(): React.ReactElement {
 
         {cursor && (
           <Button
+            className="min-h-11"
             disabled={loading}
             type="button"
             variant="outline"

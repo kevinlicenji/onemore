@@ -46,6 +46,14 @@ export const addWorkoutExerciseSchema = z.object({
   restSeconds: z.number().int().min(0).max(600).default(90),
 });
 
+export const substituteExerciseSchema = z.object({
+  exerciseLibraryId: z.string().uuid(),
+});
+
+export const updateWorkoutSessionNotesSchema = z.object({
+  privateNotes: z.string().max(2000).nullable(),
+});
+
 export const setLogSchema = z.object({
   id: z.string().uuid(),
   setNumber: z.number().int(),
@@ -61,6 +69,7 @@ export const setLogSchema = z.object({
 export const workoutExerciseSchema = z.object({
   id: z.string().uuid(),
   exerciseLibraryId: z.string().uuid(),
+  substitutedFromExerciseId: z.string().uuid().nullable().optional(),
   sortOrder: z.number().int(),
   status: exerciseExecutionStatusSchema,
   prescription: prescriptionSnapshotSchema,
@@ -88,6 +97,7 @@ export const workoutSessionDetailSchema = z.object({
   startedAt: z.string().datetime(),
   completedAt: z.string().datetime().nullable(),
   durationSeconds: z.number().int().nullable(),
+  privateNotes: z.string().nullable(),
   exercises: z.array(workoutExerciseSchema),
 });
 
@@ -129,6 +139,8 @@ export type PrescriptionSnapshot = z.infer<typeof prescriptionSnapshotSchema>;
 export type StartWorkoutSessionInput = z.infer<typeof startWorkoutSessionSchema>;
 export type UpsertSetLogInput = z.infer<typeof upsertSetLogSchema>;
 export type AddWorkoutExerciseInput = z.infer<typeof addWorkoutExerciseSchema>;
+export type SubstituteExerciseInput = z.infer<typeof substituteExerciseSchema>;
+export type UpdateWorkoutSessionNotesInput = z.infer<typeof updateWorkoutSessionNotesSchema>;
 export type WorkoutSessionDetail = z.infer<typeof workoutSessionDetailSchema>;
 export type WorkoutDayOption = z.infer<typeof workoutDayOptionSchema>;
 export type NextWorkoutPreview = z.infer<typeof nextWorkoutPreviewSchema>;

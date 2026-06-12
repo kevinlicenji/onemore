@@ -16,7 +16,10 @@ import {
   fetchNextWorkoutPreview,
   fetchWorkoutSession,
   searchExercises,
+  skipWorkoutExercise,
   startWorkoutSession,
+  substituteWorkoutExercise,
+  updateWorkoutSessionNotes,
   upsertWorkoutSet,
 } from '@/lib/api-auth';
 
@@ -54,6 +57,7 @@ function buildLocalProgrammedSession(
     startedAt,
     completedAt: null,
     durationSeconds: null,
+    privateNotes: null,
     exercises: dayExercises.map((item, index) => {
       const executionId = crypto.randomUUID();
       return {
@@ -166,20 +170,35 @@ export async function getNextWorkoutPreviewClient(
   };
 }
 
+function countCompletedSets(session: WorkoutSessionDetail): number {
+  return session.exercises.reduce(
+    (total, exercise) =>
+      total + exercise.sets.filter((set) => set.isCompleted && !set.isWarmup).length,
+    0,
+  );
+}
+
 export async function getActiveWorkoutSessionClient(
   accessToken: string,
 ): Promise<WorkoutSessionDetail | null> {
   const local = await offlineDb.sessions.where('status').equals('in_progress').first();
 
+  if (!isBrowserOnline()) {
+    return local ?? null;
+  }
+
+  const remote = await fetchActiveWorkoutSession(accessToken);
+
+  if (local && remote) {
+    const preferred = countCompletedSets(local) >= countCompletedSets(remote) ? local : remote;
+    await offlineDb.sessions.put(preferred);
+    return preferred;
+  }
+
   if (local) {
     return local;
   }
 
-  if (!isBrowserOnline()) {
-    return null;
-  }
-
-  const remote = await fetchActiveWorkoutSession(accessToken);
   if (remote) {
     await offlineDb.sessions.put(remote);
   }
@@ -215,6 +234,7 @@ export async function startWorkoutSessionClient(
     startedAt,
     completedAt: null,
     durationSeconds: null,
+    privateNotes: null,
     exercises: [],
   };
   await persistSessionLocally(session);
@@ -502,4 +522,55 @@ export async function searchExercisesClient(
         exercise.slug.toLowerCase().includes(term),
     )
     .slice(0, 20);
+}
+
+export async function skipWorkoutExerciseClient(
+  accessToken: string,
+  sessionId: string,
+  executionId: string,
+): Promise<WorkoutSessionDetail> {
+  if (!isBrowserOnline()) {
+    throw new Error('Skipping exercises requires an internet connection');
+  }
+  const session = await skipWorkoutExercise(accessToken, sessionId, executionId);
+  await offlineDb.sessions.put(session);
+  await syncIfOnline(accessToken);
+  return session;
+}
+
+export async function substituteWorkoutExerciseClient(
+  accessToken: string,
+  sessionId: string,
+  executionId: string,
+  exerciseLibraryId: string,
+): Promise<WorkoutSessionDetail> {
+  if (!isBrowserOnline()) {
+    throw new Error('Substituting exercises requires an internet connection');
+  }
+  const session = await substituteWorkoutExercise(accessToken, sessionId, executionId, {
+    exerciseLibraryId,
+  });
+  await offlineDb.sessions.put(session);
+  await syncIfOnline(accessToken);
+  return session;
+}
+
+export async function updateWorkoutSessionNotesClient(
+  accessToken: string,
+  sessionId: string,
+  privateNotes: string | null,
+): Promise<WorkoutSessionDetail> {
+  if (isBrowserOnline()) {
+    const session = await updateWorkoutSessionNotes(accessToken, sessionId, { privateNotes });
+    await offlineDb.sessions.put(session);
+    return session;
+  }
+
+  const session = await offlineDb.sessions.get(sessionId);
+  if (!session) {
+    throw new Error('Session not found locally');
+  }
+  const updated: WorkoutSessionDetail = { ...session, privateNotes };
+  await offlineDb.sessions.put(updated);
+  return updated;
 }

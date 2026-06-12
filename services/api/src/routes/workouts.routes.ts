@@ -1,6 +1,8 @@
 import {
   addWorkoutExerciseSchema,
   startWorkoutSessionSchema,
+  substituteExerciseSchema,
+  updateWorkoutSessionNotesSchema,
   upsertSetLogSchema,
 } from '@onemore/shared';
 import { Router } from 'express';
@@ -80,6 +82,53 @@ export function createWorkoutsRouter(workoutsService: WorkoutsService): Router {
       const body = addWorkoutExerciseSchema.parse(req.body);
       const session = await workoutsService.addExercise(authReq.userId ?? '', sessionId, body);
       res.status(201).json(session);
+    }),
+  );
+
+  router.post(
+    '/sessions/:sessionId/exercises/:executionId/skip',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const sessionId = requireRouteParam(req.params.sessionId, 'sessionId');
+      const executionId = requireRouteParam(req.params.executionId, 'executionId');
+      const session = await workoutsService.skipExercise(
+        authReq.userId ?? '',
+        sessionId,
+        executionId,
+      );
+      res.json(session);
+    }),
+  );
+
+  router.post(
+    '/sessions/:sessionId/exercises/:executionId/substitute',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const sessionId = requireRouteParam(req.params.sessionId, 'sessionId');
+      const executionId = requireRouteParam(req.params.executionId, 'executionId');
+      const body = substituteExerciseSchema.parse(req.body);
+      const session = await workoutsService.substituteExercise(
+        authReq.userId ?? '',
+        sessionId,
+        executionId,
+        body,
+      );
+      res.json(session);
+    }),
+  );
+
+  router.patch(
+    '/sessions/:sessionId/notes',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const sessionId = requireRouteParam(req.params.sessionId, 'sessionId');
+      const body = updateWorkoutSessionNotesSchema.parse(req.body);
+      const session = await workoutsService.updateSessionNotes(
+        authReq.userId ?? '',
+        sessionId,
+        body,
+      );
+      res.json(session);
     }),
   );
 
