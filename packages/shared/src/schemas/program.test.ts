@@ -44,6 +44,26 @@ describe('createProgramSchema', () => {
     expect(result.days[0]?.exercises[0]?.targetReps).toBe(TARGET_REPS_TO_FAILURE);
   });
 
+  it('accepts time-based reps used by seeded templates', () => {
+    const result = createProgramSchema.parse({
+      name: 'Core day',
+      days: [
+        {
+          label: 'Day A',
+          exercises: [
+            {
+              exerciseLibraryId: '00000000-0000-4000-8000-000000000001',
+              targetSets: 3,
+              targetReps: 30,
+              restSeconds: 60,
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.days[0]?.exercises[0]?.targetReps).toBe(30);
+  });
+
   it('rejects program without exercises', () => {
     expect(() =>
       createProgramSchema.parse({

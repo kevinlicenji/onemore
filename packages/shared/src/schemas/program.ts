@@ -7,7 +7,7 @@ import { trainingGoalSchema } from './user.js';
 export const programExerciseInputSchema = z.object({
   exerciseLibraryId: z.string().uuid(),
   targetSets: z.number().int().min(1).max(20),
-  targetReps: z.number().int().min(-1).max(25),
+  targetReps: z.number().int().min(-1).max(120),
   restSeconds: z.number().int().min(0).max(600),
   targetWeightKg: z.number().positive().max(500).optional(),
   coachNote: z.string().max(500).optional(),

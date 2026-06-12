@@ -123,7 +123,19 @@ export async function applyBeginnerTemplate(page: Page): Promise<void> {
   await page.waitForURL(/\/it\/programs\/templates\//);
   await page.getByRole('link', { name: /Personalizza e salva/i }).click();
   await page.waitForURL(/\/it\/programs\/new\?template=/);
-  await page.getByRole('button', { name: 'Salva e pubblica' }).click();
+  const saveButton = page.getByRole('button', { name: 'Salva e pubblica' });
+  await expect(saveButton).toBeEnabled({ timeout: 60_000 });
+
+  const publishResponse = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/v1/programs/') &&
+      response.url().includes('/publish') &&
+      response.request().method() === 'POST' &&
+      response.ok(),
+    { timeout: 60_000 },
+  );
+  await saveButton.click();
+  await publishResponse;
   await page.waitForURL(/\/it\/programs\/[0-9a-f-]+$/);
 }
 
