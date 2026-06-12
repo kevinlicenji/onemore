@@ -13,7 +13,10 @@ export interface RefreshedAuthSession {
  * Refresh the in-memory access token using the httpOnly refresh cookie proxy.
  */
 export async function refreshAccessToken(): Promise<RefreshedAuthSession | null> {
-  const response = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
+  const response = await fetch('/api/v1/auth/refresh', {
+    method: 'POST',
+    credentials: 'include',
+  });
   if (!response.ok) {
     return null;
   }

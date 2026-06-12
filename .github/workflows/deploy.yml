@@ -85,7 +85,6 @@ jobs:
           key: ${{ secrets.STAGING_SSH_KEY }}
           script: |
             cd ${{ secrets.STAGING_APP_DIR }}
-            docker compose -f docker/compose.prod.yml pull
-            docker compose -f docker/compose.prod.yml up -d
-            docker compose -f docker/compose.prod.yml exec -T api \
-              node node_modules/prisma/build/index.js migrate deploy
+            docker compose -f docker/compose.prod.yml --env-file docker/.env.prod pull
+            docker compose -f docker/compose.prod.yml --env-file docker/.env.prod up -d
+            docker compose -f docker/compose.prod.yml --env-file docker/.env.prod exec -T api sh < docker/scripts/migrate.sh

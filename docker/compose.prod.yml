@@ -48,6 +48,7 @@ services:
       NODE_ENV: production
       API_PORT: 4000
       DATABASE_URL: postgresql://${POSTGRES_USER:-onemore}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB:-onemore}
+      DIRECT_DATABASE_URL: postgresql://${POSTGRES_USER:-onemore}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-onemore}
       REDIS_URL: redis://redis:6379
       WEB_APP_URL: ${WEB_APP_URL:?WEB_APP_URL required}
       API_PUBLIC_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL required}
@@ -60,6 +61,14 @@ services:
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-}
       SENTRY_DSN: ${SENTRY_DSN:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
+      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+      APPLE_KEY_ID: ${APPLE_KEY_ID:-}
+      APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
+      APPLE_REDIRECT_URI: ${APPLE_REDIRECT_URI:-}
     volumes:
       - onemore_export_data:/data/exports
     depends_on:
@@ -87,9 +96,23 @@ services:
       PORT: 3000
       NEXT_PUBLIC_API_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL required}
       NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+      NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY:-}
+      NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-https://eu.i.posthog.com}
     depends_on:
       api:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/it').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 volumes:
   onemore_postgres_data:

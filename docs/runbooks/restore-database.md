@@ -37,7 +37,7 @@
 
 5. **Run pending migrations** (if backup predates latest schema):
    ```bash
-   docker compose -f docker/compose.prod.yml exec -T api pnpm exec prisma migrate deploy
+   docker compose -f docker/compose.prod.yml --env-file docker/.env.prod exec -T api sh < docker/scripts/migrate.sh
    ```
 
 6. **Start services**:
