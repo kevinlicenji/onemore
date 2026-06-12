@@ -8,6 +8,7 @@ export const POSTHOG_EVENTS = {
   PROGRAM_CREATED: 'program_created',
   WORKOUT_STARTED: 'workout_started',
   SET_COMPLETED: 'set_completed',
+  EXERCISE_SUBSTITUTED: 'exercise_substituted',
   WORKOUT_COMPLETED: 'workout_completed',
   PR_ACHIEVED: 'pr_achieved',
   DATA_EXPORT_REQUESTED: 'data_export_requested',

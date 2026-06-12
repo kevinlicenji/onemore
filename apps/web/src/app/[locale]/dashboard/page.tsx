@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
+import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { SyncStatusBadge } from '@/components/sync-status-badge';
 import { fetchAnalyticsDashboard } from '@/lib/api-auth';
 
@@ -146,17 +147,7 @@ export default function DashboardPage(): React.ReactElement {
           </Button>
         )}
 
-        <div className="flex flex-col gap-2">
-          <Button asChild variant="outline">
-            <Link href={`/${locale}/programs`}>{t('myProgramsLink')}</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href={`/${locale}/settings`}>{t('settingsLink')}</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href={`/${locale}/history`}>{t('historyLink')}</Link>
-          </Button>
-        </div>
+        <PwaInstallPrompt />
 
         <SyncStatusBadge />
         <Link className="text-xs text-muted-foreground underline" href={`/${locale}/credits`}>

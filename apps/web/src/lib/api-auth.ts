@@ -15,7 +15,9 @@ import type {
   ProgramSummary,
   RequestDataExportResponse,
   StartWorkoutSessionInput,
+  SubstituteExerciseInput,
   TemplateSummary,
+  UpdateWorkoutSessionNotesInput,
   UpdateUserProfile,
   UpsertSetLogInput,
   UpsertSetResponse,
@@ -120,6 +122,19 @@ export function resolveAuthenticatedHomePath(locale: string, profile: UserProfil
     return `/${locale}/dashboard`;
   }
   return `/${locale}/onboarding`;
+}
+
+export async function fetchExercises(accessToken: string): Promise<ExerciseListItem[]> {
+  const params = new URLSearchParams({ limit: '50' });
+  const response = await fetch(`${API_BASE_URL}/api/v1/exercises?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load exercises');
+  }
+  const data = (await response.json()) as { exercises: ExerciseListItem[] };
+  return data.exercises;
 }
 
 export async function searchExercises(
@@ -474,6 +489,64 @@ export async function addWorkoutExercise(
   });
   if (!response.ok) {
     throw await parseApiError(response, 'Failed to add exercise');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function skipWorkoutExercise(
+  accessToken: string,
+  sessionId: string,
+  executionId: string,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/exercises/${executionId}/skip`,
+    {
+      method: 'POST',
+      headers: authHeaders(accessToken),
+      credentials: 'include',
+      body: JSON.stringify({}),
+    },
+  );
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to skip exercise');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function substituteWorkoutExercise(
+  accessToken: string,
+  sessionId: string,
+  executionId: string,
+  payload: SubstituteExerciseInput,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/exercises/${executionId}/substitute`,
+    {
+      method: 'POST',
+      headers: authHeaders(accessToken),
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to substitute exercise');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function updateWorkoutSessionNotes(
+  accessToken: string,
+  sessionId: string,
+  payload: UpdateWorkoutSessionNotesInput,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/notes`, {
+    method: 'PATCH',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to update session notes');
   }
   return response.json() as Promise<WorkoutSessionDetail>;
 }

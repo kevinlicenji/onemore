@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   addWorkoutExerciseSchema,
   startWorkoutSessionSchema,
+  substituteExerciseSchema,
+  updateWorkoutSessionNotesSchema,
   upsertSetLogSchema,
 } from './workout.js';
 
@@ -32,5 +34,17 @@ describe('workout schemas', () => {
     });
     expect(result.targetSets).toBe(3);
     expect(result.targetReps).toBe(10);
+  });
+
+  it('accepts substitute exercise payload', () => {
+    const result = substituteExerciseSchema.safeParse({
+      exerciseLibraryId: '550e8400-e29b-41d4-a716-446655440000',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts nullable session notes', () => {
+    const result = updateWorkoutSessionNotesSchema.safeParse({ privateNotes: null });
+    expect(result.success).toBe(true);
   });
 });

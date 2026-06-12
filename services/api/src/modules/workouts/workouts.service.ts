@@ -3,6 +3,8 @@ import type {
   NextWorkoutPreview,
   PrescriptionSnapshot,
   StartWorkoutSessionInput,
+  SubstituteExerciseInput,
+  UpdateWorkoutSessionNotesInput,
   UpsertSetLogInput,
   UpsertSetResponse,
   WorkoutSessionDetail,
@@ -394,6 +396,155 @@ export class WorkoutsService {
     return this.getSession(userId, sessionId);
   }
 
+  /**
+   * Skip an entire exercise execution and its remaining sets.
+   *
+   * @param userId - Session owner id.
+   * @param sessionId - Workout session id.
+   * @param executionId - Exercise execution id.
+   */
+  async skipExercise(
+    userId: string,
+    sessionId: string,
+    executionId: string,
+  ): Promise<WorkoutSessionDetail> {
+    await this.requireInProgressSession(userId, sessionId);
+    await this.requireExecution(sessionId, executionId);
+
+    const updatedAt = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      await tx.exerciseExecution.update({
+        where: { id: executionId },
+        data: { status: 'skipped' },
+      });
+      await tx.setLog.updateMany({
+        where: {
+          exerciseExecutionId: executionId,
+          isCompleted: false,
+          isSkipped: false,
+        },
+        data: { isSkipped: true },
+      });
+      await tx.workoutSession.update({
+        where: { id: sessionId },
+        data: { clientUpdatedAt: updatedAt },
+      });
+    });
+
+    return this.getSession(userId, sessionId);
+  }
+
+  /**
+   * Replace a programmed exercise with an alternate for this session only.
+   *
+   * @param userId - Session owner id.
+   * @param sessionId - Workout session id.
+   * @param executionId - Exercise execution being replaced.
+   * @param input - Substitute exercise library id.
+   */
+  async substituteExercise(
+    userId: string,
+    sessionId: string,
+    executionId: string,
+    input: SubstituteExerciseInput,
+  ): Promise<WorkoutSessionDetail> {
+    const session = await this.requireInProgressSession(userId, sessionId);
+    const execution = await this.requireExecution(sessionId, executionId);
+
+    if (execution.exerciseLibraryId === input.exerciseLibraryId) {
+      throw new HttpError(400, 'Substitute must be a different exercise', 'SUBSTITUTE_SAME');
+    }
+
+    const substituteExercise = await this.prisma.exerciseLibrary.findFirst({
+      where: {
+        id: input.exerciseLibraryId,
+        deletedAt: null,
+        OR: [{ ownerUserId: null }, { ownerUserId: userId }],
+      },
+    });
+    if (!substituteExercise) {
+      throw new HttpError(404, 'Exercise not found', 'EXERCISE_NOT_FOUND');
+    }
+
+    const prescription = execution.prescriptionSnapshot as PrescriptionSnapshot;
+    const previous = await this.loadPreviousSetValues(userId, [substituteExercise.id]);
+    const previousSet = previous.get(substituteExercise.id) ?? null;
+    const updatedAt = new Date();
+    const newExecutionId = randomUUID();
+    const insertSortOrder = execution.sortOrder + 1;
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.exerciseExecution.update({
+        where: { id: executionId },
+        data: { status: 'skipped' },
+      });
+      await tx.setLog.updateMany({
+        where: {
+          exerciseExecutionId: executionId,
+          isCompleted: false,
+          isSkipped: false,
+        },
+        data: { isSkipped: true },
+      });
+
+      await tx.exerciseExecution.updateMany({
+        where: {
+          workoutSessionId: sessionId,
+          sortOrder: { gte: insertSortOrder },
+        },
+        data: { sortOrder: { increment: 1 } },
+      });
+
+      await tx.exerciseExecution.create({
+        data: {
+          id: newExecutionId,
+          workoutSessionId: sessionId,
+          exerciseLibraryId: substituteExercise.id,
+          programExerciseId: execution.programExerciseId,
+          substitutedFromExerciseId: execution.exerciseLibraryId,
+          sortOrder: insertSortOrder,
+          status: 'pending',
+          prescriptionSnapshot: prescription,
+        },
+      });
+
+      await this.createInitialSets(tx, newExecutionId, prescription, previousSet, false);
+
+      await tx.workoutSession.update({
+        where: { id: sessionId },
+        data: { clientUpdatedAt: updatedAt },
+      });
+    });
+
+    return this.getSession(userId, sessionId);
+  }
+
+  /**
+   * Update private session notes for an in-progress workout.
+   *
+   * @param userId - Session owner id.
+   * @param sessionId - Workout session id.
+   * @param input - Notes payload.
+   */
+  async updateSessionNotes(
+    userId: string,
+    sessionId: string,
+    input: UpdateWorkoutSessionNotesInput,
+  ): Promise<WorkoutSessionDetail> {
+    await this.requireInProgressSession(userId, sessionId);
+
+    const updatedAt = new Date();
+    await this.prisma.workoutSession.update({
+      where: { id: sessionId },
+      data: {
+        privateNotes: input.privateNotes,
+        clientUpdatedAt: updatedAt,
+      },
+    });
+
+    return this.getSession(userId, sessionId);
+  }
+
   private async startProgrammedSession(
     userId: string,
     input: StartWorkoutSessionInput,
@@ -612,6 +763,22 @@ export class WorkoutsService {
     return assignment.programVersion.workoutDays[0] ?? null;
   }
 
+  private async requireExecution(sessionId: string, executionId: string) {
+    const execution = await this.prisma.exerciseExecution.findFirst({
+      where: { id: executionId, workoutSessionId: sessionId },
+    });
+
+    if (!execution) {
+      throw new HttpError(404, 'Exercise execution not found', 'EXECUTION_NOT_FOUND');
+    }
+
+    if (execution.status === 'skipped' || execution.status === 'completed') {
+      throw new HttpError(409, 'Exercise is already finished', 'EXECUTION_FINISHED');
+    }
+
+    return execution;
+  }
+
   private async requireInProgressSession(userId: string, sessionId: string) {
     const session = await this.prisma.workoutSession.findFirst({
       where: { id: sessionId, userId },
@@ -676,10 +843,12 @@ export class WorkoutsService {
       startedAt: Date;
       completedAt: Date | null;
       durationSeconds: number | null;
+      privateNotes: string | null;
       workoutDay: { label: string } | null;
       exerciseExecutions: Array<{
         id: string;
         exerciseLibraryId: string;
+        substitutedFromExerciseId: string | null;
         sortOrder: number;
         status: string;
         prescriptionSnapshot: unknown;
@@ -713,6 +882,7 @@ export class WorkoutsService {
       startedAt: session.startedAt.toISOString(),
       completedAt: session.completedAt?.toISOString() ?? null,
       durationSeconds: session.durationSeconds,
+      privateNotes: session.privateNotes,
       exercises: session.exerciseExecutions.map((execution) => {
         const prescription = execution.prescriptionSnapshot as PrescriptionSnapshot;
         const names = execution.exerciseLibrary.names as { en: string; it?: string };
@@ -721,6 +891,7 @@ export class WorkoutsService {
         return {
           id: execution.id,
           exerciseLibraryId: execution.exerciseLibraryId,
+          substitutedFromExerciseId: execution.substitutedFromExerciseId,
           sortOrder: execution.sortOrder,
           status: execution.status as WorkoutSessionDetail['exercises'][number]['status'],
           prescription,

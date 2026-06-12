@@ -21,10 +21,40 @@
   "Home": {
     "title": "OneMore",
     "subtitle": "Allenamento e coaching fitness",
-    "apiStatus": "Stato API",
-    "apiConnected": "API connessa",
-    "apiError": "API non raggiungibile",
+    "tagline": "Programmi, workout e progressi — tutto in un'app.",
+    "featurePrograms": "Schede personalizzabili e template pronti",
+    "featureWorkout": "Log serie veloce, anche offline",
+    "featureProgress": "Storico, PR e streak settimanali",
+    "getStarted": "Inizia gratis",
+    "login": "Accedi",
+    "freeForAthletes": "Gratuito per atleti — nessuna carta richiesta.",
     "switchLanguage": "Cambia lingua"
+  },
+  "Nav": {
+    "ariaLabel": "Navigazione principale",
+    "navDashboard": "Home",
+    "navPrograms": "Schede",
+    "navWorkout": "Allenati",
+    "navHistory": "Storico",
+    "navSettings": "Profilo"
+  },
+  "Exercises": {
+    "title": "Libreria esercizi",
+    "subtitle": "Cerca tra 150+ esercizi o creane di personalizzati.",
+    "searchPlaceholder": "Cerca per nome…",
+    "search": "Cerca",
+    "loading": "Caricamento…",
+    "empty": "Nessun esercizio trovato.",
+    "loadError": "Impossibile caricare gli esercizi.",
+    "addCustom": "Aggiungi esercizio personalizzato",
+    "hideCustomForm": "Chiudi modulo",
+    "nameEn": "Nome (inglese)",
+    "nameIt": "Nome (italiano, opzionale)",
+    "primaryMuscle": "Muscolo principale",
+    "bodyweight": "A corpo libero",
+    "saveCustom": "Salva esercizio",
+    "createError": "Impossibile creare l'esercizio.",
+    "customBadge": "personalizzato"
   },
   "Onboarding": {
     "progress": "Passo {current} di {total}",
@@ -88,6 +118,9 @@
     "chooseProgram": {
       "title": "Come vuoi iniziare?",
       "subtitle": "Scegli un template o crea il tuo programma.",
+      "recommendedTitle": "Consigliato per te",
+      "recommendedHint": "In base al tuo profilo di onboarding.",
+      "recommendedCta": "Vedi scheda consigliata",
       "templateTitle": "Usa un template",
       "templateDescription": "Split pronti in linea con il tuo profilo.",
       "manualTitle": "Crea il mio programma",
@@ -236,7 +269,14 @@
     "addExerciseError": "Impossibile aggiungere esercizio.",
     "completeError": "Impossibile completare il workout.",
     "abandonError": "Impossibile abbandonare il workout.",
-    "backToDashboard": "Torna alla dashboard"
+    "backToDashboard": "Torna alla dashboard",
+    "skipExercise": "Salta esercizio",
+    "skipExerciseError": "Impossibile saltare l'esercizio.",
+    "substituteExercise": "Sostituisci",
+    "substituteError": "Impossibile sostituire l'esercizio.",
+    "exerciseSkipped": "Esercizio saltato.",
+    "sessionNotes": "Note sessione",
+    "sessionNotesPlaceholder": "Come ti sei sentito, energia, osservazioni…"
   },
   "Settings": {
     "title": "Impostazioni",
@@ -245,6 +285,7 @@
     "saveError": "Impossibile salvare le modifiche.",
     "saved": "Impostazioni salvate.",
     "backToDashboard": "Dashboard",
+    "exercisesLink": "Libreria esercizi",
     "motivationTitle": "Livello motivazione",
     "motivationSubtitle": "Quanta guida e quante celebrazioni desideri.",
     "motivationLevel1": "Discreto",
@@ -266,6 +307,12 @@
     "deleteAccount": "Elimina account",
     "deleteConfirm": "Eliminare l'account? Hai 30 giorni per annullare contattando il supporto.",
     "deleteError": "Impossibile eliminare l'account."
+  },
+  "Pwa": {
+    "installTitle": "Installa OneMore",
+    "installBody": "Aggiungi l'app alla home per aprirla come un'app nativa.",
+    "installCta": "Installa",
+    "installDismiss": "Non ora"
   },
   "Sync": {
     "pending": "{count, plural, one {# modifica in attesa di sync} other {# modifiche in attesa di sync}}",
