@@ -4,7 +4,7 @@ import {
   formatTargetRepsLabel,
   isFailureReps,
   TARGET_REPS_TO_FAILURE,
-} from './reps-prescription';
+} from './reps-prescription.js';
 
 describe('reps-prescription', () => {
   it('detects failure reps', () => {
