@@ -448,7 +448,7 @@ export class WorkoutsService {
     executionId: string,
     input: SubstituteExerciseInput,
   ): Promise<WorkoutSessionDetail> {
-    const session = await this.requireInProgressSession(userId, sessionId);
+    await this.requireInProgressSession(userId, sessionId);
     const execution = await this.requireExecution(sessionId, executionId);
 
     if (execution.exerciseLibraryId === input.exerciseLibraryId) {
