@@ -27,7 +27,16 @@ async function proxyToApi(
     init.body = await request.arrayBuffer();
   }
 
-  const upstream = await fetch(targetUrl, init);
+  let upstream: Response;
+  try {
+    upstream = await fetch(targetUrl, init);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Upstream API unreachable';
+    return NextResponse.json(
+      { error: { message, code: 'API_PROXY_ERROR' } },
+      { status: 502 },
+    );
+  }
 
   return new NextResponse(upstream.body, {
     status: upstream.status,

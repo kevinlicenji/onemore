@@ -198,6 +198,15 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
+async function readApiErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const err = (await response.json()) as { error?: { message?: string } };
+    return err.error?.message ?? fallback;
+  } catch {
+    return `${fallback} (${String(response.status)})`;
+  }
+}
+
 /**
  * Login with email or username — sets refresh cookie and in-memory access token.
  */
@@ -232,8 +241,7 @@ export async function registerAccount(payload: Record<string, unknown>): Promise
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
-    const err = (await response.json()) as { error?: { message?: string } };
-    throw new Error(err.error?.message ?? 'Registration failed');
+    throw new Error(await readApiErrorMessage(response, 'Registration failed'));
   }
   return response.json() as Promise<{ accessToken: string; user: AuthUser }>;
 }

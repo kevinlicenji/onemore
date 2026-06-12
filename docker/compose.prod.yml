@@ -97,6 +97,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      # Runtime-only — Next.js inlines NEXT_PUBLIC_* at build time; proxy must hit the API container.
+      API_INTERNAL_URL: http://api:4000
       NEXT_PUBLIC_API_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL required}
       NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY:-}
