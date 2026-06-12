@@ -15,6 +15,7 @@ import { fetchUserProfile } from '@/lib/api-auth';
 import { API_BASE_URL } from '@/lib/api-config';
 import { identifyUser } from '@/lib/analytics';
 import { allowInjectedE2eSession, E2E_SESSION_STORAGE_KEY } from '@/lib/e2e-bypass';
+import { refreshAccessToken } from '@/lib/refresh-access-token';
 
 export interface AuthUser {
   id: string;
@@ -107,8 +108,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   }, [accessToken, setProfile]);
 
   const refreshSession = useCallback(async (): Promise<boolean> => {
-    const response = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
-    if (!response.ok) {
+    const data = await refreshAccessToken();
+    if (!data) {
       // Keep an in-memory token from login/register when refresh cookie is unavailable.
       const hasInjectedSession = readStoredE2eSession() !== null;
       if (!accessTokenRef.current && !hasInjectedSession) {
@@ -116,7 +117,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
       }
       return false;
     }
-    const data = (await response.json()) as { accessToken: string; user: AuthUser };
     setSession(data.accessToken, data.user);
     try {
       const nextProfile = await fetchUserProfile(data.accessToken);
@@ -199,17 +199,17 @@ export function useAuth(): AuthContextValue {
 }
 
 /**
- * Login with email/password — sets refresh cookie and in-memory access token.
+ * Login with email or username — sets refresh cookie and in-memory access token.
  */
 export async function loginWithPassword(
-  email: string,
+  identifier: string,
   password: string,
 ): Promise<{ accessToken: string; user: AuthUser }> {
   const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ identifier, password }),
   });
   if (!response.ok) {
     const err = (await response.json()) as { error?: { message?: string } };

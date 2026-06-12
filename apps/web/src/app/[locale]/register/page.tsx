@@ -6,6 +6,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { registerBodySchema } from '@onemore/shared';
+import { ZodError } from 'zod';
+
 import { registerAccount, useAuth } from '@/components/auth-provider';
 import { fetchUserProfile, resolveAuthenticatedHomePath } from '@/lib/api-auth';
 import { identifyUser } from '@/lib/analytics';
@@ -28,7 +31,7 @@ export default function RegisterPage(): React.ReactElement {
     setLoading(true);
     setError(null);
     try {
-      const result = await registerAccount({
+      const payload = registerBodySchema.parse({
         email,
         password,
         username,
@@ -37,13 +40,18 @@ export default function RegisterPage(): React.ReactElement {
         timezone: 'Europe/Rome',
         consents: { tos: true, privacy: true, fitnessData: true },
       });
+      const result = await registerAccount(payload);
       setSession(result.accessToken, result.user);
       const profile = await fetchUserProfile(result.accessToken);
       setProfile(profile);
       identifyUser(profile.id);
       router.push(resolveAuthenticatedHomePath(locale, profile));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('registerError'));
+      if (err instanceof ZodError) {
+        setError(err.errors[0]?.message ?? t('registerError'));
+      } else {
+        setError(err instanceof Error ? err.message : t('registerError'));
+      }
     } finally {
       setLoading(false);
     }
@@ -61,6 +69,7 @@ export default function RegisterPage(): React.ReactElement {
         <label className="flex flex-col gap-1 text-sm">
           {t('email')}
           <input
+            autoComplete="email"
             className="rounded-md border px-3 py-2"
             type="email"
             value={email}
@@ -73,13 +82,19 @@ export default function RegisterPage(): React.ReactElement {
         <label className="flex flex-col gap-1 text-sm">
           {t('username')}
           <input
+            autoComplete="username"
             className="rounded-md border px-3 py-2"
+            maxLength={30}
+            minLength={3}
+            pattern="[A-Za-z0-9_]{3,30}"
+            title={t('usernameHint')}
             value={username}
             onChange={(e) => {
-              setUsername(e.target.value);
+              setUsername(e.target.value.replace(/@/g, ''));
             }}
             required
           />
+          <span className="text-xs text-muted-foreground">{t('usernameHint')}</span>
         </label>
         <label className="flex flex-col gap-1 text-sm">
           {t('password')}

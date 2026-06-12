@@ -8,7 +8,10 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
-import { NumberStepper } from '@/components/number-stepper';
+import { ExerciseActionsMenu } from '@/components/exercise-actions-menu';
+import { ExerciseNotesModal } from '@/components/exercise-notes-modal';
+import { ExerciseSearchCombobox } from '@/components/exercise-search-combobox';
+import { SetMetricInput } from '@/components/set-metric-input';
 import { PrCelebration } from '@/components/pr-celebration';
 import { RestTimer } from '@/components/rest-timer';
 import { RequireAuth } from '@/components/require-auth';
@@ -16,19 +19,19 @@ import { useSync } from '@/components/sync-provider';
 import {
   abandonWorkoutSessionClient,
   addWorkoutExerciseClient,
+  addWorkoutExerciseSetClient,
   completeWorkoutSessionClient,
   getWorkoutSessionClient,
-  searchExercisesClient,
   skipWorkoutExerciseClient,
   substituteWorkoutExerciseClient,
-  updateWorkoutSessionNotesClient,
+  updateWorkoutExerciseNotesClient,
   upsertWorkoutSetClient,
 } from '@/lib/offline/workout-client';
 import { POSTHOG_EVENTS, trackEvent } from '@/lib/analytics';
 
 export default function ActiveWorkoutPage(): React.ReactElement {
   const t = useTranslations('Workouts');
-  const { accessToken } = useAuth();
+  const { accessToken, setSession: setAuthSession, user } = useAuth();
   const router = useRouter();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
@@ -36,19 +39,17 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
   const [session, setSession] = useState<WorkoutSessionDetail | null>(null);
   const [exerciseIndex, setExerciseIndex] = useState(0);
-  const [restSeconds, setRestSeconds] = useState<number | null>(null);
+  const [restTimerContext, setRestTimerContext] = useState<{
+    setId: string;
+    seconds: number;
+  } | null>(null);
+  const [actualRestBySetId, setActualRestBySetId] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [searchResults, setSearchResults] = useState<Array<{ id: string; names: { en: string } }>>(
-    [],
-  );
   const [newPrs, setNewPrs] = useState<PersonalRecordSummary[]>([]);
   const [substituteMode, setSubstituteMode] = useState(false);
-  const [substituteSearch, setSubstituteSearch] = useState('');
-  const [substituteResults, setSubstituteResults] = useState<
-    Array<{ id: string; names: { en: string; it?: string } }>
-  >([]);
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [notesSaving, setNotesSaving] = useState(false);
   const [activeSetId, setActiveSetId] = useState<string | null>(null);
   const setRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { refreshPendingCount } = useSync();
@@ -70,6 +71,27 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     });
   }, [accessToken, sessionId, loadSession, t]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !sessionId) {
+      return;
+    }
+    try {
+      const raw = sessionStorage.getItem(`workout-rest-${sessionId}`);
+      if (raw) {
+        setActualRestBySetId(JSON.parse(raw) as Record<string, number>);
+      }
+    } catch {
+      setActualRestBySetId({});
+    }
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !sessionId) {
+      return;
+    }
+    sessionStorage.setItem(`workout-rest-${sessionId}`, JSON.stringify(actualRestBySetId));
+  }, [actualRestBySetId, sessionId]);
+
   const currentExercise = useMemo(() => {
     if (!session || session.exercises.length === 0) {
       return null;
@@ -78,13 +100,20 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   }, [session, exerciseIndex]);
 
   useEffect(() => {
-    if (!currentExercise) {
-      setActiveSetId(null);
+    if (!currentExercise || restTimerContext !== null) {
+      if (!currentExercise) {
+        setActiveSetId(null);
+      }
       return;
     }
     const nextSet = currentExercise.sets.find((set) => !set.isCompleted && !set.isSkipped);
     setActiveSetId(nextSet?.id ?? null);
-  }, [currentExercise]);
+  }, [currentExercise, restTimerContext]);
+
+  useEffect(() => {
+    setSubstituteMode(false);
+    setNotesModalOpen(false);
+  }, [exerciseIndex]);
 
   useEffect(() => {
     if (!activeSetId) {
@@ -106,24 +135,24 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     setLoading(true);
     setError(null);
     try {
-      const result = await upsertWorkoutSetClient(accessToken, session.id, {
-        id: setId,
-        exerciseExecutionId: currentExercise.id,
-        setNumber,
-        weightKg: set.weightKg,
-        reps: set.reps,
-        isCompleted: true,
-        isSkipped: false,
-        isFailed: false,
-        isWarmup: set.isWarmup,
-        clientTimestamp: new Date().toISOString(),
-      });
-      setSession(result.session);
-      const updatedExercise = result.session.exercises.find(
-        (exercise) => exercise.id === currentExercise.id,
+      const result = await upsertWorkoutSetClient(
+        accessToken,
+        session.id,
+        {
+          id: setId,
+          exerciseExecutionId: currentExercise.id,
+          setNumber,
+          weightKg: set.weightKg,
+          reps: set.reps,
+          isCompleted: true,
+          isSkipped: false,
+          isFailed: false,
+          isWarmup: set.isWarmup,
+          clientTimestamp: new Date().toISOString(),
+        },
+        { onAccessTokenRefreshed: handleAccessTokenRefreshed },
       );
-      const nextSet = updatedExercise?.sets.find((set) => !set.isCompleted && !set.isSkipped);
-      setActiveSetId(nextSet?.id ?? null);
+      setSession(result.session);
 
       if (result.personalRecords.length > 0) {
         setNewPrs(result.personalRecords);
@@ -136,7 +165,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
         }
       }
       await refreshPendingCount();
-      setRestSeconds(currentExercise.prescription.restSeconds);
+      setRestTimerContext({
+        setId,
+        seconds: currentExercise.prescription.restSeconds,
+      });
       trackEvent(POSTHOG_EVENTS.SET_COMPLETED, {
         session_id: session.id,
         exercise_id: currentExercise.exerciseLibraryId,
@@ -160,24 +192,72 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
     setLoading(true);
     try {
-      const result = await upsertWorkoutSetClient(accessToken, session.id, {
-        id: setId,
-        exerciseExecutionId: currentExercise.id,
-        setNumber,
-        weightKg: set.weightKg,
-        reps: set.reps,
-        isCompleted: false,
-        isSkipped: true,
-        isFailed: false,
-        isWarmup: set.isWarmup,
-        clientTimestamp: new Date().toISOString(),
-      });
+      const result = await upsertWorkoutSetClient(
+        accessToken,
+        session.id,
+        {
+          id: setId,
+          exerciseExecutionId: currentExercise.id,
+          setNumber,
+          weightKg: set.weightKg,
+          reps: set.reps,
+          isCompleted: false,
+          isSkipped: true,
+          isFailed: false,
+          isWarmup: set.isWarmup,
+          clientTimestamp: new Date().toISOString(),
+        },
+        { onAccessTokenRefreshed: handleAccessTokenRefreshed },
+      );
       setSession(result.session);
+      const updatedExercise = result.session.exercises.find(
+        (exercise) => exercise.id === currentExercise.id,
+      );
+      const nextSet = updatedExercise?.sets.find((item) => !item.isCompleted && !item.isSkipped);
+      setActiveSetId(nextSet?.id ?? null);
       await refreshPendingCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('setError'));
     } finally {
       setLoading(false);
+    }
+  }
+
+  function formatPrescribedWeight(targetWeightKg: number | null): string {
+    if (targetWeightKg !== null) {
+      return String(targetWeightKg);
+    }
+    return '—';
+  }
+
+  function formatSetPrescriptionLine(
+    targetReps: number,
+    targetWeightKg: number | null,
+    restSeconds: number,
+  ): string {
+    const weightPart = targetWeightKg !== null ? `${targetWeightKg}kg` : '—';
+    return `${targetReps} x ${weightPart} (${restSeconds}')`;
+  }
+
+  function formatLoggedSetLine(
+    reps: number | null,
+    weightKg: number | null,
+    restSeconds: number | null,
+    targetReps: number,
+    targetWeightKg: number | null,
+  ): string {
+    const loggedReps = reps ?? targetReps;
+    const weightPart = weightKg !== null ? `${weightKg}kg` : '—';
+    const base = `${loggedReps} x ${weightPart}`;
+    if (restSeconds === null) {
+      return base;
+    }
+    return `${base} (${restSeconds}')`;
+  }
+
+  function handleAccessTokenRefreshed(token: string): void {
+    if (user) {
+      setAuthSession(token, user);
     }
   }
 
@@ -200,12 +280,33 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     });
   }
 
-  async function handleSearch(): Promise<void> {
-    if (!accessToken || search.trim().length < 2) {
+  function isExtraSet(setNumber: number, prescribedSets: number): boolean {
+    return setNumber > prescribedSets;
+  }
+
+  async function handleAddSet(): Promise<void> {
+    if (!accessToken || !session || !currentExercise) {
       return;
     }
-    const exercises = await searchExercisesClient(accessToken, search.trim());
-    setSearchResults(exercises);
+    setLoading(true);
+    setError(null);
+    try {
+      const updated = await addWorkoutExerciseSetClient(
+        accessToken,
+        session.id,
+        currentExercise.id,
+      );
+      setSession(updated);
+      const updatedExercise = updated.exercises.find(
+        (exercise) => exercise.id === currentExercise.id,
+      );
+      const nextSet = updatedExercise?.sets.find((set) => !set.isCompleted && !set.isSkipped);
+      setActiveSetId(nextSet?.id ?? null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('addSetError'));
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleAddExercise(exerciseLibraryId: string): Promise<void> {
@@ -222,8 +323,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
       });
       setSession(updated);
       setExerciseIndex(updated.exercises.length - 1);
-      setSearch('');
-      setSearchResults([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('addExerciseError'));
     } finally {
@@ -278,14 +377,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
   }
 
-  async function handleSubstituteSearch(): Promise<void> {
-    if (!accessToken || substituteSearch.trim().length < 2) {
-      return;
-    }
-    const exercises = await searchExercisesClient(accessToken, substituteSearch.trim());
-    setSubstituteResults(exercises);
-  }
-
   async function handleSubstitute(exerciseLibraryId: string): Promise<void> {
     if (!accessToken || !session || !currentExercise) {
       return;
@@ -301,8 +392,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
       );
       setSession(updated);
       setSubstituteMode(false);
-      setSubstituteSearch('');
-      setSubstituteResults([]);
       const newIndex = updated.exercises.findIndex(
         (exercise) =>
           exercise.substitutedFromExerciseId === currentExercise.exerciseLibraryId ||
@@ -324,16 +413,29 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
   }
 
-  async function handleNotesChange(notes: string): Promise<void> {
-    if (!accessToken || !session) {
+  function openNotesModal(): void {
+    setNotesModalOpen(true);
+  }
+
+  async function handleExerciseNotesSave(notes: string): Promise<void> {
+    if (!accessToken || !session || !currentExercise) {
       return;
     }
-    const privateNotes = notes.trim().length > 0 ? notes : null;
+    const athleteNotes = notes.trim().length > 0 ? notes.trim() : null;
+    setNotesSaving(true);
     try {
-      const updated = await updateWorkoutSessionNotesClient(accessToken, session.id, privateNotes);
+      const updated = await updateWorkoutExerciseNotesClient(
+        accessToken,
+        session.id,
+        currentExercise.id,
+        athleteNotes,
+      );
       setSession(updated);
-    } catch {
-      // Notes are non-blocking; user can retry on blur.
+      setNotesModalOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('notesSaveError'));
+    } finally {
+      setNotesSaving(false);
     }
   }
 
@@ -375,285 +477,377 @@ export default function ActiveWorkoutPage(): React.ReactElement {
       <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 p-6 pb-24">
         <div>
           <h1 className="text-xl font-bold">{session.workoutDayLabel ?? t('freeWorkoutTitle')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t('exerciseProgress', {
-              current: Math.min(exerciseIndex + 1, Math.max(session.exercises.length, 1)),
-              total: Math.max(session.exercises.length, 1),
-            })}
-          </p>
         </div>
 
-        <label className="flex flex-col gap-1 text-sm">
-          {t('sessionNotes')}
-          <textarea
-            className="min-h-20 rounded-md border px-3 py-2 text-sm"
-            placeholder={t('sessionNotesPlaceholder')}
-            defaultValue={session.privateNotes ?? ''}
-            onBlur={(e) => {
-              void handleNotesChange(e.target.value);
-            }}
-          />
-        </label>
-
-        {restSeconds !== null && (
+        {restTimerContext !== null && (
           <RestTimer
             label={t('restLabel')}
-            seconds={restSeconds}
-            skipLabel={t('skipRest')}
-            onComplete={() => {
-              setRestSeconds(null);
+            nextSetLabel={t('nextSet')}
+            seconds={restTimerContext.seconds}
+            onNextSet={(actualRestSeconds) => {
+              setActualRestBySetId((prev) => ({
+                ...prev,
+                [restTimerContext.setId]: actualRestSeconds,
+              }));
+              setRestTimerContext(null);
             }}
           />
         )}
 
-        {session.sessionType === 'free' && session.exercises.length === 0 && (
-          <div className="flex flex-col gap-2">
-            <input
-              className="rounded-md border px-3 py-2 text-sm"
-              placeholder={t('searchExercises')}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-              }}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                void handleSearch();
-              }}
-            >
-              {t('search')}
-            </Button>
-            {searchResults.map((exercise) => (
-              <button
-                key={exercise.id}
-                type="button"
-                className="rounded border p-2 text-left text-sm"
-                onClick={() => {
-                  void handleAddExercise(exercise.id);
-                }}
-              >
-                {exercise.names.en}
-              </button>
-            ))}
-          </div>
+        {session.sessionType === 'free' && accessToken && session.exercises.length === 0 && (
+          <ExerciseSearchCombobox
+            accessToken={accessToken}
+            disabled={loading}
+            locale={locale}
+            noResultsLabel={t('searchNoResults')}
+            placeholder={t('searchExercises')}
+            searchingLabel={t('searchingExercises')}
+            onSelect={(exercise) => {
+              void handleAddExercise(exercise.id);
+            }}
+          />
         )}
 
         {currentExercise && (
           <div className="flex flex-col gap-3">
-            <h2 className="text-lg font-semibold">
-              {locale === 'it' && currentExercise.exercise.names.it
-                ? currentExercise.exercise.names.it
-                : currentExercise.exercise.names.en}
-            </h2>
-
-            {currentExercise.status === 'skipped' ? (
-              <p className="text-sm text-muted-foreground">{t('exerciseSkipped')}</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                <Button
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-lg font-semibold">
+                  <span>
+                    {locale === 'it' && currentExercise.exercise.names.it
+                      ? currentExercise.exercise.names.it
+                      : currentExercise.exercise.names.en}
+                  </span>
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {t('exerciseSubtitle', {
+                      sets: currentExercise.prescription.targetSets,
+                      reps: currentExercise.prescription.targetReps,
+                    })}
+                  </span>
+                </h2>
+              </div>
+              {currentExercise.status !== 'skipped' && (
+                <ExerciseActionsMenu
                   disabled={loading}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
+                  labels={{
+                    menu: t('exerciseActionsMenu'),
+                    notes: t('menuNotes'),
+                    substitute: t('substituteExercise'),
+                    skip: t('skipExercise'),
+                  }}
+                  showSubstitute={session.sessionType === 'programmed'}
+                  onNotes={openNotesModal}
+                  onSkip={() => {
                     void handleSkipExercise();
                   }}
-                >
-                  {t('skipExercise')}
-                </Button>
-                {session.sessionType === 'programmed' && (
-                  <Button
-                    disabled={loading}
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setSubstituteMode((value) => !value);
-                    }}
-                  >
-                    {t('substituteExercise')}
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {substituteMode && currentExercise.status !== 'skipped' && (
-              <div className="flex flex-col gap-2 rounded-lg border p-3">
-                <input
-                  className="rounded-md border px-3 py-2 text-sm"
-                  placeholder={t('searchExercises')}
-                  value={substituteSearch}
-                  onChange={(e) => {
-                    setSubstituteSearch(e.target.value);
+                  onSubstitute={() => {
+                    setSubstituteMode(true);
                   }}
                 />
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    void handleSubstituteSearch();
-                  }}
-                >
-                  {t('search')}
-                </Button>
-                {substituteResults.map((exercise) => (
-                  <button
-                    key={exercise.id}
-                    type="button"
-                    className="rounded border p-2 text-left text-sm"
-                    onClick={() => {
-                      void handleSubstitute(exercise.id);
-                    }}
-                  >
-                    {locale === 'it' && exercise.names.it ? exercise.names.it : exercise.names.en}
-                  </button>
-                ))}
-              </div>
+              )}
+            </div>
+
+            {currentExercise.status === 'skipped' && (
+              <p className="text-sm text-muted-foreground">{t('exerciseSkipped')}</p>
             )}
 
-            {session.sessionType === 'programmed' && currentExercise.status !== 'skipped' && (
-              <div className="rounded-lg border border-dashed bg-muted/20 p-3 text-sm">
-                <p className="font-medium">{t('prescribedLabel')}</p>
-                <p className="text-muted-foreground">
-                  {t('prescriptionDetail', {
-                    sets: currentExercise.prescription.targetSets,
-                    reps: currentExercise.prescription.targetReps,
-                    weight:
-                      currentExercise.prescription.targetWeightKg !== null
-                        ? `${String(currentExercise.prescription.targetWeightKg)} kg`
-                        : t('noTargetWeight'),
-                  })}
-                </p>
-                {currentExercise.prescription.coachNote && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {currentExercise.prescription.coachNote}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {currentExercise.sets.map((set) => {
-              const prescribedWeight =
-                currentExercise.prescription.targetWeightKg !== null
-                  ? `${String(currentExercise.prescription.targetWeightKg)} kg`
-                  : t('noTargetWeight');
+            {(() => {
+              const { prescription } = currentExercise;
+              const isResting = restTimerContext !== null;
+              const activeSet = isResting
+                ? null
+                : (currentExercise.sets.find((item) => !item.isCompleted && !item.isSkipped) ??
+                  null);
               const previousWeight = currentExercise.previousSet?.weightKg;
               const previousReps = currentExercise.previousSet?.reps;
+              const lastLoggedSet = [...currentExercise.sets]
+                .filter((item) => item.isCompleted && !item.isSkipped)
+                .sort((a, b) => b.setNumber - a.setNumber)[0];
+              const lastSetInExercise = [...currentExercise.sets].sort(
+                (a, b) => b.setNumber - a.setNumber,
+              )[0];
+              const extraPlaceholderSource = lastLoggedSet ?? lastSetInExercise;
+
+              function getRepsPlaceholder(forExtraSet: boolean): string {
+                if (forExtraSet) {
+                  if (extraPlaceholderSource?.reps !== null && extraPlaceholderSource?.reps !== undefined) {
+                    return String(extraPlaceholderSource.reps);
+                  }
+                  return t('placeholderReps');
+                }
+                if (previousReps !== null && previousReps !== undefined) {
+                  return String(previousReps);
+                }
+                return String(prescription.targetReps);
+              }
+
+              function getWeightPlaceholder(forExtraSet: boolean): string {
+                if (forExtraSet) {
+                  if (
+                    extraPlaceholderSource?.weightKg !== null &&
+                    extraPlaceholderSource?.weightKg !== undefined
+                  ) {
+                    return String(extraPlaceholderSource.weightKg);
+                  }
+                  return t('placeholderWeight');
+                }
+                if (previousWeight !== null && previousWeight !== undefined) {
+                  return String(previousWeight);
+                }
+                return formatPrescribedWeight(prescription.targetWeightKg) === '—'
+                  ? t('placeholderWeight')
+                  : formatPrescribedWeight(prescription.targetWeightKg);
+              }
+
+              const completedSets = currentExercise.sets.filter(
+                (item) => item.isCompleted || item.isSkipped,
+              );
+              const futureSets = isResting
+                ? currentExercise.sets.filter((item) => !item.isCompleted && !item.isSkipped)
+                : activeSet
+                  ? currentExercise.sets.filter(
+                      (item) =>
+                        !item.isCompleted && !item.isSkipped && item.id !== activeSet.id,
+                    )
+                  : [];
+
+              function getDisplayedRestSeconds(setId: string): number | null {
+                if (restTimerContext?.setId === setId) {
+                  return null;
+                }
+                if (actualRestBySetId[setId] !== undefined) {
+                  return actualRestBySetId[setId];
+                }
+                return prescription.restSeconds;
+              }
 
               return (
-                <div
-                  key={set.id}
-                  ref={(node) => {
-                    setRefs.current[set.id] = node;
-                  }}
-                  className={`rounded-lg border p-3 ${
-                    set.isCompleted ? 'bg-muted/50' : ''
-                  } ${activeSetId === set.id ? 'border-primary ring-1 ring-primary/30' : ''}`}
-                >
-                  <p className="text-sm font-medium">{t('setLabel', { number: set.setNumber })}</p>
-                  {session.sessionType === 'programmed' ? (
-                    <div className="mt-3 grid grid-cols-2 gap-3">
-                      <div className="rounded-md bg-muted/30 p-2">
-                        <p className="text-xs font-medium text-muted-foreground">
-                          {t('prescribedLabel')}
-                        </p>
-                        <p className="mt-1 text-sm font-medium">
-                          {currentExercise.prescription.targetReps} {t('reps')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{prescribedWeight}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground">
-                          {t('actualLabel')}
-                        </p>
-                        <div className="mt-1 flex flex-col gap-2">
-                          <NumberStepper
-                            disabled={set.isCompleted || set.isSkipped}
-                            label={t('weightKg')}
-                            max={500}
-                            placeholder={
-                              previousWeight !== null && previousWeight !== undefined
-                                ? String(previousWeight)
-                                : prescribedWeight
-                            }
-                            step={2.5}
-                            value={set.weightKg}
-                            onChange={(value) => {
-                              updateSetValue(set.id, 'weightKg', value);
-                            }}
+                <div className="flex flex-col gap-3">
+                  {completedSets.map((set) => (
+                    <div
+                      key={set.id}
+                      className="flex items-center gap-3 rounded-lg bg-muted/35 px-3 py-2.5 text-sm"
+                    >
+                      {set.isCompleted ? (
+                        <svg
+                          aria-hidden
+                          className="h-5 w-5 shrink-0 text-green-600"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2.5"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                          <path d="m8 12.5 2.5 2.5L16 9.5" />
+                        </svg>
+                      ) : (
+                        <svg
+                          aria-hidden
+                          className="h-5 w-5 shrink-0 text-muted-foreground"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M8 12h8" />
+                        </svg>
+                      )}
+                      <span className="font-medium text-foreground/80">
+                        {t('setLabel', { number: set.setNumber })}
+                      </span>
+                      {set.isSkipped ? (
+                        <span className="ml-auto flex items-center">
+                          <span
+                            aria-hidden
+                            className="h-0.5 w-8 rounded-full bg-muted-foreground/70"
                           />
-                          <NumberStepper
-                            disabled={set.isCompleted || set.isSkipped}
-                            label={t('reps')}
-                            max={100}
-                            placeholder={
-                              previousReps !== null && previousReps !== undefined
-                                ? String(previousReps)
-                                : String(currentExercise.prescription.targetReps)
-                            }
-                            step={1}
-                            value={set.reps}
-                            onChange={(value) => {
-                              updateSetValue(set.id, 'reps', value);
-                            }}
-                          />
-                        </div>
-                      </div>
+                          <span className="sr-only">{t('setSkippedLabel')}</span>
+                        </span>
+                      ) : (
+                        <span className="ml-auto text-muted-foreground">
+                          {formatLoggedSetLine(
+                            set.reps,
+                            set.weightKg,
+                            getDisplayedRestSeconds(set.id),
+                            prescription.targetReps,
+                            prescription.targetWeightKg,
+                          )}
+                        </span>
+                      )}
                     </div>
-                  ) : (
-                    <div className="mt-2 flex flex-col gap-2">
-                      <NumberStepper
-                        disabled={set.isCompleted || set.isSkipped}
-                        label={t('weightKg')}
-                        max={500}
-                        step={2.5}
-                        value={set.weightKg}
-                        onChange={(value) => {
-                          updateSetValue(set.id, 'weightKg', value);
-                        }}
-                      />
-                      <NumberStepper
-                        disabled={set.isCompleted || set.isSkipped}
-                        label={t('reps')}
-                        max={100}
-                        step={1}
-                        value={set.reps}
-                        onChange={(value) => {
-                          updateSetValue(set.id, 'reps', value);
-                        }}
-                      />
+                  ))}
+
+                  {completedSets.length > 0 && (activeSet !== null || isResting) && (
+                    <div aria-hidden className="flex items-center py-1">
+                      <div className="h-px flex-1 bg-border" />
                     </div>
                   )}
-                  {!set.isCompleted && !set.isSkipped && (
-                    <div className="mt-2 flex gap-2">
-                      <Button
-                        className="min-h-11 flex-1"
-                        disabled={loading}
-                        type="button"
-                        onClick={() => {
-                          void handleCompleteSet(set.id, set.setNumber);
-                        }}
-                      >
-                        {t('completeSet')}
-                      </Button>
-                      <Button
-                        disabled={loading}
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          void handleSkipSet(set.id, set.setNumber);
-                        }}
-                      >
-                        {t('skipSet')}
-                      </Button>
+
+                  {activeSet && (
+                    <div
+                      ref={(node) => {
+                        setRefs.current[activeSet.id] = node;
+                      }}
+                      className="mx-auto w-full max-w-sm rounded-xl border border-primary p-4 shadow-sm ring-1 ring-primary/25"
+                    >
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                        <p className="text-base font-semibold">
+                          {t('setLabel', { number: activeSet.setNumber })}
+                        </p>
+                        {!isExtraSet(activeSet.setNumber, prescription.targetSets) && (
+                          <p className="text-sm text-muted-foreground">
+                            {formatSetPrescriptionLine(
+                              prescription.targetReps,
+                              prescription.targetWeightKg,
+                              prescription.restSeconds,
+                            )}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <SetMetricInput
+                          inputMode="numeric"
+                          max={100}
+                          placeholder={getRepsPlaceholder(
+                            isExtraSet(activeSet.setNumber, prescription.targetSets),
+                          )}
+                          size="sm"
+                          value={activeSet.reps}
+                          onChange={(value) => {
+                            updateSetValue(activeSet.id, 'reps', value);
+                          }}
+                        />
+                        <SetMetricInput
+                          max={500}
+                          placeholder={getWeightPlaceholder(
+                            isExtraSet(activeSet.setNumber, prescription.targetSets),
+                          )}
+                          size="sm"
+                          value={activeSet.weightKg}
+                          onChange={(value) => {
+                            updateSetValue(activeSet.id, 'weightKg', value);
+                          }}
+                        />
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between gap-2">
+                        <Button
+                          className="min-h-11"
+                          disabled={loading}
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            void handleSkipSet(activeSet.id, activeSet.setNumber);
+                          }}
+                        >
+                          {t('skipSet')}
+                        </Button>
+                        <Button
+                          className="min-h-11"
+                          disabled={loading}
+                          type="button"
+                          onClick={() => {
+                            void handleCompleteSet(activeSet.id, activeSet.setNumber);
+                          }}
+                        >
+                          {t('completeSet')}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {futureSets.length > 0 && (
+                    <div className="flex flex-col gap-2 pt-1">
+                      {futureSets.map((set) => (
+                        <div
+                          key={set.id}
+                          className="mx-auto w-[92%] rounded-lg border border-dashed border-muted-foreground/25 bg-muted/15 px-3 py-2 opacity-60"
+                        >
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {t('setLabel', { number: set.setNumber })}
+                          </p>
+                          {!isExtraSet(set.setNumber, prescription.targetSets) && (
+                            <p className="mt-0.5 text-[11px] text-muted-foreground/80">
+                              {formatSetPrescriptionLine(
+                                prescription.targetReps,
+                                prescription.targetWeightKg,
+                                prescription.restSeconds,
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
               );
-            })}
+            })()}
+
+            {!restTimerContext &&
+              currentExercise.status !== 'skipped' &&
+              !currentExercise.sets.some((set) => !set.isCompleted && !set.isSkipped) && (
+                <Button
+                  className="w-full"
+                  disabled={loading}
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    void handleAddSet();
+                  }}
+                >
+                  {t('addSet')}
+                </Button>
+              )}
+
+            {substituteMode && currentExercise.status !== 'skipped' && accessToken && (
+              <div className="rounded-lg border p-3">
+                <ExerciseSearchCombobox
+                  accessToken={accessToken}
+                  disabled={loading}
+                  locale={locale}
+                  noResultsLabel={t('searchNoResults')}
+                  placeholder={t('searchExercises')}
+                  searchingLabel={t('searchingExercises')}
+                  onSelect={(exercise) => {
+                    void handleSubstitute(exercise.id);
+                  }}
+                />
+              </div>
+            )}
+
+            {currentExercise.athleteNotes && (
+              <div className="flex items-start gap-2">
+                <p className="flex-1 text-sm italic text-muted-foreground">
+                  {currentExercise.athleteNotes}
+                </p>
+                <button
+                  aria-label={t('editNotes')}
+                  className="rounded p-1 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  type="button"
+                  onClick={openNotesModal}
+                >
+                  <svg
+                    aria-hidden
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                </button>
+              </div>
+            )}
 
             <div className="flex gap-2">
               <Button
@@ -677,6 +871,39 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                 {t('nextExercise')}
               </Button>
             </div>
+
+            <ExerciseNotesModal
+              cancelLabel={t('cancel')}
+              initialValue={currentExercise.athleteNotes ?? ''}
+              open={notesModalOpen}
+              placeholder={t('notesPlaceholder')}
+              saveLabel={t('saveNotes')}
+              saving={notesSaving}
+              title={t('notesModalTitle')}
+              onClose={() => {
+                setNotesModalOpen(false);
+              }}
+              onSave={(notes) => {
+                void handleExerciseNotesSave(notes);
+              }}
+            />
+          </div>
+        )}
+
+        {session.sessionType === 'free' && accessToken && session.exercises.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium">{t('addExercise')}</p>
+            <ExerciseSearchCombobox
+              accessToken={accessToken}
+              disabled={loading}
+              locale={locale}
+              noResultsLabel={t('searchNoResults')}
+              placeholder={t('searchExercises')}
+              searchingLabel={t('searchingExercises')}
+              onSelect={(exercise) => {
+                void handleAddExercise(exercise.id);
+              }}
+            />
           </div>
         )}
 

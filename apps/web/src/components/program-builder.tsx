@@ -1,15 +1,19 @@
 'use client';
 
-import type { CreateProgramInput, ExerciseListItem } from '@onemore/shared';
+import type { CreateProgramInput, ExerciseListItem, MuscleGroup } from '@onemore/shared';
+import { aggregateMuscleGroups } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { searchExercises } from '@/lib/api-auth';
+import { MuscleGroupFilter } from '@/components/muscle-group-filter';
+import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
+import { fetchExercises } from '@/lib/api-auth';
 
 export interface BuilderExercise {
   exerciseLibraryId: string;
   name: string;
+  primaryMuscles: MuscleGroup[];
   targetSets: number;
   targetReps: number;
   restSeconds: number;
@@ -34,6 +38,13 @@ function emptyDay(index: number): BuilderDay {
   return { label: `Day ${String.fromCharCode(65 + index)}`, exercises: [] };
 }
 
+function dayMuscleLabel(day: BuilderDay, translate: (key: MuscleGroup) => string): string {
+  return formatMuscleGroupsForLocale(
+    aggregateMuscleGroups(day.exercises.map((row) => ({ primaryMuscles: row.primaryMuscles }))),
+    translate,
+  );
+}
+
 /**
  * Multi-day program editor with exercise search and per-exercise prescription fields.
  */
@@ -46,25 +57,43 @@ export function ProgramBuilder({
   onSubmit,
 }: ProgramBuilderProps): React.ReactElement {
   const t = useTranslations('Programs');
+  const tMuscle = useTranslations('MuscleGroups');
   const [name, setName] = useState(initialName);
   const [days, setDays] = useState<BuilderDay[]>(
     initialDays && initialDays.length > 0 ? initialDays : [emptyDay(0)],
   );
   const [dayIndex, setDayIndex] = useState(0);
   const [search, setSearch] = useState('');
+  const [muscle, setMuscle] = useState<MuscleGroup | ''>('');
   const [results, setResults] = useState<ExerciseListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const currentDay = days[dayIndex] ?? days[0];
 
-  async function handleSearch(): Promise<void> {
-    if (search.trim().length < 2) {
+  useEffect(() => {
+    const trimmed = search.trim();
+    if (trimmed.length < 2 && muscle === '') {
+      setResults([]);
       return;
     }
-    const exercises = await searchExercises(accessToken, search.trim());
-    setResults(exercises);
-  }
+
+    const handle = window.setTimeout(() => {
+      void fetchExercises(accessToken, {
+        ...(trimmed.length >= 2 ? { q: trimmed } : {}),
+        ...(muscle ? { muscle } : {}),
+        limit: 25,
+      })
+        .then(setResults)
+        .catch(() => {
+          setResults([]);
+        });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(handle);
+    };
+  }, [accessToken, muscle, search]);
 
   function addExercise(exercise: ExerciseListItem): void {
     const displayName =
@@ -79,6 +108,7 @@ export function ProgramBuilder({
                 {
                   exerciseLibraryId: exercise.id,
                   name: displayName,
+                  primaryMuscles: exercise.primaryMuscles,
                   targetSets: 3,
                   targetReps: 8,
                   restSeconds: 90,
@@ -96,7 +126,7 @@ export function ProgramBuilder({
   function updateExercise(
     exerciseIndex: number,
     field: keyof BuilderExercise,
-    value: string | number | null,
+    value: string | number | null | MuscleGroup[],
   ): void {
     setDays((prev) =>
       prev.map((day, index) => {
@@ -176,19 +206,23 @@ export function ProgramBuilder({
       </label>
 
       <div className="flex flex-wrap gap-2">
-        {days.map((day, index) => (
-          <Button
-            key={`${day.label}-${String(index)}`}
-            type="button"
-            size="sm"
-            variant={index === dayIndex ? 'default' : 'outline'}
-            onClick={() => {
-              setDayIndex(index);
-            }}
-          >
-            {day.label}
-          </Button>
-        ))}
+        {days.map((day, index) => {
+          const muscles = dayMuscleLabel(day, tMuscle);
+          return (
+            <Button
+              key={`${day.label}-${String(index)}`}
+              type="button"
+              size="sm"
+              variant={index === dayIndex ? 'default' : 'outline'}
+              onClick={() => {
+                setDayIndex(index);
+              }}
+            >
+              {day.label}
+              {muscles ? ` — ${muscles}` : ''}
+            </Button>
+          );
+        })}
         <Button type="button" size="sm" variant="ghost" onClick={addDay}>
           {t('addDay')}
         </Button>
@@ -206,27 +240,26 @@ export function ProgramBuilder({
             );
           }}
         />
+        {currentDay && dayMuscleLabel(currentDay, tMuscle) && (
+          <span className="text-xs text-muted-foreground">{dayMuscleLabel(currentDay, tMuscle)}</span>
+        )}
       </label>
 
-      <div className="flex gap-2">
-        <input
-          className="flex-1 rounded-md border px-3 py-2 text-sm"
-          placeholder={t('searchExercises')}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-          }}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            void handleSearch();
-          }}
-        >
-          {t('search')}
-        </Button>
-      </div>
+      <MuscleGroupFilter
+        value={muscle}
+        onChange={(nextMuscle) => {
+          setMuscle(nextMuscle);
+        }}
+      />
+
+      <input
+        className="w-full rounded-md border px-3 py-2 text-sm"
+        placeholder={t('searchExercises')}
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value);
+        }}
+      />
 
       {results.length > 0 && (
         <div className="flex flex-col gap-2">

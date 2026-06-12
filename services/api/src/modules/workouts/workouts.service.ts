@@ -1,5 +1,6 @@
 import type {
   AddWorkoutExerciseInput,
+  AddWorkoutSetInput,
   NextWorkoutPreview,
   PrescriptionSnapshot,
   StartWorkoutSessionInput,
@@ -9,6 +10,7 @@ import type {
   UpsertSetResponse,
   WorkoutSessionDetail,
 } from '@onemore/shared';
+import { aggregateMuscleGroups, normalizeMuscleTags } from '@onemore/shared';
 import { randomUUID } from 'node:crypto';
 
 import type { Prisma, PrismaClient } from '@prisma/client';
@@ -74,11 +76,17 @@ export class WorkoutsService {
 
     const days = workoutDays.map((workoutDay) => {
       const dayExercises = exercisesByDay.get(workoutDay.id) ?? [];
+      const exercises = dayExercises.map((item) => this.mapProgramExercise(item));
       return {
         workoutDayId: workoutDay.id,
         label: workoutDay.label,
         exerciseCount: dayExercises.length,
-        exercises: dayExercises.map((item) => this.mapProgramExercise(item)),
+        muscleGroups: aggregateMuscleGroups(
+          dayExercises.map((item) => ({
+            primaryMuscles: normalizeMuscleTags(item.exerciseLibrary.primaryMuscles as string[]),
+          })),
+        ),
+        exercises,
       };
     });
 
@@ -545,6 +553,108 @@ export class WorkoutsService {
     return this.getSession(userId, sessionId);
   }
 
+  /**
+   * Update athlete notes for a single exercise execution.
+   *
+   * @param userId - Session owner id.
+   * @param sessionId - Workout session id.
+   * @param executionId - Exercise execution id.
+   * @param input - Notes payload.
+   */
+  async updateExerciseNotes(
+    userId: string,
+    sessionId: string,
+    executionId: string,
+    input: { athleteNotes: string | null },
+  ): Promise<WorkoutSessionDetail> {
+    await this.requireInProgressSession(userId, sessionId);
+    await this.requireExecution(sessionId, executionId);
+
+    const updatedAt = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      await tx.exerciseExecution.update({
+        where: { id: executionId },
+        data: { athleteNotes: input.athleteNotes },
+      });
+      await tx.workoutSession.update({
+        where: { id: sessionId },
+        data: { clientUpdatedAt: updatedAt },
+      });
+    });
+
+    return this.getSession(userId, sessionId);
+  }
+
+  /**
+   * Append an extra set beyond the programmed prescription.
+   *
+   * @param userId - Session owner id.
+   * @param sessionId - Workout session id.
+   * @param executionId - Exercise execution id.
+   * @param input - Client-generated set log id.
+   */
+  async addExerciseSet(
+    userId: string,
+    sessionId: string,
+    executionId: string,
+    input: AddWorkoutSetInput,
+  ): Promise<WorkoutSessionDetail> {
+    await this.requireInProgressSession(userId, sessionId);
+
+    const execution = await this.prisma.exerciseExecution.findFirst({
+      where: { id: executionId, workoutSessionId: sessionId },
+      include: { setLogs: { orderBy: { setNumber: 'asc' } } },
+    });
+
+    if (!execution) {
+      throw new HttpError(404, 'Exercise execution not found', 'EXECUTION_NOT_FOUND');
+    }
+
+    if (execution.status === 'skipped') {
+      throw new HttpError(409, 'Exercise is skipped', 'EXECUTION_SKIPPED');
+    }
+
+    const maxSetNumber = execution.setLogs.reduce(
+      (max, set) => Math.max(max, set.setNumber),
+      0,
+    );
+    if (maxSetNumber >= 30) {
+      throw new HttpError(400, 'Maximum sets reached', 'MAX_SETS_REACHED');
+    }
+
+    const lastSet = execution.setLogs.find((set) => set.setNumber === maxSetNumber) ?? null;
+    const updatedAt = new Date();
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.setLog.create({
+        data: {
+          id: input.id,
+          exerciseExecutionId: executionId,
+          setNumber: maxSetNumber + 1,
+          weightKg: lastSet?.weightKg ?? null,
+          reps: lastSet?.reps ?? null,
+          isWarmup: false,
+          isCompleted: false,
+          isSkipped: false,
+          isFailed: false,
+          clientTimestamp: updatedAt,
+        },
+      });
+
+      await tx.exerciseExecution.update({
+        where: { id: executionId },
+        data: { status: 'in_progress' },
+      });
+
+      await tx.workoutSession.update({
+        where: { id: sessionId },
+        data: { clientUpdatedAt: updatedAt },
+      });
+    });
+
+    return this.getSession(userId, sessionId);
+  }
+
   private async startProgrammedSession(
     userId: string,
     input: StartWorkoutSessionInput,
@@ -851,6 +961,7 @@ export class WorkoutsService {
         substitutedFromExerciseId: string | null;
         sortOrder: number;
         status: string;
+        athleteNotes: string | null;
         prescriptionSnapshot: unknown;
         exerciseLibrary: {
           id: string;
@@ -894,6 +1005,7 @@ export class WorkoutsService {
           substitutedFromExerciseId: execution.substitutedFromExerciseId,
           sortOrder: execution.sortOrder,
           status: execution.status as WorkoutSessionDetail['exercises'][number]['status'],
+          athleteNotes: execution.athleteNotes,
           prescription,
           exercise: {
             id: execution.exerciseLibrary.id,

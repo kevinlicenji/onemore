@@ -2,17 +2,13 @@ import type {
   CreateProgramInput,
   ProgramDetail,
   ProgramSummary,
+  TemplateMeta,
   TemplateSummary,
 } from '@onemore/shared';
+import { aggregateMuscleGroups, normalizeMuscleTags } from '@onemore/shared';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
-
-interface TemplateMeta {
-  displayName?: { en?: string; it?: string };
-  audience?: string;
-  daysPerWeek?: number;
-}
 
 /**
  * Program CRUD, version publishing, and template application.
@@ -360,7 +356,8 @@ export class ProgramsService {
     return {
       ...detail,
       name: meta.displayName?.en ?? template.name,
-      description: meta.displayName?.it ?? template.description,
+      description: null,
+      guide: meta.guide ?? null,
       isActive: false,
     };
   }
@@ -388,10 +385,13 @@ export class ProgramsService {
       return {
         slug: template.name,
         name: meta.displayName?.en ?? template.name,
-        description: meta.displayName?.it ?? template.description,
+        description: meta.displayName?.it ?? null,
+        guide: meta.guide ?? null,
         objective: template.objective,
         daysPerWeek: meta.daysPerWeek ?? published?.workoutDays.length ?? 0,
         audience: meta.audience ?? 'general',
+        equipmentProfile: meta.equipmentProfile ?? null,
+        split: meta.split ?? null,
       };
     });
   }
@@ -536,12 +536,12 @@ export class ProgramsService {
     }
   }
 
-  private parseTemplateMeta(description: string | null): TemplateMeta {
+  private parseTemplateMeta(description: string | null): Partial<TemplateMeta> {
     if (!description) {
       return {};
     }
     try {
-      return JSON.parse(description) as TemplateMeta;
+      return JSON.parse(description) as Partial<TemplateMeta>;
     } catch {
       return { displayName: { en: description } };
     }
@@ -614,6 +614,7 @@ export class ProgramsService {
               id: string;
               slug: string;
               names: unknown;
+              primaryMuscles: unknown;
             };
           }>;
         }>;
@@ -631,11 +632,8 @@ export class ProgramsService {
       versionStatus: version ? (version.status as ProgramDetail['versionStatus']) : null,
       publishedAt: version?.publishedAt?.toISOString() ?? null,
       days:
-        version?.workoutDays.map((day) => ({
-          id: day.id,
-          label: day.label,
-          sortOrder: day.sortOrder,
-          exercises: day.programExercises.map((exercise) => ({
+        version?.workoutDays.map((day) => {
+          const exercises = day.programExercises.map((exercise) => ({
             id: exercise.id,
             exerciseLibraryId: exercise.exerciseLibraryId,
             sortOrder: exercise.sortOrder,
@@ -648,9 +646,22 @@ export class ProgramsService {
               id: exercise.exerciseLibrary.id,
               slug: exercise.exerciseLibrary.slug,
               names: exercise.exerciseLibrary.names as { en: string; it?: string },
+              primaryMuscles: normalizeMuscleTags(
+                exercise.exerciseLibrary.primaryMuscles as string[],
+              ),
             },
-          })),
-        })) ?? [],
+          }));
+
+          return {
+            id: day.id,
+            label: day.label,
+            sortOrder: day.sortOrder,
+            muscleGroups: aggregateMuscleGroups(
+              exercises.map((row) => ({ primaryMuscles: row.exercise.primaryMuscles })),
+            ),
+            exercises,
+          };
+        }) ?? [],
     };
   }
 }

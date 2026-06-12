@@ -15,6 +15,12 @@ describe('validateUsernameFormat', () => {
       validateUsernameFormat('ab');
     }).toThrow(HttpError);
   });
+
+  it('rejects username containing @', () => {
+    expect(() => {
+      validateUsernameFormat('user@mail');
+    }).toThrow(HttpError);
+  });
 });
 
 describe('assertUsernameChangeAllowed', () => {

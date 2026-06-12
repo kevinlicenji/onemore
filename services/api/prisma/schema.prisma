@@ -407,6 +407,7 @@ model ExerciseExecution {
   sortOrder                 Int                     @map("sort_order")
   status                    ExerciseExecutionStatus
   prescriptionSnapshot      Json                  @map("prescription_snapshot")
+  athleteNotes              String?                 @map("athlete_notes")
   createdAt                 DateTime                @default(now()) @map("created_at")
   updatedAt                 DateTime                @updatedAt @map("updated_at")
 

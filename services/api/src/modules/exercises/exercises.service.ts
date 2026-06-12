@@ -1,5 +1,7 @@
 import type { CreateCustomExercise, ExerciseListItem, ExerciseSearchQuery } from '@onemore/shared';
-import type { PrismaClient } from '@prisma/client';
+import { equipmentTypesForGroup, normalizeMuscleTags } from '@onemore/shared';
+import type { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma as PrismaNamespace } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
 import { slugify } from '../../lib/slug.js';
@@ -34,15 +36,11 @@ export class ExercisesService {
    */
   async list(userId: string, query: ExerciseSearchQuery): Promise<ExerciseListItem[]> {
     if (query.q) {
-      return this.search(userId, query.q, query.limit);
+      return this.search(userId, query);
     }
 
     const exercises = await this.prisma.exerciseLibrary.findMany({
-      where: {
-        deletedAt: null,
-        OR: [{ ownerUserId: null }, { ownerUserId: userId }],
-        ...(query.category ? { category: query.category } : {}),
-      },
+      where: this.buildWhere(userId, query),
       orderBy: [{ category: 'asc' }, { slug: 'asc' }],
       take: query.limit,
     });
@@ -51,21 +49,26 @@ export class ExercisesService {
   }
 
   /**
-   * Full-text search using Postgres tsvector.
+   * Full-text search using Postgres tsvector with optional filters.
    *
    * @param userId - Authenticated user id.
-   * @param term - Search term.
-   * @param limit - Max results.
+   * @param query - Search term and filters.
    */
-  async search(userId: string, term: string, limit: number): Promise<ExerciseListItem[]> {
+  async search(userId: string, query: ExerciseSearchQuery): Promise<ExerciseListItem[]> {
+    const term = query.q;
+    if (!term) {
+      return [];
+    }
+
     const rows = await this.prisma.$queryRaw<ExerciseRow[]>`
       SELECT id, slug, names, category, primary_muscles, secondary_muscles, equipment, is_bodyweight, owner_user_id
       FROM exercise_library
       WHERE deleted_at IS NULL
         AND (owner_user_id IS NULL OR owner_user_id = ${userId}::uuid)
         AND search_vector @@ plainto_tsquery('english', ${term})
+        ${this.buildSqlFilters(query)}
       ORDER BY ts_rank(search_vector, plainto_tsquery('english', ${term})) DESC
-      LIMIT ${limit}
+      LIMIT ${query.limit}
     `;
 
     return rows.map((row) => ({
@@ -73,7 +76,7 @@ export class ExercisesService {
       slug: row.slug,
       names: row.names,
       category: row.category,
-      primaryMuscles: row.primary_muscles,
+      primaryMuscles: normalizeMuscleTags(row.primary_muscles),
       secondaryMuscles: row.secondary_muscles,
       equipment: row.equipment,
       isBodyweight: row.is_bodyweight,
@@ -96,12 +99,14 @@ export class ExercisesService {
       throw new HttpError(409, 'Custom exercise slug already exists', 'EXERCISE_SLUG_EXISTS');
     }
 
+    const primaryMuscles = normalizeMuscleTags(input.primaryMuscles);
+
     const created = await this.prisma.exerciseLibrary.create({
       data: {
         slug,
         names: input.names,
         category: input.category,
-        primaryMuscles: input.primaryMuscles,
+        primaryMuscles,
         secondaryMuscles: input.secondaryMuscles,
         equipment: input.equipment,
         isBodyweight: input.isBodyweight,
@@ -110,6 +115,64 @@ export class ExercisesService {
     });
 
     return this.toListItem(created, userId);
+  }
+
+  private buildWhere(userId: string, query: ExerciseSearchQuery): Prisma.ExerciseLibraryWhereInput {
+    const where: Prisma.ExerciseLibraryWhereInput = {
+      deletedAt: null,
+      OR: [{ ownerUserId: null }, { ownerUserId: userId }],
+    };
+
+    if (query.category) {
+      where.category = query.category;
+    }
+
+    if (query.isBodyweight !== undefined) {
+      where.isBodyweight = query.isBodyweight;
+    }
+
+    if (query.equipmentGroup) {
+      where.equipment = { in: equipmentTypesForGroup(query.equipmentGroup) };
+    } else if (query.equipment) {
+      where.equipment = query.equipment;
+    }
+
+    if (query.muscle) {
+      where.primaryMuscles = { string_contains: `"${query.muscle}"` };
+    }
+
+    return where;
+  }
+
+  private buildSqlFilters(query: ExerciseSearchQuery): PrismaNamespace.Sql {
+    const parts: PrismaNamespace.Sql[] = [];
+
+    if (query.category) {
+      parts.push(PrismaNamespace.sql`AND category = ${query.category}`);
+    }
+
+    if (query.isBodyweight !== undefined) {
+      parts.push(PrismaNamespace.sql`AND is_bodyweight = ${query.isBodyweight}`);
+    }
+
+    if (query.equipmentGroup) {
+      const equipmentTypes = equipmentTypesForGroup(query.equipmentGroup);
+      parts.push(PrismaNamespace.sql`AND equipment IN (${PrismaNamespace.join(equipmentTypes)})`);
+    } else if (query.equipment) {
+      parts.push(PrismaNamespace.sql`AND equipment = ${query.equipment}`);
+    }
+
+    if (query.muscle) {
+      parts.push(
+        PrismaNamespace.sql`AND primary_muscles @> ${JSON.stringify([query.muscle])}::jsonb`,
+      );
+    }
+
+    if (parts.length === 0) {
+      return PrismaNamespace.empty;
+    }
+
+    return PrismaNamespace.join(parts, ' ');
   }
 
   private toListItem(
@@ -127,7 +190,7 @@ export class ExercisesService {
     userId: string,
   ): ExerciseListItem {
     const names = exercise.names as { en: string; it?: string };
-    const primaryMuscles = exercise.primaryMuscles as string[];
+    const primaryMuscles = normalizeMuscleTags(exercise.primaryMuscles as string[]);
     const secondaryMuscles = exercise.secondaryMuscles as string[];
 
     return {

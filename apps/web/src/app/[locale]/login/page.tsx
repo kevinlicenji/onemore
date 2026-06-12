@@ -16,7 +16,7 @@ export default function LoginPage(): React.ReactElement {
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const { setSession, setProfile } = useAuth();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ export default function LoginPage(): React.ReactElement {
     setLoading(true);
     setError(null);
     try {
-      const result = await loginWithPassword(email, password);
+      const result = await loginWithPassword(identifier, password);
       setSession(result.accessToken, result.user);
       const profile = await fetchUserProfile(result.accessToken);
       setProfile(profile);
@@ -44,13 +44,14 @@ export default function LoginPage(): React.ReactElement {
       <h1 className="text-2xl font-bold">{t('loginTitle')}</h1>
       <form className="flex flex-col gap-4" onSubmit={(e) => void handleSubmit(e)}>
         <label className="flex flex-col gap-1 text-sm">
-          {t('email')}
+          {t('loginIdentifier')}
           <input
+            autoComplete="username"
             className="rounded-md border px-3 py-2"
-            type="email"
-            value={email}
+            type="text"
+            value={identifier}
             onChange={(e) => {
-              setEmail(e.target.value);
+              setIdentifier(e.target.value);
             }}
             required
           />

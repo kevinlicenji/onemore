@@ -2,12 +2,40 @@ import { z } from 'zod';
 
 export const passwordSchema = z.string().min(8, 'Password must be at least 8 characters').max(128);
 
+/** RFC-style email used for registration and password reset. */
+export const emailSchema = z
+  .string()
+  .trim()
+  .min(1, 'Email is required')
+  .email('Invalid email address')
+  .transform((value) => value.toLowerCase());
+
+/**
+ * Username: letters, digits, underscore only — never `@` (reserved for email login).
+ */
 export const usernameSchema = z
   .string()
-  .regex(/^[a-zA-Z0-9_]{3,30}$/, 'Username must be 3–30 alphanumeric or underscore');
+  .trim()
+  .min(3, 'Username must be at least 3 characters')
+  .max(30, 'Username must be at most 30 characters')
+  .superRefine((value, ctx) => {
+    if (value.includes('@')) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Username cannot contain @',
+      });
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Username must contain only letters, numbers, and underscore',
+      });
+    }
+  });
 
 export const registerBodySchema = z.object({
-  email: z.string().email().toLowerCase(),
+  email: emailSchema,
   password: passwordSchema,
   username: usernameSchema,
   displayName: z.string().min(1).max(100).optional(),
@@ -26,12 +54,31 @@ export const registerBodySchema = z.object({
 });
 
 export const loginBodySchema = z.object({
-  email: z.string().email().toLowerCase(),
+  identifier: z.string().trim().min(1).max(254),
   password: z.string().min(1),
 });
 
+/**
+ * Normalize login identifier for lookup (email or username).
+ *
+ * @param identifier - Raw value from the login form.
+ * @returns Lowercased identifier.
+ */
+export function normalizeLoginIdentifier(identifier: string): string {
+  return identifier.trim().toLowerCase();
+}
+
+/**
+ * Whether the login identifier should be resolved as an email address.
+ *
+ * @param identifier - Normalized login identifier.
+ */
+export function isEmailLoginIdentifier(identifier: string): boolean {
+  return identifier.includes('@');
+}
+
 export const forgotPasswordBodySchema = z.object({
-  email: z.string().email().toLowerCase(),
+  email: emailSchema,
 });
 
 export const resetPasswordBodySchema = z.object({

@@ -79,7 +79,11 @@ export function createAuthRouter(deps: AuthRouterDeps): Router {
     '/login',
     loginRateLimit,
     asyncHandler(async (req, res) => {
-      const body = loginBodySchema.parse(req.body);
+      const payload = req.body as { identifier?: string; email?: string; password?: string };
+      const body = loginBodySchema.parse({
+        identifier: payload.identifier ?? payload.email,
+        password: payload.password,
+      });
       const ipHash = hashIp(req.ip ?? 'unknown');
       const result = await deps.authService.login(body, ipHash);
       authResponse(res, deps.env, result);

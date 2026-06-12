@@ -10,6 +10,10 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
  * @param username - Proposed username.
  */
 export function validateUsernameFormat(username: string): void {
+  if (username.includes('@')) {
+    throw new HttpError(400, 'Username cannot contain @', 'INVALID_USERNAME');
+  }
+
   if (!USERNAME_REGEX.test(username)) {
     throw new HttpError(
       400,

@@ -52,6 +52,37 @@ describe('ExercisesService', () => {
     expect(prisma.exerciseLibrary.findMany).toHaveBeenCalled();
   });
 
+  it('applies category filter when listing', async () => {
+    const prisma = createMockPrisma();
+    const service = new ExercisesService(prisma as never);
+
+    await service.list('user-1', { limit: 10, category: 'legs', equipmentGroup: 'machines' });
+
+    expect(prisma.exerciseLibrary.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          category: 'legs',
+          equipment: { in: ['machine', 'smith_machine'] },
+        }),
+      }),
+    );
+  });
+
+  it('applies muscle filter when listing', async () => {
+    const prisma = createMockPrisma();
+    const service = new ExercisesService(prisma as never);
+
+    await service.list('user-1', { limit: 10, muscle: 'hamstrings' });
+
+    expect(prisma.exerciseLibrary.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          primaryMuscles: { string_contains: '"hamstrings"' },
+        }),
+      }),
+    );
+  });
+
   it('creates a custom exercise', async () => {
     const prisma = createMockPrisma();
     const service = new ExercisesService(prisma as never);

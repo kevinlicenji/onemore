@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { muscleGroupSchema } from './exercise.js';
+import { localizedTextSchema } from '../constants/template-meta.js';
 import { trainingGoalSchema } from './user.js';
 
 export const programExerciseInputSchema = z.object({
@@ -52,6 +54,7 @@ export const programExerciseSchema = z.object({
     id: z.string().uuid(),
     slug: z.string(),
     names: z.object({ en: z.string(), it: z.string().optional() }),
+    primaryMuscles: z.array(muscleGroupSchema),
   }),
 });
 
@@ -59,6 +62,7 @@ export const workoutDaySchema = z.object({
   id: z.string().uuid(),
   label: z.string(),
   sortOrder: z.number().int(),
+  muscleGroups: z.array(muscleGroupSchema),
   exercises: z.array(programExerciseSchema),
 });
 
@@ -68,16 +72,26 @@ export const programDetailSchema = programSummarySchema.omit({ isActive: true })
   versionNumber: z.number().int().nullable(),
   versionStatus: z.enum(['draft', 'published', 'archived']).nullable(),
   publishedAt: z.string().datetime().nullable(),
+  guide: localizedTextSchema.nullable().optional(),
   days: z.array(workoutDaySchema),
 });
 
 export const templateSummarySchema = z.object({
   slug: z.string(),
   name: z.string(),
+  /** Localized display name (legacy alias kept for compatibility). */
   description: z.string().nullable(),
+  /** Why the template is built this way — training intent and target. */
+  guide: localizedTextSchema.nullable(),
   objective: trainingGoalSchema.nullable(),
   daysPerWeek: z.number().int(),
   audience: z.string(),
+  equipmentProfile: z
+    .enum(['mixed', 'machines', 'free_weights', 'bodyweight', 'dumbbells', 'bands'])
+    .nullable(),
+  split: z
+    .enum(['full_body', 'upper_lower', 'push_pull_legs', 'bro_split', 'conditioning'])
+    .nullable(),
 });
 
 export type CreateProgramInput = z.infer<typeof createProgramSchema>;

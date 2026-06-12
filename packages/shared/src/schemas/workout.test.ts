@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   addWorkoutExerciseSchema,
+  addWorkoutSetSchema,
   startWorkoutSessionSchema,
   substituteExerciseSchema,
+  updateWorkoutExerciseNotesSchema,
   updateWorkoutSessionNotesSchema,
   upsertSetLogSchema,
 } from './workout.js';
@@ -45,6 +47,18 @@ describe('workout schemas', () => {
 
   it('accepts nullable session notes', () => {
     const result = updateWorkoutSessionNotesSchema.safeParse({ privateNotes: null });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts nullable exercise notes', () => {
+    const result = updateWorkoutExerciseNotesSchema.safeParse({ athleteNotes: 'felt heavy' });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts add workout set payload', () => {
+    const result = addWorkoutSetSchema.safeParse({
+      id: '550e8400-e29b-41d4-a716-446655440000',
+    });
     expect(result.success).toBe(true);
   });
 });

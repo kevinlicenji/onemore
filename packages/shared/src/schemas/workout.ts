@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { muscleGroupSchema } from './exercise.js';
+
 export const sessionTypeSchema = z.enum(['programmed', 'free']);
 
 export const workoutSessionStatusSchema = z.enum(['in_progress', 'completed', 'abandoned']);
@@ -46,12 +48,20 @@ export const addWorkoutExerciseSchema = z.object({
   restSeconds: z.number().int().min(0).max(600).default(90),
 });
 
+export const addWorkoutSetSchema = z.object({
+  id: z.string().uuid(),
+});
+
 export const substituteExerciseSchema = z.object({
   exerciseLibraryId: z.string().uuid(),
 });
 
 export const updateWorkoutSessionNotesSchema = z.object({
   privateNotes: z.string().max(2000).nullable(),
+});
+
+export const updateWorkoutExerciseNotesSchema = z.object({
+  athleteNotes: z.string().max(2000).nullable(),
 });
 
 export const setLogSchema = z.object({
@@ -72,6 +82,7 @@ export const workoutExerciseSchema = z.object({
   substitutedFromExerciseId: z.string().uuid().nullable().optional(),
   sortOrder: z.number().int(),
   status: exerciseExecutionStatusSchema,
+  athleteNotes: z.string().nullable(),
   prescription: prescriptionSnapshotSchema,
   exercise: z.object({
     id: z.string().uuid(),
@@ -121,6 +132,7 @@ export const workoutDayOptionSchema = z.object({
   workoutDayId: z.string().uuid(),
   label: z.string(),
   exerciseCount: z.number().int(),
+  muscleGroups: z.array(muscleGroupSchema),
   exercises: z.array(nextWorkoutDayExerciseSchema),
 });
 
@@ -139,8 +151,10 @@ export type PrescriptionSnapshot = z.infer<typeof prescriptionSnapshotSchema>;
 export type StartWorkoutSessionInput = z.infer<typeof startWorkoutSessionSchema>;
 export type UpsertSetLogInput = z.infer<typeof upsertSetLogSchema>;
 export type AddWorkoutExerciseInput = z.infer<typeof addWorkoutExerciseSchema>;
+export type AddWorkoutSetInput = z.infer<typeof addWorkoutSetSchema>;
 export type SubstituteExerciseInput = z.infer<typeof substituteExerciseSchema>;
 export type UpdateWorkoutSessionNotesInput = z.infer<typeof updateWorkoutSessionNotesSchema>;
+export type UpdateWorkoutExerciseNotesInput = z.infer<typeof updateWorkoutExerciseNotesSchema>;
 export type WorkoutSessionDetail = z.infer<typeof workoutSessionDetailSchema>;
 export type WorkoutDayOption = z.infer<typeof workoutDayOptionSchema>;
 export type NextWorkoutPreview = z.infer<typeof nextWorkoutPreviewSchema>;

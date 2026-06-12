@@ -16,6 +16,8 @@
     "db:push": "prisma db push",
     "seed": "tsx prisma/seed/index.ts",
     "seed:exercises": "tsx prisma/seed/exercises.seed.ts",
+    "seed:import-exercises": "tsx prisma/seed/scripts/import-wger.ts",
+    "seed:validate": "tsx prisma/seed/scripts/validate-seed.ts",
     "seed:templates": "tsx prisma/seed/templates.seed.ts",
     "openapi:lint": "spectral lint openapi.yaml"
   },

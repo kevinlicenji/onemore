@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
 import { fetchProgramTemplates } from '@/lib/api-auth';
+import { pickLocalizedText } from '@/lib/pick-localized-text';
 import type { TemplateSummary } from '@onemore/shared';
 
 export default function ProgramTemplatesPage(): React.ReactElement {
@@ -44,13 +45,20 @@ export default function ProgramTemplatesPage(): React.ReactElement {
               href={`/${locale}/programs/templates/${template.slug}`}
               className="rounded-lg border p-4 hover:bg-muted/30"
             >
-              <span className="font-medium">{template.name}</span>
+              <span className="font-medium">
+                {locale === 'it' && template.description ? template.description : template.name}
+              </span>
               <p className="mt-1 text-sm text-muted-foreground">
                 {t('templateMeta', {
                   days: template.daysPerWeek,
                   audience: template.audience,
                 })}
               </p>
+              {template.guide && (
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+                  {pickLocalizedText(template.guide, locale)}
+                </p>
+              )}
               <p className="mt-2 text-xs text-primary">{t('viewTemplateDetail')}</p>
             </Link>
           ))}

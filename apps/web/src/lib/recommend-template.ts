@@ -7,9 +7,39 @@ interface ProfileHints {
 }
 
 const FALLBACK_SLUGS: Record<TrainingEnvironment, string> = {
-  gym: 'beginner_full_body_gym',
+  gym: 'beginner_machine_gym_3day',
   home: 'home_bodyweight_3day',
 };
+
+function scoreTemplate(
+  template: TemplateSummary,
+  environment: TrainingEnvironment,
+  levelToken: string,
+  days: number,
+): number {
+  const audience = template.audience.toLowerCase();
+  let score = 0;
+
+  const envMatch = environment === 'home' ? audience.includes('home') : audience.includes('gym');
+  if (!envMatch) {
+    return -1;
+  }
+
+  if (audience.includes(levelToken)) {
+    score += 50;
+  }
+
+  if (environment === 'gym' && levelToken === 'beginner' && template.equipmentProfile === 'machines') {
+    score += 30;
+  }
+
+  if (environment === 'home' && template.equipmentProfile === 'bodyweight') {
+    score += 20;
+  }
+
+  score -= Math.abs(template.daysPerWeek - days) * 5;
+  return score;
+}
 
 /**
  * Pick the best-matching program template for a new athlete profile.
@@ -29,23 +59,19 @@ export function recommendTemplateSlug(
   const environment = profile.trainingEnvironment ?? 'gym';
   const level = profile.trainingLevel ?? 'beginner';
   const days = profile.trainingDaysPerWeek ?? 3;
+  const levelToken = level === 'advanced' ? 'advanced' : level;
 
-  const levelToken = level === 'advanced' ? 'intermediate' : level;
+  const ranked = templates
+    .map((template) => ({
+      template,
+      score: scoreTemplate(template, environment, levelToken, days),
+    }))
+    .filter((entry) => entry.score >= 0)
+    .sort((left, right) => right.score - left.score);
 
-  const candidates = templates.filter((template) => {
-    const audience = template.audience.toLowerCase();
-    const envMatch = environment === 'home' ? audience.includes('home') : audience.includes('gym');
-    const levelMatch = audience.includes(levelToken);
-    return envMatch && levelMatch;
-  });
+  if (ranked.length > 0) {
+    return ranked[0]?.template.slug ?? null;
+  }
 
-  const pool = candidates.length > 0 ? candidates : templates;
-
-  const sorted = [...pool].sort((left, right) => {
-    const leftDiff = Math.abs(left.daysPerWeek - days);
-    const rightDiff = Math.abs(right.daysPerWeek - days);
-    return leftDiff - rightDiff;
-  });
-
-  return sorted[0]?.slug ?? FALLBACK_SLUGS[environment];
+  return FALLBACK_SLUGS[environment];
 }

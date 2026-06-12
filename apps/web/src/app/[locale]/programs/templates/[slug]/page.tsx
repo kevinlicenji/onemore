@@ -11,6 +11,7 @@ import { useAuth } from '@/components/auth-provider';
 import { ProgramDayList } from '@/components/program-day-list';
 import { RequireAuth } from '@/components/require-auth';
 import { fetchProgramTemplateDetail } from '@/lib/api-auth';
+import { pickLocalizedText } from '@/lib/pick-localized-text';
 
 export default function ProgramTemplateDetailPage(): React.ReactElement {
   const t = useTranslations('Programs');
@@ -39,6 +40,11 @@ export default function ProgramTemplateDetailPage(): React.ReactElement {
           <>
             <div>
               <h1 className="text-2xl font-bold">{template.name}</h1>
+              {template.guide && (
+                <p className="mt-3 text-sm leading-relaxed text-foreground/90">
+                  {pickLocalizedText(template.guide, locale)}
+                </p>
+              )}
               <p className="mt-2 text-sm text-muted-foreground">{t('templateDetailSubtitle')}</p>
             </div>
             <ProgramDayList days={template.days} locale={locale} />

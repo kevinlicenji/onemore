@@ -1,6 +1,7 @@
 import type {
   AccountDeletionResponse,
   AddWorkoutExerciseInput,
+  AddWorkoutSetInput,
   AnalyticsDashboard,
   CreateCustomExercise,
   CreateProgramInput,
@@ -17,6 +18,7 @@ import type {
   StartWorkoutSessionInput,
   SubstituteExerciseInput,
   TemplateSummary,
+  UpdateWorkoutExerciseNotesInput,
   UpdateWorkoutSessionNotesInput,
   UpdateUserProfile,
   UpsertSetLogInput,
@@ -124,8 +126,42 @@ export function resolveAuthenticatedHomePath(locale: string, profile: UserProfil
   return `/${locale}/onboarding`;
 }
 
-export async function fetchExercises(accessToken: string): Promise<ExerciseListItem[]> {
-  const params = new URLSearchParams({ limit: '50' });
+export interface ExerciseQueryFilters {
+  q?: string;
+  category?: string;
+  equipment?: string;
+  isBodyweight?: boolean;
+  equipmentGroup?: 'machines' | 'bodyweight' | 'free_weights' | 'cables' | 'cardio';
+  muscle?: string;
+  limit?: number;
+}
+
+export async function fetchExercises(
+  accessToken: string,
+  filters: ExerciseQueryFilters = {},
+): Promise<ExerciseListItem[]> {
+  const params = new URLSearchParams({
+    limit: String(filters.limit ?? 100),
+  });
+  if (filters.q) {
+    params.set('q', filters.q);
+  }
+  if (filters.category) {
+    params.set('category', filters.category);
+  }
+  if (filters.equipment) {
+    params.set('equipment', filters.equipment);
+  }
+  if (filters.isBodyweight !== undefined) {
+    params.set('isBodyweight', filters.isBodyweight ? 'true' : 'false');
+  }
+  if (filters.equipmentGroup) {
+    params.set('equipmentGroup', filters.equipmentGroup);
+  }
+  if (filters.muscle) {
+    params.set('muscle', filters.muscle);
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/v1/exercises?${params.toString()}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     credentials: 'include',
@@ -140,17 +176,14 @@ export async function fetchExercises(accessToken: string): Promise<ExerciseListI
 export async function searchExercises(
   accessToken: string,
   query: string,
+  filters: Omit<ExerciseQueryFilters, 'q'> = {},
 ): Promise<ExerciseListItem[]> {
-  const params = new URLSearchParams({ q: query, limit: '20' });
-  const response = await fetch(`${API_BASE_URL}/api/v1/exercises?${params.toString()}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-    credentials: 'include',
-  });
-  if (!response.ok) {
-    throw await parseApiError(response, 'Failed to search exercises');
+  const trimmed = query.trim();
+  const limit = filters.limit ?? 20;
+  if (trimmed.length >= 1) {
+    return fetchExercises(accessToken, { ...filters, q: trimmed, limit });
   }
-  const data = (await response.json()) as { exercises: ExerciseListItem[] };
-  return data.exercises;
+  return fetchExercises(accessToken, { ...filters, limit });
 }
 
 export async function createCustomExercise(
@@ -493,6 +526,27 @@ export async function addWorkoutExercise(
   return response.json() as Promise<WorkoutSessionDetail>;
 }
 
+export async function addWorkoutExerciseSet(
+  accessToken: string,
+  sessionId: string,
+  executionId: string,
+  payload: AddWorkoutSetInput,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/exercises/${executionId}/sets`,
+    {
+      method: 'POST',
+      headers: authHeaders(accessToken),
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to add set');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
 export async function skipWorkoutExercise(
   accessToken: string,
   sessionId: string,
@@ -547,6 +601,27 @@ export async function updateWorkoutSessionNotes(
   });
   if (!response.ok) {
     throw await parseApiError(response, 'Failed to update session notes');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function updateWorkoutExerciseNotes(
+  accessToken: string,
+  sessionId: string,
+  executionId: string,
+  payload: UpdateWorkoutExerciseNotesInput,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/workouts/sessions/${sessionId}/exercises/${executionId}/notes`,
+    {
+      method: 'PATCH',
+      headers: authHeaders(accessToken),
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to update exercise notes');
   }
   return response.json() as Promise<WorkoutSessionDetail>;
 }

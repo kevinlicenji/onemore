@@ -1,311 +1,2352 @@
 [
   {
-    "slug": "squat",
-    "wgerId": 1,
-    "names": { "en": "Squat", "it": "Squat" },
-    "category": "legs",
-    "primaryMuscles": ["quadriceps"],
-    "secondaryMuscles": ["glutes"],
-    "equipment": "barbell",
-    "isBodyweight": false
-  },
-  {
-    "slug": "bench-press",
-    "wgerId": 2,
-    "names": { "en": "Bench Press", "it": "Panca piana" },
-    "category": "chest",
-    "primaryMuscles": ["chest"],
-    "secondaryMuscles": ["triceps"],
-    "equipment": "barbell",
-    "isBodyweight": false
-  },
-  {
-    "slug": "barbell-row",
-    "wgerId": 3,
-    "names": { "en": "Barbell Row", "it": "Rematore con bilanciere" },
-    "category": "back",
-    "primaryMuscles": ["back"],
-    "secondaryMuscles": ["biceps"],
-    "equipment": "barbell",
-    "isBodyweight": false
-  },
-  {
-    "slug": "plank",
-    "names": { "en": "Plank", "it": "Plank" },
-    "category": "core",
-    "primaryMuscles": ["core"],
+    "slug": "assisted-dip-machine",
+    "names": {
+      "en": "Assisted Dip Machine",
+      "it": "Dip assistiti alla macchina"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "triceps",
+      "chest"
+    ],
     "secondaryMuscles": [],
-    "equipment": "bodyweight",
-    "isBodyweight": true
-  },
-  {
-    "slug": "romanian-deadlift",
-    "names": { "en": "Romanian Deadlift", "it": "Stacco rumeno" },
-    "category": "legs",
-    "primaryMuscles": ["hamstrings"],
-    "secondaryMuscles": ["glutes"],
-    "equipment": "barbell",
-    "isBodyweight": false
-  },
-  {
-    "slug": "overhead-press",
-    "names": { "en": "Overhead Press", "it": "Lento avanti" },
-    "category": "shoulders",
-    "primaryMuscles": ["shoulders"],
-    "secondaryMuscles": ["triceps"],
-    "equipment": "barbell",
-    "isBodyweight": false
-  },
-  {
-    "slug": "lat-pulldown",
-    "names": { "en": "Lat Pulldown", "it": "Lat machine" },
-    "category": "back",
-    "primaryMuscles": ["back"],
-    "secondaryMuscles": ["biceps"],
-    "equipment": "cable",
-    "isBodyweight": false
-  },
-  {
-    "slug": "leg-raise",
-    "names": { "en": "Leg Raise", "it": "Alzata delle gambe" },
-    "category": "core",
-    "primaryMuscles": ["core"],
-    "secondaryMuscles": [],
-    "equipment": "bodyweight",
-    "isBodyweight": true
-  },
-  {
-    "slug": "leg-press",
-    "names": { "en": "Leg Press", "it": "Pressa" },
-    "category": "legs",
-    "primaryMuscles": ["quadriceps"],
-    "secondaryMuscles": ["glutes"],
     "equipment": "machine",
     "isBodyweight": false
   },
   {
-    "slug": "incline-dumbbell-press",
-    "names": { "en": "Incline Dumbbell Press", "it": "Panca inclinata manubri" },
-    "category": "chest",
-    "primaryMuscles": ["chest"],
-    "secondaryMuscles": ["triceps"],
+    "slug": "backward-arm-circles",
+    "wgerId": 995,
+    "names": {
+      "en": "Backward arm circles",
+      "it": "Cerchi di braccia all'indietro"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "biceps-curl",
+    "names": {
+      "en": "Biceps Curl",
+      "it": "Curl bicipiti"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
     "equipment": "dumbbell",
     "isBodyweight": false
   },
   {
-    "slug": "cable-row",
-    "names": { "en": "Cable Row", "it": "Rematore cavo" },
-    "category": "back",
-    "primaryMuscles": ["back"],
-    "secondaryMuscles": ["biceps"],
-    "equipment": "cable",
-    "isBodyweight": false
-  },
-  {
-    "slug": "pallof-press",
-    "names": { "en": "Pallof Press", "it": "Pallof press" },
-    "category": "core",
-    "primaryMuscles": ["core"],
-    "secondaryMuscles": [],
-    "equipment": "cable",
-    "isBodyweight": false
-  },
-  {
-    "slug": "leg-curl",
-    "names": { "en": "Leg Curl", "it": "Leg curl" },
-    "category": "legs",
-    "primaryMuscles": ["hamstrings"],
+    "slug": "biceps-curl-machine",
+    "wgerId": 1424,
+    "names": {
+      "en": "Biceps Curl Machine"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "biceps"
+    ],
     "secondaryMuscles": [],
     "equipment": "machine",
     "isBodyweight": false
   },
   {
-    "slug": "calf-raise",
-    "names": { "en": "Calf Raise", "it": "Calf raise" },
-    "category": "legs",
-    "primaryMuscles": ["calves"],
+    "slug": "dumbbells-on-scott-machine",
+    "wgerId": 208,
+    "names": {
+      "en": "Dumbbells on Scott Machine"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "biceps"
+    ],
     "secondaryMuscles": [],
     "equipment": "machine",
     "isBodyweight": false
   },
   {
-    "slug": "pull-up",
-    "names": { "en": "Pull-up", "it": "Trazioni" },
-    "category": "back",
-    "primaryMuscles": ["back"],
-    "secondaryMuscles": ["biceps"],
+    "slug": "floor-dips",
+    "wgerId": 1000,
+    "names": {
+      "en": "Floor dips",
+      "it": "Cadimenti a terra"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
   },
   {
-    "slug": "lateral-raise",
-    "names": { "en": "Lateral Raise", "it": "Alzate laterali" },
-    "category": "shoulders",
-    "primaryMuscles": ["shoulders"],
+    "slug": "forward-arm-circles",
+    "wgerId": 994,
+    "names": {
+      "en": "Forward arm circles",
+      "it": "Cerchi del braccio"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "hammer-curl",
+    "names": {
+      "en": "Hammer Curl",
+      "it": "Hammer curl"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
     "secondaryMuscles": [],
     "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "pike-push-ups",
+    "wgerId": 454,
+    "names": {
+      "en": "Pike Push Ups",
+      "it": "Flessioni del luccio"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "preacher-curl-machine",
+    "names": {
+      "en": "Preacher Curl Machine",
+      "it": "Curl alla macchina Scott"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "push-up-rotations",
+    "wgerId": 985,
+    "names": {
+      "en": "Push-up rotations",
+      "it": "Flessioni con rotazione"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "chest",
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "sloper-hanging",
+    "wgerId": 804,
+    "names": {
+      "en": "Sloper hanging"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "forearms",
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "smith-machine-close-grip-bench-press",
+    "wgerId": 598,
+    "names": {
+      "en": "Smith Machine Close-grip Bench Press"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "smith_machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "tricep-extension-machine",
+    "names": {
+      "en": "Tricep Extension Machine",
+      "it": "Estensioni tricipiti alla macchina"
+    },
+    "category": "arms",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
     "isBodyweight": false
   },
   {
     "slug": "tricep-pushdown",
-    "names": { "en": "Tricep Pushdown", "it": "Pushdown tricipiti" },
+    "names": {
+      "en": "Tricep Pushdown",
+      "it": "Pushdown tricipiti"
+    },
     "category": "arms",
-    "primaryMuscles": ["triceps"],
+    "primaryMuscles": [
+      "triceps"
+    ],
     "secondaryMuscles": [],
     "equipment": "cable",
     "isBodyweight": false
   },
   {
-    "slug": "biceps-curl",
-    "names": { "en": "Biceps Curl", "it": "Curl bicipiti" },
+    "slug": "triceps-on-machine",
+    "wgerId": 661,
+    "names": {
+      "en": "Triceps on Machine"
+    },
     "category": "arms",
-    "primaryMuscles": ["biceps"],
-    "secondaryMuscles": [],
-    "equipment": "dumbbell",
-    "isBodyweight": false
-  },
-  {
-    "slug": "hammer-curl",
-    "names": { "en": "Hammer Curl", "it": "Hammer curl" },
-    "category": "arms",
-    "primaryMuscles": ["biceps"],
-    "secondaryMuscles": [],
-    "equipment": "dumbbell",
-    "isBodyweight": false
-  },
-  {
-    "slug": "bulgarian-split-squat",
-    "names": { "en": "Bulgarian Split Squat", "it": "Squat bulgaro" },
-    "category": "legs",
-    "primaryMuscles": ["quadriceps"],
-    "secondaryMuscles": ["glutes"],
-    "equipment": "dumbbell",
-    "isBodyweight": false
-  },
-  {
-    "slug": "leg-extension",
-    "names": { "en": "Leg Extension", "it": "Leg extension" },
-    "category": "legs",
-    "primaryMuscles": ["quadriceps"],
+    "primaryMuscles": [
+      "triceps"
+    ],
     "secondaryMuscles": [],
     "equipment": "machine",
     "isBodyweight": false
   },
   {
-    "slug": "push-up",
-    "names": { "en": "Push-up", "it": "Piegamenti" },
-    "category": "chest",
-    "primaryMuscles": ["chest"],
-    "secondaryMuscles": ["triceps"],
+    "slug": "assisted-pull-up-machine",
+    "names": {
+      "en": "Assisted Pull-up Machine",
+      "it": "Trazioni assistite alla macchina"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back",
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "back-extension-machine",
+    "names": {
+      "en": "Back Extension Machine",
+      "it": "Iperestensioni alla macchina"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "lower_back",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "back-neck-stretch",
+    "wgerId": 1010,
+    "names": {
+      "en": "Back neck stretch",
+      "it": "Stiramento della nuca"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "traps"
+    ],
+    "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
   },
   {
-    "slug": "glute-bridge",
-    "names": { "en": "Glute Bridge", "it": "Bridge glutei" },
-    "category": "legs",
-    "primaryMuscles": ["glutes"],
-    "secondaryMuscles": ["hamstrings"],
+    "slug": "barbell-row",
+    "wgerId": 3,
+    "names": {
+      "en": "Barbell Row",
+      "it": "Rematore con bilanciere"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "cable-row",
+    "names": {
+      "en": "Cable Row",
+      "it": "Rematore cavo"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "cable",
+    "isBodyweight": false
+  },
+  {
+    "slug": "child-s-pose",
+    "wgerId": 1002,
+    "names": {
+      "en": "Child's pose",
+      "it": "Posa del bambino"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
   },
   {
-    "slug": "pike-push-up",
-    "names": { "en": "Pike Push-up", "it": "Pike push-up" },
-    "category": "shoulders",
-    "primaryMuscles": ["shoulders"],
-    "secondaryMuscles": ["triceps"],
+    "slug": "chin-tuck",
+    "wgerId": 1006,
+    "names": {
+      "en": "Chin tuck",
+      "it": "Rialzo del mento"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "traps"
+    ],
+    "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
   },
   {
-    "slug": "reverse-lunge",
-    "names": { "en": "Reverse Lunge", "it": "Affondi indietro" },
-    "category": "legs",
-    "primaryMuscles": ["quadriceps"],
-    "secondaryMuscles": ["glutes"],
+    "slug": "chin-up",
+    "wgerId": 152,
+    "names": {
+      "en": "Chin Up",
+      "it": "Trazioni alla sbarra"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back",
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "pull_up_bar",
+    "isBodyweight": true
+  },
+  {
+    "slug": "chin-ups",
+    "wgerId": 154,
+    "names": {
+      "en": "Chin-ups",
+      "it": "Trazioni con presa prona"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back",
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "pull_up_bar",
+    "isBodyweight": true
+  },
+  {
+    "slug": "front-lever-tuck",
+    "wgerId": 1214,
+    "names": {
+      "en": "Front lever tuck",
+      "it": "Front lever tuck"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back",
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "pull_up_bar",
+    "isBodyweight": true
+  },
+  {
+    "slug": "front-neck-stretch",
+    "wgerId": 1011,
+    "names": {
+      "en": "Front neck stretch",
+      "it": "Collo anteriore allungato"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "traps"
+    ],
+    "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
   },
   {
-    "slug": "dead-bug",
-    "names": { "en": "Dead Bug", "it": "Dead bug" },
-    "category": "core",
-    "primaryMuscles": ["core"],
+    "slug": "lat-pulldown",
+    "names": {
+      "en": "Lat Pulldown",
+      "it": "Lat machine"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "cable",
+    "isBodyweight": false
+  },
+  {
+    "slug": "lat-pulldown-machine",
+    "names": {
+      "en": "Lat Pulldown Machine",
+      "it": "Lat machine"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leverage-machine-iso-row",
+    "wgerId": 380,
+    "names": {
+      "en": "Leverage Machine Iso Row"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "muscle-up",
+    "wgerId": 423,
+    "names": {
+      "en": "Muscle up",
+      "it": "Muscle up"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back",
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "pull_up_bar",
+    "isBodyweight": true
+  },
+  {
+    "slug": "pull-up",
+    "names": {
+      "en": "Pull-up",
+      "it": "Trazioni"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back",
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "pull_up_bar",
+    "isBodyweight": true
+  },
+  {
+    "slug": "pull-ups-on-machine",
+    "wgerId": 477,
+    "names": {
+      "en": "Pull Ups on Machine"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back",
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "pullover-machine",
+    "wgerId": 1384,
+    "names": {
+      "en": "Pullover Machine"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back",
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "resistance-band-row",
+    "names": {
+      "en": "Resistance Band Row",
+      "it": "Rematore con elastico"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "resistance_band",
+    "isBodyweight": false
+  },
+  {
+    "slug": "seated-row-machine",
+    "names": {
+      "en": "Seated Row Machine",
+      "it": "Rematore alla macchina seduto"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "superman",
+    "names": {
+      "en": "Superman",
+      "it": "Superman"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "lower_back",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "wall-slides",
+    "wgerId": 716,
+    "names": {
+      "en": "Wall Slides",
+      "it": "Scivoli a muro"
+    },
+    "category": "back",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "bag-training",
+    "wgerId": 1092,
+    "names": {
+      "en": "Bag training",
+      "it": "Allenamento al sacco"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "shoulders",
+      "core"
+    ],
     "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
   },
   {
     "slug": "burpee",
-    "names": { "en": "Burpee", "it": "Burpee" },
+    "names": {
+      "en": "Burpee",
+      "it": "Burpee"
+    },
     "category": "cardio",
-    "primaryMuscles": ["full_body"],
+    "primaryMuscles": [
+      "full_body"
+    ],
     "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
   },
   {
-    "slug": "jump-squat",
-    "names": { "en": "Jump Squat", "it": "Squat con salto" },
-    "category": "legs",
-    "primaryMuscles": ["quadriceps"],
-    "secondaryMuscles": ["glutes"],
+    "slug": "cycling",
+    "wgerId": 177,
+    "names": {
+      "en": "Cycling",
+      "it": "Bicicletta"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "cardio"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "elliptical",
+    "wgerId": 962,
+    "names": {
+      "en": "Elliptical",
+      "it": "Ellittica"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "cardio"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "high-knees",
+    "wgerId": 983,
+    "names": {
+      "en": "High knees",
+      "it": "Corsa sul posto con ginocchia alte"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "cardio"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "jump-rope-basic-jumps",
+    "wgerId": 993,
+    "names": {
+      "en": "Jump rope: basic jumps",
+      "it": "Corda per saltare: salti di base"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "cardio"
+    ],
+    "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
   },
   {
     "slug": "mountain-climber",
-    "names": { "en": "Mountain Climber", "it": "Mountain climber" },
+    "names": {
+      "en": "Mountain Climber",
+      "it": "Mountain climber"
+    },
     "category": "cardio",
-    "primaryMuscles": ["core"],
+    "primaryMuscles": [
+      "core",
+      "cardio"
+    ],
     "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
   },
   {
-    "slug": "side-plank",
-    "names": { "en": "Side Plank", "it": "Side plank" },
-    "category": "core",
-    "primaryMuscles": ["core"],
+    "slug": "rowing-machine",
+    "names": {
+      "en": "Rowing Machine",
+      "it": "Vogatore"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "back",
+      "cardio"
+    ],
     "secondaryMuscles": [],
-    "equipment": "bodyweight",
-    "isBodyweight": true
-  },
-  {
-    "slug": "face-pull",
-    "names": { "en": "Face Pull", "it": "Face pull" },
-    "category": "shoulders",
-    "primaryMuscles": ["shoulders"],
-    "secondaryMuscles": ["back"],
-    "equipment": "cable",
+    "equipment": "rower",
     "isBodyweight": false
   },
   {
-    "slug": "front-squat",
-    "names": { "en": "Front Squat", "it": "Front squat" },
-    "category": "legs",
-    "primaryMuscles": ["quadriceps"],
-    "secondaryMuscles": ["glutes"],
+    "slug": "ski-machine",
+    "wgerId": 1526,
+    "names": {
+      "en": "Ski Machine"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "cardio"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "stair-climber",
+    "names": {
+      "en": "Stair Climber",
+      "it": "Scala cardio"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "cardio"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "stair_climber",
+    "isBodyweight": false
+  },
+  {
+    "slug": "stationary-bike",
+    "names": {
+      "en": "Stationary Bike",
+      "it": "Cyclette"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "cardio"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bike",
+    "isBodyweight": false
+  },
+  {
+    "slug": "suspended-crossess",
+    "wgerId": 927,
+    "names": {
+      "en": "Suspended crossess",
+      "it": "Croci in sospensione"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "treadmill-run",
+    "names": {
+      "en": "Treadmill Run",
+      "it": "Corsa sul tapis roulant"
+    },
+    "category": "cardio",
+    "primaryMuscles": [
+      "cardio"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "treadmill",
+    "isBodyweight": false
+  },
+  {
+    "slug": "4-count-burpees",
+    "wgerId": 997,
+    "names": {
+      "en": "4-count burpees",
+      "it": "Burpees da 4 punti"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "full_body"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "bench-press",
+    "wgerId": 2,
+    "names": {
+      "en": "Bench Press",
+      "it": "Panca piana"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
     "equipment": "barbell",
     "isBodyweight": false
   },
   {
-    "slug": "split-squat",
-    "names": { "en": "Split Squat", "it": "Split squat" },
-    "category": "legs",
-    "primaryMuscles": ["quadriceps"],
-    "secondaryMuscles": ["glutes"],
+    "slug": "chest-press-machine",
+    "names": {
+      "en": "Chest Press Machine",
+      "it": "Chest press alla macchina"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "flat-machine-press",
+    "wgerId": 1694,
+    "names": {
+      "en": "Flat Machine Press"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "high-incline-smith-machine-press",
+    "wgerId": 1508,
+    "names": {
+      "en": "High-Incline Smith Machine Press"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "smith_machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "incline-chest-press-machine",
+    "names": {
+      "en": "Incline Chest Press Machine",
+      "it": "Chest press inclinata alla macchina"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "incline-dumbbell-press",
+    "names": {
+      "en": "Incline Dumbbell Press",
+      "it": "Panca inclinata manubri"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
     "equipment": "dumbbell",
     "isBodyweight": false
   },
   {
-    "slug": "superman",
-    "names": { "en": "Superman", "it": "Superman" },
-    "category": "back",
-    "primaryMuscles": ["back"],
-    "secondaryMuscles": ["glutes"],
+    "slug": "incline-smith-press",
+    "wgerId": 1692,
+    "names": {
+      "en": "Incline Smith Press"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "smith_machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "inverted-rows",
+    "wgerId": 1198,
+    "names": {
+      "en": "Inverted Rows",
+      "it": "Trazioni orizzontali"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
     "equipment": "bodyweight",
     "isBodyweight": true
+  },
+  {
+    "slug": "leverage-machine-chest-press",
+    "wgerId": 379,
+    "names": {
+      "en": "Leverage Machine Chest Press"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "machine-chest-fly",
+    "wgerId": 926,
+    "names": {
+      "en": "Machine chest fly",
+      "it": "Pectoral Machine"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "machine-chest-press",
+    "wgerId": 1883,
+    "names": {
+      "en": "Machine Chest Press"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "machine-chest-press-exercise",
+    "wgerId": 1655,
+    "names": {
+      "en": "Machine Chest Press Exercise"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "mountain-climbers",
+    "wgerId": 996,
+    "names": {
+      "en": "Mountain climbers",
+      "it": "Alpinista"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "core",
+      "cardio"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "no-push-up-burpees",
+    "wgerId": 998,
+    "names": {
+      "en": "No push-up burpees",
+      "it": "Nessun burpees con flessioni"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "full_body"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "pec-deck",
+    "wgerId": 1904,
+    "names": {
+      "en": "Pec Deck"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "pec-deck-machine",
+    "names": {
+      "en": "Pec Deck Machine",
+      "it": "Pec deck"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "push-up",
+    "names": {
+      "en": "Push-up",
+      "it": "Piegamenti"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "resistance-band-press",
+    "names": {
+      "en": "Resistance Band Press",
+      "it": "Press con elastico"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "resistance_band",
+    "isBodyweight": false
+  },
+  {
+    "slug": "smith-machine-bench-press",
+    "names": {
+      "en": "Smith Machine Bench Press",
+      "it": "Panca piana al multipower"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "smith_machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "smith-machine-slight-incline-press",
+    "wgerId": 925,
+    "names": {
+      "en": "SMITH MACHINE SLIGHT INCLINE PRESS"
+    },
+    "category": "chest",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "smith_machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "ab-crunch-machine",
+    "names": {
+      "en": "Ab Crunch Machine",
+      "it": "Crunch alla macchina"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "biceps-with-trx",
+    "wgerId": 958,
+    "names": {
+      "en": "Biceps with TRX",
+      "it": "Bicipiti al trx"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "box-squat",
+    "wgerId": 977,
+    "names": {
+      "en": "Box squat",
+      "it": "Squat box"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "clamshell",
+    "wgerId": 1823,
+    "names": {
+      "en": "Clamshell",
+      "it": "Clamshell"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "commando-pull-ups",
+    "wgerId": 980,
+    "names": {
+      "en": "commando pull-ups",
+      "it": "Trazioni alla sbarra commando"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "back",
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "pull_up_bar",
+    "isBodyweight": true
+  },
+  {
+    "slug": "crunches-on-machine",
+    "wgerId": 172,
+    "names": {
+      "en": "Crunches on Machine"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "dead-bug",
+    "names": {
+      "en": "Dead Bug",
+      "it": "Dead bug"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "front-lever",
+    "wgerId": 1245,
+    "names": {
+      "en": "Front Lever",
+      "it": "Front lever"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "back",
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "hollow-hold",
+    "wgerId": 297,
+    "names": {
+      "en": "Hollow Hold",
+      "it": "Barchetta"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "horizontal-traction-isometry",
+    "wgerId": 1101,
+    "names": {
+      "en": "Horizontal traction isometry",
+      "it": "Isometria trazioni orizzontali"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "back",
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "pull_up_bar",
+    "isBodyweight": true
+  },
+  {
+    "slug": "ice-scream-maker",
+    "wgerId": 1248,
+    "names": {
+      "en": "Ice Scream maker",
+      "it": "Ice Scream maker"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "knee-raises",
+    "wgerId": 978,
+    "names": {
+      "en": "Knee Raises",
+      "it": "Addominali alla sbarra"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "pull_up_bar",
+    "isBodyweight": true
+  },
+  {
+    "slug": "leg-raise",
+    "names": {
+      "en": "Leg Raise",
+      "it": "Alzata delle gambe"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "leg-raises-pull-up-bar",
+    "wgerId": 979,
+    "names": {
+      "en": "Leg raises pull up bar",
+      "it": "Addominali alla sbarra a gambe distese"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "pull_up_bar",
+    "isBodyweight": true
+  },
+  {
+    "slug": "medicine-ball-booklet-crunch",
+    "wgerId": 976,
+    "names": {
+      "en": "Medicine ball booklet crunch",
+      "it": "Crunch a libretto con palla medica"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "one-armed-push-ups",
+    "wgerId": 1293,
+    "names": {
+      "en": "One armed push-ups",
+      "it": "Piegamenti a una mano"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "pallof-press",
+    "names": {
+      "en": "Pallof Press",
+      "it": "Pallof press"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "cable",
+    "isBodyweight": false
+  },
+  {
+    "slug": "plank",
+    "names": {
+      "en": "Plank",
+      "it": "Plank"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "rotary-torso-machine",
+    "wgerId": 1374,
+    "names": {
+      "en": "Rotary Torso Machine"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "side-bends-on-machine",
+    "wgerId": 556,
+    "names": {
+      "en": "Side Bends on Machine"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "side-plank",
+    "names": {
+      "en": "Side Plank",
+      "it": "Side plank"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "torso-rotation-machine",
+    "names": {
+      "en": "Torso Rotation Machine",
+      "it": "Rotazioni busto alla macchina"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "trx-rows",
+    "wgerId": 959,
+    "names": {
+      "en": "TRX Rows",
+      "it": "Trazioni orizzontali con trx"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "vpushup",
+    "wgerId": 1090,
+    "names": {
+      "en": "Vpushup",
+      "it": "Vpushup"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "walking-bridge",
+    "wgerId": 1103,
+    "names": {
+      "en": "walking bridge",
+      "it": "Ponte in camminata"
+    },
+    "category": "core",
+    "primaryMuscles": [
+      "glutes",
+      "core"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "calf-press-using-leg-press-machine",
+    "wgerId": 146,
+    "names": {
+      "en": "Calf Press Using Leg Press Machine",
+      "it": "Pressa per polpacci alla Leg Press"
+    },
+    "category": "full_body",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "calf-raises-left-leg",
+    "wgerId": 1203,
+    "names": {
+      "en": "Calf raises, left leg"
+    },
+    "category": "full_body",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "calf-raises-on-hackenschmitt-machine",
+    "wgerId": 148,
+    "names": {
+      "en": "Calf Raises on Hackenschmitt Machine"
+    },
+    "category": "full_body",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "calf-raises-one-legged",
+    "wgerId": 702,
+    "names": {
+      "en": "Calf raises, one legged",
+      "it": "Sollevamento del polpaccio gamba sinistra"
+    },
+    "category": "full_body",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "other",
+    "isBodyweight": false
+  },
+  {
+    "slug": "calf-raises-right-leg",
+    "wgerId": 1021,
+    "names": {
+      "en": "Calf raises, right leg",
+      "it": "Sollevamento del polpaccio gamba destra"
+    },
+    "category": "full_body",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "leg-curl-with-elastic",
+    "wgerId": 1603,
+    "names": {
+      "en": "Leg curl with elastic",
+      "it": "Leg curl con elastico"
+    },
+    "category": "full_body",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "resistance_band",
+    "isBodyweight": false
+  },
+  {
+    "slug": "standing-calf-raises",
+    "wgerId": 622,
+    "names": {
+      "en": "Standing Calf Raises",
+      "it": "Sollevamento dei polpacci in piedi"
+    },
+    "category": "full_body",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "other",
+    "isBodyweight": false
+  },
+  {
+    "slug": "tibialis-raises",
+    "wgerId": 1200,
+    "names": {
+      "en": "Tibialis raises"
+    },
+    "category": "full_body",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "alternate-back-lunges",
+    "wgerId": 1102,
+    "names": {
+      "en": "Alternate back lunges",
+      "it": "Affondi indietro alternati"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "barbell-hack-squats",
+    "wgerId": 43,
+    "names": {
+      "en": "Barbell Hack Squats"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "bulgarian-split-squat",
+    "names": {
+      "en": "Bulgarian Split Squat",
+      "it": "Squat bulgaro"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "bulgarian-split-squats-left",
+    "wgerId": 988,
+    "names": {
+      "en": "Bulgarian split squats left",
+      "it": "Affondo bulgaro con manubri"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "bulgarian-split-squats-right",
+    "wgerId": 989,
+    "names": {
+      "en": "Bulgarian split squats right",
+      "it": "Split squats right bulgari"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "calf-raise",
+    "names": {
+      "en": "Calf Raise",
+      "it": "Calf raise"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "calf-raise-machine",
+    "names": {
+      "en": "Calf Raise Machine",
+      "it": "Calf raise alla macchina"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "calf-raise-using-hack-squat-machine",
+    "wgerId": 1466,
+    "names": {
+      "en": "Calf Raise using Hack Squat Machine"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "front-squat",
+    "names": {
+      "en": "Front Squat",
+      "it": "Front squat"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "glute-bridge",
+    "names": {
+      "en": "Glute Bridge",
+      "it": "Bridge glutei"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "glute-kickback-machine",
+    "names": {
+      "en": "Glute Kickback Machine",
+      "it": "Glute kickback alla macchina"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "hack-squat-machine",
+    "names": {
+      "en": "Hack Squat Machine",
+      "it": "Hack squat alla macchina"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "hack-squats",
+    "wgerId": 1414,
+    "names": {
+      "en": "Hack Squats"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "hip-abductor-machine",
+    "names": {
+      "en": "Hip Abductor Machine",
+      "it": "Abduttori alla macchina"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "abductors"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "hip-adductor-machine",
+    "names": {
+      "en": "Hip Adductor Machine",
+      "it": "Adduttori alla macchina"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "adductors"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "jump-squat",
+    "names": {
+      "en": "Jump Squat",
+      "it": "Squat con salto"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "kneeling-kickbacks",
+    "wgerId": 990,
+    "names": {
+      "en": "Kneeling kickbacks",
+      "it": "Contraccolpi in ginocchio"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "leg-curl",
+    "names": {
+      "en": "Leg Curl",
+      "it": "Leg curl"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leg-extension",
+    "names": {
+      "en": "Leg Extension",
+      "it": "Leg extension"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leg-press",
+    "names": {
+      "en": "Leg Press",
+      "it": "Pressa"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leg-press-on-hackenschmidt-machine",
+    "wgerId": 375,
+    "names": {
+      "en": "Leg Press on Hackenschmidt Machine"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leg-press-toe-press",
+    "wgerId": 1515,
+    "names": {
+      "en": "Leg Press Toe Press"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leg-presses-narrow",
+    "wgerId": 373,
+    "names": {
+      "en": "Leg Presses (narrow)"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "leg-presses-wide",
+    "wgerId": 374,
+    "names": {
+      "en": "Leg Presses (wide)"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "lunges",
+    "wgerId": 984,
+    "names": {
+      "en": "Lunges",
+      "it": "Affondi"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "machine-hip-abduction",
+    "wgerId": 1748,
+    "names": {
+      "en": "Machine Hip Abduction"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "abductors"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "pause-hack-squats",
+    "wgerId": 1464,
+    "names": {
+      "en": "Pause Hack Squats"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "resistance-band-squat",
+    "names": {
+      "en": "Resistance Band Squat",
+      "it": "Squat con elastico"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "resistance_band",
+    "isBodyweight": false
+  },
+  {
+    "slug": "reverse-lunge",
+    "names": {
+      "en": "Reverse Lunge",
+      "it": "Affondi indietro"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "romanian-deadlift",
+    "names": {
+      "en": "Romanian Deadlift",
+      "it": "Stacco rumeno"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "seated-calf-raise-machine",
+    "names": {
+      "en": "Seated Calf Raise Machine",
+      "it": "Calf raise seduto alla macchina"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "seated-leg-curl-machine",
+    "names": {
+      "en": "Seated Leg Curl Machine",
+      "it": "Leg curl seduto alla macchina"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "shinbox-ir-stretch",
+    "wgerId": 1884,
+    "names": {
+      "en": "Shinbox IR Stretch",
+      "it": "Shinbox IR stretch"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "side-split-squats-left",
+    "wgerId": 986,
+    "names": {
+      "en": "Side split squats left",
+      "it": "Squat laterale sinistro"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "adductors",
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "side-split-squats-right",
+    "wgerId": 987,
+    "names": {
+      "en": "Side split squats right",
+      "it": "Squat laterali a destra"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "adductors",
+      "quadriceps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "smith-machine-split-squat",
+    "wgerId": 1593,
+    "names": {
+      "en": "Smith Machine Split Squat"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "smith_machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "smith-machine-squat",
+    "names": {
+      "en": "Smith Machine Squat",
+      "it": "Squat al multipower"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "smith_machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "split-squat",
+    "names": {
+      "en": "Split Squat",
+      "it": "Split squat"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "split-squats-left",
+    "wgerId": 991,
+    "names": {
+      "en": "Split squats left",
+      "it": "Split squat a sinistra"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "squat",
+    "wgerId": 1,
+    "names": {
+      "en": "Squat",
+      "it": "Squat"
+    },
+    "category": "legs",
+    "primaryMuscles": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "face-pull",
+    "names": {
+      "en": "Face Pull",
+      "it": "Face pull"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders",
+      "back"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "cable",
+    "isBodyweight": false
+  },
+  {
+    "slug": "head-turns",
+    "wgerId": 1007,
+    "names": {
+      "en": "Head turns",
+      "it": "La testa gira"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "traps"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "lateral-raise",
+    "names": {
+      "en": "Lateral Raise",
+      "it": "Alzate laterali"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "dumbbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "lateral-raise-machine",
+    "names": {
+      "en": "Lateral Raise Machine",
+      "it": "Alzate laterali alla macchina"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "machine-lateral-wise",
+    "wgerId": 1654,
+    "names": {
+      "en": "Machine lateral wise"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "machine-side-lateral-raises",
+    "wgerId": 1744,
+    "names": {
+      "en": "Machine Side Lateral Raises"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "overhead-press",
+    "names": {
+      "en": "Overhead Press",
+      "it": "Lento avanti"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "barbell",
+    "isBodyweight": false
+  },
+  {
+    "slug": "pec-deck-rear-delt-fly",
+    "wgerId": 1775,
+    "names": {
+      "en": "Pec deck rear delt fly"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "pike-push-up",
+    "names": {
+      "en": "Pike Push-up",
+      "it": "Pike push-up"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "isBodyweight": true
+  },
+  {
+    "slug": "resistance-band-pull-apart",
+    "names": {
+      "en": "Band Pull-apart",
+      "it": "Pull-apart con elastico"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "resistance_band",
+    "isBodyweight": false
+  },
+  {
+    "slug": "reverse-fly-machine",
+    "names": {
+      "en": "Reverse Fly Machine",
+      "it": "Reverse fly alla macchina"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "shoulder-press-machine",
+    "names": {
+      "en": "Shoulder Press Machine",
+      "it": "Shoulder press alla macchina"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "shoulder-press-on-machine",
+    "wgerId": 543,
+    "names": {
+      "en": "Shoulder Press, on Machine"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "smith-machine-shoulder-press",
+    "names": {
+      "en": "Smith Machine Shoulder Press",
+      "it": "Lento avanti al multipower"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "smith_machine",
+    "isBodyweight": false
+  },
+  {
+    "slug": "smith-press",
+    "wgerId": 916,
+    "names": {
+      "en": "Smith Press"
+    },
+    "category": "shoulders",
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "equipment": "smith_machine",
+    "isBodyweight": false
   }
 ]

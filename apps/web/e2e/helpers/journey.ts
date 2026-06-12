@@ -169,9 +169,9 @@ export async function dismissPrModalIfVisible(page: Page): Promise<void> {
  * Skip rest timer overlay when shown.
  */
 export async function skipRestTimerIfVisible(page: Page): Promise<void> {
-  const skipRest = page.getByRole('button', { name: 'Salta recupero' });
-  if (await skipRest.isVisible().catch(() => false)) {
-    await skipRest.click();
+  const nextSet = page.getByRole('button', { name: /Prossima serie|Next set/i });
+  if (await nextSet.isVisible().catch(() => false)) {
+    await nextSet.click();
   }
 }
 

@@ -5,6 +5,8 @@ import { Button } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+
+import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
@@ -20,6 +22,7 @@ import { trackEvent } from '@/lib/analytics';
 
 export default function StartWorkoutPage(): React.ReactElement {
   const t = useTranslations('Workouts');
+  const tMuscle = useTranslations('MuscleGroups');
   const { accessToken } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -160,10 +163,14 @@ export default function StartWorkoutPage(): React.ReactElement {
                     setSelectedDayId(day.workoutDayId);
                   }}
                 >
-                  <span className="font-medium">{day.label}</span>
-                  <p className="text-sm text-muted-foreground">
-                    {t('nextDayMeta', { label: day.label, count: day.exerciseCount })}
-                  </p>
+                  <span className="font-medium">
+                    {day.label}
+                    {day.muscleGroups.length > 0
+                      ? ` — ${formatMuscleGroupsForLocale(day.muscleGroups, tMuscle)}`
+                      : ''}
+                    {' · '}
+                    {t('nextDayMeta', { count: day.exerciseCount })}
+                  </span>
                 </button>
               ))}
             </div>

@@ -1,7 +1,9 @@
 import {
   addWorkoutExerciseSchema,
+  addWorkoutSetSchema,
   startWorkoutSessionSchema,
   substituteExerciseSchema,
+  updateWorkoutExerciseNotesSchema,
   updateWorkoutSessionNotesSchema,
   upsertSetLogSchema,
 } from '@onemore/shared';
@@ -86,6 +88,23 @@ export function createWorkoutsRouter(workoutsService: WorkoutsService): Router {
   );
 
   router.post(
+    '/sessions/:sessionId/exercises/:executionId/sets',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const sessionId = requireRouteParam(req.params.sessionId, 'sessionId');
+      const executionId = requireRouteParam(req.params.executionId, 'executionId');
+      const body = addWorkoutSetSchema.parse(req.body);
+      const session = await workoutsService.addExerciseSet(
+        authReq.userId ?? '',
+        sessionId,
+        executionId,
+        body,
+      );
+      res.status(201).json(session);
+    }),
+  );
+
+  router.post(
     '/sessions/:sessionId/exercises/:executionId/skip',
     asyncHandler(async (req, res) => {
       const authReq = req as AuthenticatedRequest;
@@ -126,6 +145,23 @@ export function createWorkoutsRouter(workoutsService: WorkoutsService): Router {
       const session = await workoutsService.updateSessionNotes(
         authReq.userId ?? '',
         sessionId,
+        body,
+      );
+      res.json(session);
+    }),
+  );
+
+  router.patch(
+    '/sessions/:sessionId/exercises/:executionId/notes',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const sessionId = requireRouteParam(req.params.sessionId, 'sessionId');
+      const executionId = requireRouteParam(req.params.executionId, 'executionId');
+      const body = updateWorkoutExerciseNotesSchema.parse(req.body);
+      const session = await workoutsService.updateExerciseNotes(
+        authReq.userId ?? '',
+        sessionId,
+        executionId,
         body,
       );
       res.json(session);

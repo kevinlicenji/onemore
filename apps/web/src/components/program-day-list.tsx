@@ -3,6 +3,8 @@
 import type { ProgramDetail } from '@onemore/shared';
 import { useTranslations } from 'next-intl';
 
+import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
+
 interface ProgramDayListProps {
   days: ProgramDetail['days'];
   locale: string;
@@ -20,12 +22,21 @@ function exerciseName(names: { en: string; it?: string }, locale: string): strin
  */
 export function ProgramDayList({ days, locale }: ProgramDayListProps): React.ReactElement {
   const t = useTranslations('Programs');
+  const tMuscle = useTranslations('MuscleGroups');
 
   return (
     <div className="flex flex-col gap-4">
       {days.map((day) => (
         <section key={day.id} className="rounded-lg border p-4">
-          <h2 className="font-semibold">{day.label}</h2>
+          <h2 className="font-semibold">
+            {day.label}
+            {day.muscleGroups.length > 0 && (
+              <span className="font-normal text-muted-foreground">
+                {' '}
+                — {formatMuscleGroupsForLocale(day.muscleGroups, tMuscle)}
+              </span>
+            )}
+          </h2>
           <ul className="mt-3 flex flex-col gap-3">
             {day.exercises.map((row) => (
               <li key={row.id} className="text-sm">

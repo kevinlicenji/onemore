@@ -14,7 +14,7 @@ paths:
       summary: Register with email and password
   /auth/login:
     post:
-      summary: Login with email and password
+      summary: Login with email or username and password
   /auth/logout:
     post:
       summary: Logout and revoke refresh token

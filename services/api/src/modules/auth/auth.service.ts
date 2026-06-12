@@ -1,4 +1,9 @@
-import type { LoginBody, RegisterBody } from '@onemore/shared';
+import {
+  isEmailLoginIdentifier,
+  normalizeLoginIdentifier,
+  type LoginBody,
+  type RegisterBody,
+} from '@onemore/shared';
 import type { PrismaClient } from '@prisma/client';
 
 import type { Env } from '../../config/env.js';
@@ -110,26 +115,46 @@ export class AuthService {
   }
 
   /**
-   * Authenticate with email and password.
+   * Authenticate with email/username and password.
    */
   async login(input: LoginBody, ipHash?: string): Promise<AuthResult> {
-    const user = await this.prisma.user.findUnique({
-      where: { email: input.email },
-      include: { credential: true },
-    });
+    const identifier = normalizeLoginIdentifier(input.identifier);
+    const user = await this.findUserForLogin(identifier);
 
     if (!user?.credential || user.deletedAt) {
-      throw new HttpError(401, 'Invalid email or password', 'INVALID_CREDENTIALS');
+      throw new HttpError(401, 'Invalid credentials', 'INVALID_CREDENTIALS');
     }
 
     const valid = await this.passwordService.verify(input.password, user.credential.passwordHash);
     if (!valid) {
-      throw new HttpError(401, 'Invalid email or password', 'INVALID_CREDENTIALS');
+      throw new HttpError(401, 'Invalid credentials', 'INVALID_CREDENTIALS');
     }
 
     await this.writeAudit(user.id, 'auth.login', 'user', user.id, ipHash);
 
     return this.issueTokens(user.id, user.email, user.username, user.displayName, user.locale);
+  }
+
+  private async findUserForLogin(identifier: string): Promise<{
+    id: string;
+    email: string;
+    username: string | null;
+    displayName: string | null;
+    locale: string;
+    deletedAt: Date | null;
+    credential: { passwordHash: string } | null;
+  } | null> {
+    if (isEmailLoginIdentifier(identifier)) {
+      return this.prisma.user.findUnique({
+        where: { email: identifier },
+        include: { credential: true },
+      });
+    }
+
+    return this.prisma.user.findFirst({
+      where: { username: { equals: identifier, mode: 'insensitive' } },
+      include: { credential: true },
+    });
   }
 
   /**

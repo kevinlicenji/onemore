@@ -74,13 +74,32 @@ describeIntegration('integration: auth flows', () => {
     expect(meBody.email).toBe(testEmail);
   });
 
-  it('logs in with valid credentials', async () => {
+  it('logs in with email', async () => {
+    const loginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ identifier: testEmail, password: 'zQ8!mKp2vLn9Wx4rUniq' });
+
+    expect(loginRes.status).toBe(200);
+    const loginBody = loginRes.body as { accessToken: string };
+    expect(loginBody.accessToken).toBeDefined();
+  });
+
+  it('logs in with username', async () => {
+    const user = await prisma.user.findUnique({ where: { email: testEmail } });
+    expect(user?.username).toBeTruthy();
+
+    const loginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ identifier: user?.username, password: 'zQ8!mKp2vLn9Wx4rUniq' });
+
+    expect(loginRes.status).toBe(200);
+  });
+
+  it('accepts legacy email field on login', async () => {
     const loginRes = await request(app)
       .post('/api/v1/auth/login')
       .send({ email: testEmail, password: 'zQ8!mKp2vLn9Wx4rUniq' });
 
     expect(loginRes.status).toBe(200);
-    const loginBody = loginRes.body as { accessToken: string };
-    expect(loginBody.accessToken).toBeDefined();
   });
 });

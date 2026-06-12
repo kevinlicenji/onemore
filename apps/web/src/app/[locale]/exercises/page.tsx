@@ -1,26 +1,27 @@
 'use client';
 
-import type { CreateCustomExercise, ExerciseListItem } from '@onemore/shared';
+import type { CreateCustomExercise, ExerciseListItem, MuscleGroup } from '@onemore/shared';
+import { EQUIPMENT_TYPES, FILTER_EQUIPMENT_TYPES, FILTER_EXERCISE_CATEGORIES } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { MuscleGroupFilter } from '@/components/muscle-group-filter';
+import { MuscleTagPicker } from '@/components/muscle-tag-picker';
 import { RequireAuth } from '@/components/require-auth';
-import { createCustomExercise, fetchExercises, searchExercises } from '@/lib/api-auth';
+import { createCustomExercise, fetchExercises, type ExerciseQueryFilters } from '@/lib/api-auth';
 
-const MUSCLE_OPTIONS = [
-  'chest',
-  'back',
-  'shoulders',
-  'biceps',
-  'triceps',
-  'quads',
-  'hamstrings',
-  'glutes',
-  'core',
-  'calves',
+type EquipmentGroup = NonNullable<ExerciseQueryFilters['equipmentGroup']>;
+
+const EQUIPMENT_GROUP_CHIPS: Array<{ id: EquipmentGroup | 'all'; labelKey: string }> = [
+  { id: 'all', labelKey: 'filterAll' },
+  { id: 'machines', labelKey: 'filterMachinesOnly' },
+  { id: 'bodyweight', labelKey: 'filterBodyweightOnly' },
+  { id: 'free_weights', labelKey: 'filterFreeWeights' },
+  { id: 'cables', labelKey: 'filterCables' },
+  { id: 'cardio', labelKey: 'filterCardio' },
 ];
 
 function exerciseDisplayName(exercise: ExerciseListItem, locale: string): string {
@@ -38,6 +39,9 @@ export default function ExercisesPage(): React.ReactElement {
 
   const [items, setItems] = useState<ExerciseListItem[]>([]);
   const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('');
+  const [equipment, setEquipment] = useState('');
+  const [equipmentGroup, setEquipmentGroup] = useState<EquipmentGroup | 'all'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -50,6 +54,30 @@ export default function ExercisesPage(): React.ReactElement {
     isBodyweight: false,
   });
 
+  const hasActiveFilters =
+    category !== '' || equipment !== '' || equipmentGroup !== 'all' || muscle !== '';
+
+  const queryFilters = useMemo((): ExerciseQueryFilters => {
+    const filters: ExerciseQueryFilters = { limit: 100 };
+    const trimmedSearch = search.trim();
+    if (trimmedSearch.length >= 2) {
+      filters.q = trimmedSearch;
+    }
+    if (category) {
+      filters.category = category;
+    }
+    if (equipment) {
+      filters.equipment = equipment;
+    }
+    if (equipmentGroup !== 'all') {
+      filters.equipmentGroup = equipmentGroup;
+    }
+    if (muscle) {
+      filters.muscle = muscle;
+    }
+    return filters;
+  }, [category, equipment, equipmentGroup, muscle, search]);
+
   const loadExercises = useCallback(async (): Promise<void> => {
     if (!accessToken) {
       return;
@@ -57,24 +85,57 @@ export default function ExercisesPage(): React.ReactElement {
     setLoading(true);
     setError(null);
     try {
-      const exercises =
-        search.trim().length >= 2
-          ? await searchExercises(accessToken, search.trim())
-          : await fetchExercises(accessToken);
+      const exercises = await fetchExercises(accessToken, queryFilters);
       setItems(exercises);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loadError'));
     } finally {
       setLoading(false);
     }
-  }, [accessToken, search, t]);
+  }, [accessToken, queryFilters, t]);
 
   useEffect(() => {
     void loadExercises();
   }, [loadExercises]);
 
+  function clearFilters(): void {
+    setCategory('');
+    setEquipment('');
+    setEquipmentGroup('all');
+    setMuscle('');
+  }
+
+  function handleEquipmentGroupChange(group: EquipmentGroup | 'all'): void {
+    setEquipmentGroup(group);
+    if (group !== 'all') {
+      setEquipment('');
+    }
+  }
+
+  function handleEquipmentChange(value: string): void {
+    setEquipment(value);
+    if (value) {
+      setEquipmentGroup('all');
+    }
+  }
+
+  function labelCategory(value: string): string {
+    if ((FILTER_EXERCISE_CATEGORIES as readonly string[]).includes(value)) {
+      return t(`categories.${value}` as 'categories.chest');
+    }
+    return value;
+  }
+
+  function labelEquipment(value: string): string {
+    const knownLabels = [...FILTER_EQUIPMENT_TYPES, 'other'] as string[];
+    if (knownLabels.includes(value)) {
+      return t(`equipmentLabels.${value}` as 'equipmentLabels.barbell');
+    }
+    return value.replace(/_/g, ' ');
+  }
+
   async function handleCreate(): Promise<void> {
-    if (!accessToken || form.names.en.trim().length === 0) {
+    if (!accessToken || form.names.en.trim().length === 0 || form.primaryMuscles.length === 0) {
       return;
     }
     setLoading(true);
@@ -131,6 +192,84 @@ export default function ExercisesPage(): React.ReactElement {
           </Button>
         </div>
 
+        <MuscleGroupFilter
+          value={muscle}
+          onChange={(nextMuscle) => {
+            setMuscle(nextMuscle);
+          }}
+        />
+
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-2">
+            {EQUIPMENT_GROUP_CHIPS.map((chip) => {
+              const active = equipmentGroup === chip.id;
+              return (
+                <Button
+                  key={chip.id}
+                  className="min-h-9"
+                  size="sm"
+                  type="button"
+                  variant={active ? 'default' : 'outline'}
+                  onClick={() => {
+                    handleEquipmentGroupChange(chip.id);
+                  }}
+                >
+                  {t(chip.labelKey as 'filterAll')}
+                </Button>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              {t('filterCategory')}
+              <select
+                className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
+                value={category}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                }}
+              >
+                <option value="">{t('filterAll')}</option>
+                {FILTER_EXERCISE_CATEGORIES.map((value) => (
+                  <option key={value} value={value}>
+                    {labelCategory(value)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              {t('filterEquipment')}
+              <select
+                className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
+                value={equipment}
+                onChange={(e) => {
+                  handleEquipmentChange(e.target.value);
+                }}
+              >
+                <option value="">{t('filterAll')}</option>
+                {FILTER_EQUIPMENT_TYPES.map((value) => (
+                  <option key={value} value={value}>
+                    {labelEquipment(value)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {hasActiveFilters && (
+            <Button
+              className="min-h-9 self-start"
+              size="sm"
+              type="button"
+              variant="ghost"
+              onClick={clearFilters}
+            >
+              {t('clearFilters')}
+            </Button>
+          )}
+        </div>
+
         <Button
           className="min-h-11"
           type="button"
@@ -164,18 +303,29 @@ export default function ExercisesPage(): React.ReactElement {
                 }}
               />
             </label>
+            <MuscleTagPicker
+              value={form.primaryMuscles}
+              onChange={(tags) => {
+                setForm((prev) => ({ ...prev, primaryMuscles: tags }));
+              }}
+            />
             <label className="flex flex-col gap-1 text-sm">
-              {t('primaryMuscle')}
+              {t('equipmentField')}
               <select
                 className="rounded-md border px-3 py-2"
-                value={form.primaryMuscles[0] ?? 'chest'}
+                value={form.equipment}
                 onChange={(e) => {
-                  setForm((prev) => ({ ...prev, primaryMuscles: [e.target.value] }));
+                  const nextEquipment = e.target.value;
+                  setForm((prev) => ({
+                    ...prev,
+                    equipment: nextEquipment,
+                    isBodyweight: nextEquipment === 'bodyweight',
+                  }));
                 }}
               >
-                {MUSCLE_OPTIONS.map((muscle) => (
-                  <option key={muscle} value={muscle}>
-                    {muscle}
+                {EQUIPMENT_TYPES.map((value) => (
+                  <option key={value} value={value}>
+                    {labelEquipment(value)}
                   </option>
                 ))}
               </select>
@@ -213,10 +363,10 @@ export default function ExercisesPage(): React.ReactElement {
               <li key={exercise.id} className="rounded-lg border p-3">
                 <p className="font-medium">{exerciseDisplayName(exercise, locale)}</p>
                 <p className="text-xs text-muted-foreground">
-                  {exercise.category}
+                  {labelCategory(exercise.category)}
                   {exercise.isCustom ? ` · ${t('customBadge')}` : ''}
                   {' · '}
-                  {exercise.equipment}
+                  {labelEquipment(exercise.equipment)}
                 </p>
               </li>
             ))}

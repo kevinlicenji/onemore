@@ -41,6 +41,7 @@ export default function EditProgramPage(): React.ReactElement {
                 locale === 'it' && row.exercise.names.it
                   ? row.exercise.names.it
                   : row.exercise.names.en,
+              primaryMuscles: row.exercise.primaryMuscles,
               targetSets: row.targetSets,
               targetReps: row.targetReps,
               restSeconds: row.restSeconds,

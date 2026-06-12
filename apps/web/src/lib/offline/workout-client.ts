@@ -11,6 +11,7 @@ import type {
 import {
   abandonWorkoutSession,
   addWorkoutExercise,
+  addWorkoutExerciseSet,
   completeWorkoutSession,
   fetchActiveWorkoutSession,
   fetchNextWorkoutPreview,
@@ -19,12 +20,19 @@ import {
   skipWorkoutExercise,
   startWorkoutSession,
   substituteWorkoutExercise,
+  updateWorkoutExerciseNotes,
   updateWorkoutSessionNotes,
   upsertWorkoutSet,
 } from '@/lib/api-auth';
 
+import { isInvalidAccessTokenError, refreshAccessToken } from '@/lib/refresh-access-token';
+
 import { offlineDb } from './db';
 import { enqueueMutation, flushSyncQueue, isBrowserOnline } from './sync-engine';
+
+export interface WorkoutClientAuthOptions {
+  onAccessTokenRefreshed?: (accessToken: string) => void;
+}
 
 async function syncIfOnline(accessToken: string): Promise<void> {
   if (!isBrowserOnline()) {
@@ -65,6 +73,7 @@ function buildLocalProgrammedSession(
         exerciseLibraryId: item.exerciseLibraryId,
         sortOrder: index,
         status: 'pending' as const,
+        athleteNotes: null,
         prescription: {
           targetSets: item.targetSets,
           targetReps: item.targetReps,
@@ -259,18 +268,10 @@ export async function getWorkoutSessionClient(
   return remote;
 }
 
-export async function upsertWorkoutSetClient(
-  accessToken: string,
+async function applyLocalSetUpdate(
   sessionId: string,
   payload: UpsertSetLogInput,
 ): Promise<UpsertSetResponse> {
-  if (isBrowserOnline()) {
-    const result = await upsertWorkoutSet(accessToken, sessionId, payload);
-    await offlineDb.sessions.put(result.session);
-    await syncIfOnline(accessToken);
-    return result;
-  }
-
   const session = await offlineDb.sessions.get(sessionId);
   if (!session) {
     throw new Error('Session not found locally');
@@ -282,7 +283,7 @@ export async function upsertWorkoutSetClient(
     }
 
     const sets = exercise.sets.map((set) =>
-      set.setNumber === payload.setNumber
+      set.id === payload.id
         ? {
             ...set,
             weightKg: payload.weightKg ?? set.weightKg,
@@ -309,12 +310,89 @@ export async function upsertWorkoutSetClient(
 
   const updatedSession: WorkoutSessionDetail = { ...session, exercises: updatedExercises };
   await offlineDb.sessions.put(updatedSession);
-  await enqueueMutation({
-    type: 'set_log',
-    op: 'upsert',
-    payload,
-  });
   return { session: updatedSession, personalRecords: [] };
+}
+
+async function syncSetToServer(
+  accessToken: string,
+  sessionId: string,
+  payload: UpsertSetLogInput,
+): Promise<UpsertSetResponse> {
+  const result = await upsertWorkoutSet(accessToken, sessionId, payload);
+  await offlineDb.sessions.put(result.session);
+  await syncIfOnline(accessToken);
+  return result;
+}
+
+async function syncSetWithAuthRetry(
+  accessToken: string,
+  sessionId: string,
+  payload: UpsertSetLogInput,
+  options?: WorkoutClientAuthOptions,
+): Promise<UpsertSetResponse> {
+  try {
+    return await syncSetToServer(accessToken, sessionId, payload);
+  } catch (error) {
+    if (!isInvalidAccessTokenError(error)) {
+      throw error;
+    }
+
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) {
+      throw error;
+    }
+
+    options?.onAccessTokenRefreshed?.(refreshed.accessToken);
+    return syncSetToServer(refreshed.accessToken, sessionId, payload);
+  }
+}
+
+async function ensureSessionInLocalDb(
+  accessToken: string,
+  sessionId: string,
+): Promise<WorkoutSessionDetail> {
+  const cached = await offlineDb.sessions.get(sessionId);
+  if (cached) {
+    return cached;
+  }
+
+  if (!isBrowserOnline()) {
+    throw new Error('Session not found locally');
+  }
+
+  const remote = await fetchWorkoutSession(accessToken, sessionId);
+  await offlineDb.sessions.put(remote);
+  return remote;
+}
+
+export async function upsertWorkoutSetClient(
+  accessToken: string,
+  sessionId: string,
+  payload: UpsertSetLogInput,
+  options?: WorkoutClientAuthOptions,
+): Promise<UpsertSetResponse> {
+  await ensureSessionInLocalDb(accessToken, sessionId);
+  const localResult = await applyLocalSetUpdate(sessionId, payload);
+
+  if (!isBrowserOnline()) {
+    await enqueueMutation({
+      type: 'set_log',
+      op: 'upsert',
+      payload,
+    });
+    return localResult;
+  }
+
+  try {
+    return await syncSetWithAuthRetry(accessToken, sessionId, payload, options);
+  } catch {
+    await enqueueMutation({
+      type: 'set_log',
+      op: 'upsert',
+      payload,
+    });
+    return localResult;
+  }
 }
 
 export async function addWorkoutExerciseClient(
@@ -346,6 +424,7 @@ export async function addWorkoutExerciseClient(
     exerciseLibraryId: exercise.id,
     sortOrder: session.exercises.length,
     status: 'pending' as const,
+    athleteNotes: null,
     prescription: {
       targetSets: payload.targetSets,
       targetReps: payload.targetReps,
@@ -508,20 +587,103 @@ export async function abandonWorkoutSessionClient(
 export async function searchExercisesClient(
   accessToken: string,
   query: string,
+  filters: { muscle?: string; limit?: number } = {},
 ): Promise<ExerciseListItem[]> {
   if (isBrowserOnline()) {
-    return searchExercises(accessToken, query);
+    return searchExercises(accessToken, query, filters);
   }
 
   const term = query.trim().toLowerCase();
   const all = await offlineDb.exercises.toArray();
   return all
-    .filter(
-      (exercise) =>
+    .filter((exercise) => {
+      const matchesText =
+        term.length === 0 ||
         exercise.names.en.toLowerCase().includes(term) ||
-        exercise.slug.toLowerCase().includes(term),
-    )
-    .slice(0, 20);
+        (exercise.names.it?.toLowerCase().includes(term) ?? false) ||
+        exercise.slug.toLowerCase().includes(term);
+      const matchesMuscle =
+        !filters.muscle || exercise.primaryMuscles.includes(filters.muscle as never);
+      return matchesText && matchesMuscle;
+    })
+    .slice(0, filters.limit ?? 20);
+}
+
+export async function addWorkoutExerciseSetClient(
+  accessToken: string,
+  sessionId: string,
+  executionId: string,
+): Promise<WorkoutSessionDetail> {
+  const setId = crypto.randomUUID();
+  const clientTimestamp = new Date().toISOString();
+
+  if (isBrowserOnline()) {
+    const session = await addWorkoutExerciseSet(accessToken, sessionId, executionId, { id: setId });
+    await offlineDb.sessions.put(session);
+    await syncIfOnline(accessToken);
+    return session;
+  }
+
+  const session = await offlineDb.sessions.get(sessionId);
+  if (!session) {
+    throw new Error('Session not found locally');
+  }
+
+  const exercise = session.exercises.find((item) => item.id === executionId);
+  if (!exercise) {
+    throw new Error('Exercise not found locally');
+  }
+
+  const maxSetNumber = exercise.sets.reduce((max, set) => Math.max(max, set.setNumber), 0);
+  if (maxSetNumber >= 30) {
+    throw new Error('Maximum sets reached');
+  }
+
+  const lastSet = exercise.sets.find((set) => set.setNumber === maxSetNumber) ?? null;
+  const newSet = {
+    id: setId,
+    setNumber: maxSetNumber + 1,
+    weightKg: lastSet?.weightKg ?? null,
+    reps: lastSet?.reps ?? null,
+    isWarmup: false,
+    isCompleted: false,
+    isSkipped: false,
+    isFailed: false,
+    clientTimestamp,
+  };
+
+  const updatedSession: WorkoutSessionDetail = {
+    ...session,
+    exercises: session.exercises.map((item) =>
+      item.id === executionId
+        ? {
+            ...item,
+            status: 'in_progress',
+            sets: [...item.sets, newSet],
+          }
+        : item,
+    ),
+  };
+
+  await offlineDb.sessions.put(updatedSession);
+  await enqueueMutation({
+    type: 'set_log',
+    op: 'upsert',
+    payload: {
+      id: newSet.id,
+      exerciseExecutionId: executionId,
+      setNumber: newSet.setNumber,
+      weightKg: newSet.weightKg,
+      reps: newSet.reps,
+      isWarmup: newSet.isWarmup,
+      isCompleted: newSet.isCompleted,
+      isSkipped: newSet.isSkipped,
+      isFailed: newSet.isFailed,
+      clientTimestamp: newSet.clientTimestamp,
+    },
+  });
+
+  return updatedSession;
 }
 
 export async function skipWorkoutExerciseClient(
@@ -571,6 +733,35 @@ export async function updateWorkoutSessionNotesClient(
     throw new Error('Session not found locally');
   }
   const updated: WorkoutSessionDetail = { ...session, privateNotes };
+  await offlineDb.sessions.put(updated);
+  return updated;
+}
+
+export async function updateWorkoutExerciseNotesClient(
+  accessToken: string,
+  sessionId: string,
+  executionId: string,
+  athleteNotes: string | null,
+): Promise<WorkoutSessionDetail> {
+  if (isBrowserOnline()) {
+    const session = await updateWorkoutExerciseNotes(accessToken, sessionId, executionId, {
+      athleteNotes,
+    });
+    await offlineDb.sessions.put(session);
+    return session;
+  }
+
+  const session = await offlineDb.sessions.get(sessionId);
+  if (!session) {
+    throw new Error('Session not found locally');
+  }
+
+  const updated: WorkoutSessionDetail = {
+    ...session,
+    exercises: session.exercises.map((exercise) =>
+      exercise.id === executionId ? { ...exercise, athleteNotes } : exercise,
+    ),
+  };
   await offlineDb.sessions.put(updated);
   return updated;
 }

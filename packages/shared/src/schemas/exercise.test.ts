@@ -13,6 +13,24 @@ describe('exerciseSearchQuerySchema', () => {
     expect(result.q).toBe('bench');
     expect(result.limit).toBe(10);
   });
+
+  it('parses equipment and bodyweight filters', () => {
+    const result = exerciseSearchQuerySchema.parse({
+      category: 'chest',
+      equipment: 'machine',
+      isBodyweight: 'true',
+      equipmentGroup: 'machines',
+    });
+    expect(result.category).toBe('chest');
+    expect(result.equipment).toBe('machine');
+    expect(result.isBodyweight).toBe(true);
+    expect(result.equipmentGroup).toBe('machines');
+  });
+
+  it('parses muscle group filter', () => {
+    const result = exerciseSearchQuerySchema.parse({ muscle: 'hamstrings' });
+    expect(result.muscle).toBe('hamstrings');
+  });
 });
 
 describe('createCustomExerciseSchema', () => {

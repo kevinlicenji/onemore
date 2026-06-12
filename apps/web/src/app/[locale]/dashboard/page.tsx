@@ -23,7 +23,6 @@ function formatDate(iso: string, locale: string): string {
 
 export default function DashboardPage(): React.ReactElement {
   const t = useTranslations('Dashboard');
-  const tProgress = useTranslations('Progress');
   const { profile, accessToken, isLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -58,9 +57,7 @@ export default function DashboardPage(): React.ReactElement {
 
   const hasActivity =
     dashboard !== null &&
-    (dashboard.lastWorkout !== null ||
-      dashboard.streakWeeks > 0 ||
-      dashboard.recentPersonalRecords.length > 0);
+    (dashboard.lastWorkout !== null || dashboard.streakWeeks > 0);
 
   return (
     <RequireAuth>
@@ -103,39 +100,13 @@ export default function DashboardPage(): React.ReactElement {
           </div>
         )}
 
-        {dashboard?.nextWorkout.hasActiveAssignment && (
-          <div className="rounded-lg border p-4">
-            <p className="text-sm font-medium">{t('nextWorkoutLabel')}</p>
-            <p className="text-sm text-muted-foreground">
-              {dashboard.nextWorkout.workoutDayLabel ?? t('nextWorkoutFallback')}
-              {' · '}
-              {t('nextWorkoutMeta', { count: dashboard.nextWorkout.exerciseCount })}
-            </p>
-            <Button asChild className="mt-3" size="sm">
-              <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
-            </Button>
-          </div>
+        {dashboard && (
+          <Button asChild className="min-h-11 w-full">
+            <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
+          </Button>
         )}
 
-        {dashboard && dashboard.recentPersonalRecords.length > 0 && (
-          <div className="rounded-lg border p-4">
-            <p className="text-sm font-medium">{t('recentPrsLabel')}</p>
-            <ul className="mt-2 space-y-2 text-sm">
-              {dashboard.recentPersonalRecords.map((record) => (
-                <li key={record.id} className="text-muted-foreground">
-                  <span className="font-medium text-foreground">{record.exerciseName}</span>
-                  {' · '}
-                  {tProgress(`prType_${record.prType}`)} {record.value}
-                  {record.prType === 'weight_pr' && record.reps !== null
-                    ? ` × ${String(record.reps)}`
-                    : ''}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {!hasActivity && !dashboard?.nextWorkout.hasActiveAssignment && (
+        {!hasActivity && (
           <div className="w-full rounded-lg border border-dashed p-8 text-center">
             <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
             <Button asChild className="mt-4">
@@ -144,18 +115,9 @@ export default function DashboardPage(): React.ReactElement {
           </div>
         )}
 
-        {!dashboard?.nextWorkout.hasActiveAssignment && hasActivity && (
-          <Button asChild>
-            <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
-          </Button>
-        )}
-
         <PwaInstallPrompt />
 
         <SyncStatusBadge />
-        <Link className="text-xs text-muted-foreground underline" href={`/${locale}/credits`}>
-          {t('creditsLink')}
-        </Link>
       </main>
     </RequireAuth>
   );

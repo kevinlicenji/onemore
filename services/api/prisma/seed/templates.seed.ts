@@ -20,6 +20,10 @@ interface TemplateSeedRow {
     displayName: { en: string; it?: string };
     audience: string;
     daysPerWeek: number;
+    equipmentProfile?: string;
+    split?: string;
+    tags?: string[];
+    guide: { en: string; it?: string };
   };
   days: Array<{
     label: string;
@@ -44,8 +48,49 @@ async function ensureSystemOwner(): Promise<string> {
   return user.id;
 }
 
+async function replaceTemplateDays(
+  tx: Prisma.TransactionClient,
+  versionId: string,
+  template: TemplateSeedRow,
+  slugToId: Map<string, string>,
+): Promise<void> {
+  await tx.programExercise.deleteMany({
+    where: { workoutDay: { programVersionId: versionId } },
+  });
+  await tx.workoutDay.deleteMany({ where: { programVersionId: versionId } });
+
+  for (const [dayIndex, day] of template.days.entries()) {
+    const workoutDay = await tx.workoutDay.create({
+      data: {
+        programVersionId: versionId,
+        label: day.label,
+        sortOrder: dayIndex,
+      },
+    });
+
+    for (const [exerciseIndex, exercise] of day.exercises.entries()) {
+      const exerciseId = slugToId.get(exercise.slug);
+      if (!exerciseId) {
+        throw new Error(`Missing exercise slug for template: ${exercise.slug}`);
+      }
+
+      await tx.programExercise.create({
+        data: {
+          workoutDayId: workoutDay.id,
+          exerciseLibraryId: exerciseId,
+          sortOrder: exerciseIndex,
+          targetSets: exercise.sets,
+          targetReps: exercise.reps,
+          restSeconds: exercise.rest,
+          coachNote: exercise.note,
+        },
+      });
+    }
+  }
+}
+
 /**
- * Idempotent seed of published program templates.
+ * Idempotent upsert of published program templates.
  */
 export async function seedTemplates(): Promise<number> {
   const ownerUserId = await ensureSystemOwner();
@@ -64,10 +109,42 @@ export async function seedTemplates(): Promise<number> {
   for (const template of rows) {
     const existing = await prisma.program.findFirst({
       where: { name: template.slug, isTemplate: true },
-      include: { versions: true },
+      include: {
+        versions: {
+          where: { status: 'published' },
+          orderBy: { versionNumber: 'desc' },
+          take: 1,
+        },
+      },
     });
 
     if (existing) {
+      await prisma.$transaction(async (tx) => {
+        await tx.program.update({
+          where: { id: existing.id },
+          data: {
+            description: JSON.stringify(template.meta),
+            objective: template.objective as Prisma.ProgramUpdateInput['objective'],
+          },
+        });
+
+        const published = existing.versions[0];
+        if (published) {
+          await replaceTemplateDays(tx, published.id, template, slugToId);
+        } else {
+          const version = await tx.programVersion.create({
+            data: {
+              programId: existing.id,
+              versionNumber: 1,
+              status: 'published',
+              publishedAt: new Date(),
+              changeReason: 'manual',
+            },
+          });
+          await replaceTemplateDays(tx, version.id, template, slugToId);
+        }
+      });
+      count += 1;
       continue;
     }
 
@@ -93,34 +170,7 @@ export async function seedTemplates(): Promise<number> {
         },
       });
 
-      for (const [dayIndex, day] of template.days.entries()) {
-        const workoutDay = await tx.workoutDay.create({
-          data: {
-            programVersionId: version.id,
-            label: day.label,
-            sortOrder: dayIndex,
-          },
-        });
-
-        for (const [exerciseIndex, exercise] of day.exercises.entries()) {
-          const exerciseId = slugToId.get(exercise.slug);
-          if (!exerciseId) {
-            throw new Error(`Missing exercise slug for template: ${exercise.slug}`);
-          }
-
-          await tx.programExercise.create({
-            data: {
-              workoutDayId: workoutDay.id,
-              exerciseLibraryId: exerciseId,
-              sortOrder: exerciseIndex,
-              targetSets: exercise.sets,
-              targetReps: exercise.reps,
-              restSeconds: exercise.rest,
-              coachNote: exercise.note,
-            },
-          });
-        }
-      }
+      await replaceTemplateDays(tx, version.id, template, slugToId);
     });
 
     count += 1;

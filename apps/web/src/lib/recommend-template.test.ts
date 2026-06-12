@@ -5,51 +5,54 @@ import { recommendTemplateSlug } from './recommend-template';
 
 const templates: TemplateSummary[] = [
   {
-    slug: 'beginner_full_body_gym',
-    name: 'Full body',
+    slug: 'beginner_machine_gym_3day',
+    name: 'Beginner Machines',
     description: null,
+    guide: null,
     objective: 'fitness',
     daysPerWeek: 3,
     audience: 'beginner, gym',
+    equipmentProfile: 'machines',
+    split: 'full_body',
   },
   {
-    slug: 'beginner_upper_lower_gym',
-    name: 'Upper lower',
+    slug: 'beginner_full_body_gym',
+    name: 'Beginner Full Body',
     description: null,
+    guide: null,
     objective: 'fitness',
-    daysPerWeek: 4,
+    daysPerWeek: 3,
     audience: 'beginner, gym',
+    equipmentProfile: 'mixed',
+    split: 'full_body',
   },
   {
     slug: 'home_bodyweight_3day',
-    name: 'Home',
+    name: 'Home Bodyweight',
     description: null,
+    guide: null,
     objective: 'fitness',
     daysPerWeek: 3,
     audience: 'beginner, home',
+    equipmentProfile: 'bodyweight',
+    split: 'full_body',
   },
 ];
 
 describe('recommendTemplateSlug', () => {
-  it('prefers home template for home environment', () => {
-    expect(
-      recommendTemplateSlug(
-        { trainingLevel: 'beginner', trainingEnvironment: 'home', trainingDaysPerWeek: 3 },
-        templates,
-      ),
-    ).toBe('home_bodyweight_3day');
+  it('prefers machine template for beginner gym users', () => {
+    const slug = recommendTemplateSlug(
+      { trainingLevel: 'beginner', trainingEnvironment: 'gym', trainingDaysPerWeek: 3 },
+      templates,
+    );
+    expect(slug).toBe('beginner_machine_gym_3day');
   });
 
-  it('matches gym days per week', () => {
-    expect(
-      recommendTemplateSlug(
-        { trainingLevel: 'beginner', trainingEnvironment: 'gym', trainingDaysPerWeek: 4 },
-        templates,
-      ),
-    ).toBe('beginner_upper_lower_gym');
-  });
-
-  it('returns null for empty catalog', () => {
-    expect(recommendTemplateSlug({ trainingEnvironment: 'gym' }, [])).toBeNull();
+  it('prefers home bodyweight for home users', () => {
+    const slug = recommendTemplateSlug(
+      { trainingLevel: 'beginner', trainingEnvironment: 'home', trainingDaysPerWeek: 3 },
+      templates,
+    );
+    expect(slug).toBe('home_bodyweight_3day');
   });
 });
