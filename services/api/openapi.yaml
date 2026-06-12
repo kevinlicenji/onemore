@@ -53,6 +53,15 @@ paths:
   /programs/templates:
     get:
       summary: List system program templates
+  /programs/templates/{slug}:
+    get:
+      summary: Get template detail with days and exercises
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
   /programs/templates/{slug}/apply:
     post:
       summary: Clone a template into the user's library and assign it
@@ -65,6 +74,34 @@ paths:
   /programs/{programId}:
     get:
       summary: Get program detail with days and exercises
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+    put:
+      summary: Update program structure and publish a new version
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+    delete:
+      summary: Soft-delete a program and pause its assignment
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  /programs/{programId}/activate:
+    post:
+      summary: Set program as the user's only active assignment
       parameters:
         - name: programId
           in: path
