@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { ProgramBuilder, type BuilderDay } from '@/components/program-builder';
 import { RequireAuth } from '@/components/require-auth';
@@ -102,9 +103,11 @@ export function NewProgramPageContent(): React.ReactElement {
         )}
 
         {!isDesktop ? (
-          <Button asChild variant="ghost">
-            <Link href={`/${locale}/programs/templates`}>{t('useTemplate')}</Link>
-          </Button>
+          <GymMobileActions>
+            <Button asChild variant="outline">
+              <Link href={`/${locale}/programs/templates`}>{t('useTemplate')}</Link>
+            </Button>
+          </GymMobileActions>
         ) : null}
       </AdaptivePageShell>
     </RequireAuth>

@@ -16,6 +16,7 @@ import { RequireAuth } from '@/components/require-auth';
 import { useSync } from '@/components/sync-provider';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { trackEvent } from '@/lib/analytics';
+import { generateClientUuid } from '@/lib/generate-client-uuid';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
 import { triggerHaptic } from '@/lib/haptic';
 import {
@@ -89,7 +90,7 @@ export default function StartWorkoutPage(): React.ReactElement {
     setError(null);
     try {
       const session = await startWorkoutSessionClient(accessToken, {
-        id: crypto.randomUUID(),
+        id: generateClientUuid(),
         sessionType: 'programmed',
         programAssignmentId: preview?.programAssignmentId ?? undefined,
         workoutDayId,
@@ -121,7 +122,7 @@ export default function StartWorkoutPage(): React.ReactElement {
     setError(null);
     try {
       const session = await startWorkoutSessionClient(accessToken, {
-        id: crypto.randomUUID(),
+        id: generateClientUuid(),
         sessionType: 'free',
       });
       trackEvent('workout_started', {
@@ -251,13 +252,9 @@ export default function StartWorkoutPage(): React.ReactElement {
                 key={day.workoutDayId}
                 active={startingDayId === day.workoutDayId}
                 disabled={loading}
-                meta={
-                  <>
-                    <span aria-hidden>· </span>
-                    {t('nextDayMeta', { count: day.exerciseCount })}
-                  </>
-                }
-                subtitle={muscles}
+                subtitle={[muscles, t('nextDayMeta', { count: day.exerciseCount })]
+                  .filter(Boolean)
+                  .join(' · ')}
                 title={day.label}
                 onClick={() => {
                   void handleStartProgrammedDay(day.workoutDayId);

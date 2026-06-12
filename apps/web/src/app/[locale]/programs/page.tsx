@@ -2,12 +2,15 @@
 
 import type { ProgramSummary } from '@onemore/shared';
 import { Badge, Button, Card, CardContent } from '@onemore/ui';
+import { ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
+import { GymEmptyState } from '@/components/gym-ui/gym-empty-state';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
 import { GymListRow } from '@/components/gym-ui/gym-list-row';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
@@ -28,6 +31,7 @@ export default function ProgramsPage(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const loadPrograms = useCallback(async (): Promise<void> => {
     if (!accessToken) {
@@ -64,10 +68,15 @@ export default function ProgramsPage(): React.ReactElement {
     }
   }
 
-  async function handleDelete(programId: string): Promise<void> {
-    if (!accessToken || !window.confirm(t('deleteConfirm'))) {
+  function requestDelete(programId: string): void {
+    setPendingDeleteId(programId);
+  }
+
+  async function confirmDelete(): Promise<void> {
+    if (!accessToken || pendingDeleteId === null) {
       return;
     }
+    const programId = pendingDeleteId;
     setActionId(programId);
     setError(null);
     try {
@@ -77,16 +86,26 @@ export default function ProgramsPage(): React.ReactElement {
       setError(err instanceof Error ? err.message : t('deleteError'));
     } finally {
       setActionId(null);
+      setPendingDeleteId(null);
     }
   }
 
-  const headerActions = (
+  const headerActions = isDesktop ? (
     <>
-      <Button asChild size={isDesktop ? 'default' : 'sm'} variant="outline">
+      <Button asChild variant="outline">
         <Link href={`/${locale}/programs/templates`}>{t('browseTemplates')}</Link>
       </Button>
-      <Button asChild size={isDesktop ? 'default' : 'sm'}>
+      <Button asChild>
         <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
+      </Button>
+    </>
+  ) : (
+    <>
+      <Button asChild className="min-h-11">
+        <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
+      </Button>
+      <Button asChild className="min-h-11" variant="outline">
+        <Link href={`/${locale}/programs/templates`}>{t('browseTemplates')}</Link>
       </Button>
     </>
   );
@@ -98,14 +117,14 @@ export default function ProgramsPage(): React.ReactElement {
           key={program.id}
           active={program.isActive}
           href={`/${locale}/programs/${program.id}`}
-          meta={t('programListMeta', {
+          showChevron
+          subtitle={t('programListMeta', {
             days: program.daysCount,
             status: program.latestVersionStatus ?? 'draft',
           })}
-          showChevron
           title={
-            <span className="inline-flex flex-wrap items-center gap-2">
-              {program.name}
+            <span className="inline-flex items-center gap-2">
+              <span className="truncate">{program.name}</span>
               {program.isActive ? <Badge variant="accent">{t('activeBadge')}</Badge> : null}
             </span>
           }
@@ -121,7 +140,7 @@ export default function ProgramsPage(): React.ReactElement {
               }}
               showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
               onDelete={() => {
-                void handleDelete(program.id);
+                requestDelete(program.id);
               }}
               onSetActive={() => {
                 void handleActivate(program.id);
@@ -167,7 +186,7 @@ export default function ProgramsPage(): React.ReactElement {
                     !program.isActive && program.latestVersionStatus === 'published'
                   }
                   onDelete={() => {
-                    void handleDelete(program.id);
+                    requestDelete(program.id);
                   }}
                   onSetActive={() => {
                     void handleActivate(program.id);
@@ -189,13 +208,31 @@ export default function ProgramsPage(): React.ReactElement {
         title={t('myProgramsTitle')}
         description={`${t('myProgramsSubtitle')} ${t('singleActiveHint')}`}
         actions={headerActions}
+        onRefresh={isDesktop ? undefined : loadPrograms}
       >
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
         {loading ? (
           <CardGridSkeleton count={isDesktop ? 6 : 3} columns="3" />
         ) : programs.length === 0 && !error ? (
-          <p className="text-sm text-muted-foreground">{t('noPrograms')}</p>
+          isDesktop ? (
+            <p className="text-sm text-muted-foreground">{t('noPrograms')}</p>
+          ) : (
+            <GymEmptyState
+              action={
+                <div className="flex flex-col gap-2">
+                  <Button asChild className="min-h-11 w-full">
+                    <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
+                  </Button>
+                  <Button asChild className="min-h-11 w-full" variant="outline">
+                    <Link href={`/${locale}/programs/templates`}>{t('browseTemplates')}</Link>
+                  </Button>
+                </div>
+              }
+              icon={<ClipboardList aria-hidden className="h-7 w-7" />}
+              title={t('noPrograms')}
+            />
+          )
         ) : isDesktop ? (
           desktopProgramList
         ) : (
@@ -203,6 +240,21 @@ export default function ProgramsPage(): React.ReactElement {
             <StaggerItem>{mobileProgramList}</StaggerItem>
           </StaggerGroup>
         )}
+        <GymActionSheet
+          cancelLabel={t('cancel')}
+          confirmLabel={t('deleteProgram')}
+          destructive
+          loading={pendingDeleteId !== null && actionId === pendingDeleteId}
+          message={t('deleteConfirm')}
+          open={pendingDeleteId !== null}
+          title={t('deleteProgram')}
+          onCancel={() => {
+            setPendingDeleteId(null);
+          }}
+          onConfirm={() => {
+            void confirmDelete();
+          }}
+        />
       </AdaptivePageShell>
     </RequireAuth>
   );

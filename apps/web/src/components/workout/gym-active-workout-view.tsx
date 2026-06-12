@@ -1,9 +1,9 @@
 'use client';
 
 import type { WorkoutSessionDetail } from '@onemore/shared';
-import { Button } from '@onemore/ui';
+import { Button, cn } from '@onemore/ui';
 import { AnimatePresence, motion } from 'motion/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ExerciseNotesModal } from '@/components/exercise-notes-modal';
 import { ExerciseSearchCombobox } from '@/components/exercise-search-combobox';
@@ -11,6 +11,10 @@ import { RestTimer } from '@/components/rest-timer';
 import { useHorizontalSwipe } from '@/hooks/use-horizontal-swipe';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { getExerciseDisplayName } from '@/lib/exercise-display-name';
+import {
+  formatWorkoutDuration,
+  getWorkoutElapsedSeconds,
+} from '@/lib/format-workout-duration';
 import { triggerHaptic } from '@/lib/haptic';
 import type { RestTimerContext, WorkoutExerciseDetail } from '@/lib/workout-exercise-set-state';
 
@@ -66,6 +70,8 @@ export interface GymActiveWorkoutViewProps {
     prevExercise: string;
     nextExercise: string;
     swipeHint: string;
+    elapsedLabel: string;
+    previousSetLabel: string;
   };
   onRestComplete: (setId: string, actualRestSeconds: number) => void;
   onSkipRest: () => void;
@@ -139,6 +145,18 @@ export function GymActiveWorkoutView({
 }: GymActiveWorkoutViewProps): React.ReactElement {
   const reducedMotion = useReducedMotion();
   const [transitionDirection, setTransitionDirection] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(() =>
+    getWorkoutElapsedSeconds(session.startedAt),
+  );
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setElapsedSeconds(getWorkoutElapsedSeconds(session.startedAt));
+    }, 1000);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [session.startedAt]);
   const motionTransition = reducedMotion
     ? { duration: 0 }
     : { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const };
@@ -200,9 +218,6 @@ export function GymActiveWorkoutView({
               onNextSet={(actualRestSeconds) => {
                 handleRestComplete(restTimerContext.setId, actualRestSeconds);
               }}
-              onRestComplete={() => {
-                triggerHaptic('medium');
-              }}
               onSkipRest={() => {
                 triggerHaptic('light');
                 onSkipRest();
@@ -219,11 +234,16 @@ export function GymActiveWorkoutView({
             transition={motionTransition}
             {...swipeHandlers}
           >
-            <header className="sticky top-0 z-20 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <header className="sticky top-0 z-20 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 dark:bg-gym-surface/90">
               <div className="flex items-center justify-between gap-3">
-                <p className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {session.workoutDayLabel ?? labels.freeWorkoutTitle}
-                </p>
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {session.workoutDayLabel ?? labels.freeWorkoutTitle}
+                  </p>
+                  <p className="text-[11px] tabular-nums text-muted-foreground/80">
+                    {labels.elapsedLabel}: {formatWorkoutDuration(elapsedSeconds)}
+                  </p>
+                </div>
                 {currentExercise && currentExercise.status !== 'skipped' && (
                   <GymWorkoutMenu
                     disabled={loading}
@@ -267,6 +287,24 @@ export function GymActiveWorkoutView({
                   <h1 className="mt-2 text-2xl font-bold leading-tight">
                     {getExerciseDisplayName(currentExercise.exercise, locale)}
                   </h1>
+                  <div
+                    aria-hidden
+                    className="mt-3 flex items-center justify-center gap-1.5"
+                  >
+                    {session.exercises.map((exercise, index) => (
+                      <span
+                        key={exercise.id}
+                        className={cn(
+                          'h-1.5 rounded-full transition-all',
+                          index === exerciseIndex
+                            ? 'w-5 bg-primary'
+                            : exercise.status === 'completed' || exercise.status === 'skipped'
+                              ? 'w-1.5 bg-primary/35'
+                              : 'w-1.5 bg-muted-foreground/25',
+                        )}
+                      />
+                    ))}
+                  </div>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm text-muted-foreground">{exerciseProgressText}</p>
@@ -349,6 +387,7 @@ export function GymActiveWorkoutView({
                             placeholderReps: labels.placeholderReps,
                             placeholderWeight: labels.placeholderWeight,
                             failureReps: labels.failureReps,
+                            previousSetLabel: labels.previousSetLabel,
                           }}
                           loading={loading}
                           restTimerContext={restTimerContext}

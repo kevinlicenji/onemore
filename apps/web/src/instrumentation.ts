@@ -1,13 +1,33 @@
-import * as Sentry from '@sentry/nextjs';
-
+/**
+ * Next.js instrumentation hook. Sentry loads only when a DSN is configured.
+ */
 export async function register(): Promise<void> {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    await import('../sentry.server.config');
+  if (!process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    return;
   }
 
-  if (process.env.NEXT_RUNTIME === 'edge') {
-    await import('../sentry.server.config');
-  }
+  await import('../sentry.server.config');
 }
 
-export const onRequestError = Sentry.captureRequestError;
+type RequestErrorHandler = (
+  error: unknown,
+  request: {
+    path: string;
+    method: string;
+    headers: Record<string, string | string[] | undefined>;
+  },
+  context: {
+    routerKind: 'Pages Router' | 'App Router';
+    routePath: string;
+    routeType: 'render' | 'route' | 'action' | 'middleware';
+  },
+) => void | Promise<void>;
+
+export const onRequestError: RequestErrorHandler = async (error, request, context) => {
+  if (!process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    return;
+  }
+
+  const Sentry = await import('@sentry/nextjs');
+  await Sentry.captureRequestError(error, request, context);
+};

@@ -1,13 +1,17 @@
 'use client';
 
-import { Button, Card, CardContent, Input } from '@onemore/ui';
+import { Button } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
+import { AuthErrorMessage } from '@/components/auth/auth-error-message';
+import { AuthPageContent } from '@/components/auth/auth-page-content';
 import { loginWithPassword, useAuth } from '@/components/auth-provider';
+import { GymAuthField } from '@/components/gym-ui/gym-auth-field';
+import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { fetchUserProfile, resolveAuthenticatedHomePath } from '@/lib/api-auth';
 import { identifyUser } from '@/lib/analytics';
 
@@ -41,49 +45,50 @@ export default function LoginPage(): React.ReactElement {
   }
 
   return (
-    <AdaptivePageShell title={t('loginTitle')} variant="centered">
-      <Card className="w-full">
-        <CardContent className="p-6">
-          <form className="flex flex-col gap-4" onSubmit={(e) => void handleSubmit(e)}>
-            <label className="flex flex-col gap-1.5 text-sm font-medium">
-              {t('loginIdentifier')}
-              <Input
-                autoComplete="username"
-                type="text"
-                value={identifier}
-                onChange={(e) => {
-                  setIdentifier(e.target.value);
-                }}
-                required
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm font-medium">
-              {t('password')}
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
-                required
-              />
-            </label>
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
-            <Button type="submit" disabled={loading} className="w-full">
-              {t('loginSubmit')}
+    <AdaptivePageShell
+      description={t('loginSubtitle')}
+      title={t('loginTitle')}
+      variant="centered"
+    >
+      <AuthPageContent
+        footer={
+          <GymMobileActions>
+            <Button asChild variant="outline">
+              <Link href={`/${locale}/register`}>{t('goRegister')}</Link>
             </Button>
-          </form>
-        </CardContent>
-      </Card>
-      <p className="text-center text-sm text-muted-foreground">
-        <Link href={`/${locale}/register`} className="text-primary hover:underline">
-          {t('goRegister')}
-        </Link>
-        {' · '}
-        <Link href={`/${locale}/forgot-password`} className="text-primary hover:underline">
-          {t('goForgotPassword')}
-        </Link>
-      </p>
+            <Button asChild variant="ghost">
+              <Link href={`/${locale}/forgot-password`}>{t('goForgotPassword')}</Link>
+            </Button>
+          </GymMobileActions>
+        }
+      >
+        <form className="flex w-full flex-col gap-4" onSubmit={(e) => void handleSubmit(e)}>
+          <GymAuthField
+            autoComplete="username"
+            label={t('loginIdentifier')}
+            type="text"
+            value={identifier}
+            onChange={(e) => {
+              setIdentifier(e.target.value);
+            }}
+            required
+          />
+          <GymAuthField
+            autoComplete="current-password"
+            label={t('password')}
+            type="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+            required
+          />
+          {error ? <AuthErrorMessage message={error} /> : null}
+          <Button className="min-h-11 w-full text-base" disabled={loading} type="submit">
+            {t('loginSubmit')}
+          </Button>
+        </form>
+      </AuthPageContent>
     </AdaptivePageShell>
   );
 }

@@ -84,16 +84,13 @@ export default function HistoryDetailPage(): React.ReactElement {
   return (
     <RequireAuth>
       <AdaptivePageShell
+        backHref={isDesktop ? undefined : `/${locale}/history`}
+        backLabel={t('backToHistory')}
         title={session.workoutDayLabel ?? t('freeWorkout')}
         description={completedLabel}
         actions={isDesktop ? headerActions : undefined}
         variant="wide"
       >
-        {!isDesktop ? (
-          <Button asChild className="w-fit" size="sm" variant="outline">
-            <Link href={`/${locale}/history`}>{t('backToHistory')}</Link>
-          </Button>
-        ) : null}
 
         <StatGrid>
           <Card>

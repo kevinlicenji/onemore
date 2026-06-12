@@ -1,8 +1,11 @@
 {
   "Auth": {
     "loginTitle": "Accedi",
+    "loginSubtitle": "Inserisci le tue credenziali per continuare.",
     "registerTitle": "Crea account",
+    "registerSubtitle": "Registrati gratis e inizia ad allenarti.",
     "forgotTitle": "Password dimenticata",
+    "forgotSubtitle": "Inserisci la tua email e ti invieremo un link di reset.",
     "email": "Email",
     "loginIdentifier": "Email o username",
     "password": "Password",
@@ -248,7 +251,10 @@
   "Offline": {
     "title": "Sei offline",
     "body": "Questa pagina non è in cache. Torna online per continuare.",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "resumeCta": "Riprendi {label}",
+    "resumeWorkout": "allenamento",
+    "resumeFreeWorkout": "Allenamento libero"
   },
   "Progress": {
     "prTitle": "Nuovo record personale!",
@@ -394,7 +400,18 @@
     "substituteError": "Impossibile sostituire l'esercizio.",
     "exerciseSkipped": "Esercizio saltato.",
     "sessionNotes": "Note sessione",
-    "sessionNotesPlaceholder": "Come ti sei sentito, energia, osservazioni…"
+    "sessionNotesPlaceholder": "Come ti sei sentito, energia, osservazioni…",
+    "elapsedLabel": "Trascorso",
+    "previousSetLabel": "Ultima",
+    "summaryTitle": "Workout completato!",
+    "summaryDone": "Fatto",
+    "summaryDuration": "Durata",
+    "summarySets": "Serie",
+    "summaryVolume": "Volume",
+    "summaryPrCount": "PR",
+    "summaryPrTitle": "Nuovi record personali",
+    "summaryNotReady": "Il riepilogo non è ancora pronto.",
+    "viewHistory": "Vedi storico"
   },
   "Settings": {
     "title": "Impostazioni",
@@ -448,13 +465,20 @@
     "exportError": "Impossibile avviare l'export.",
     "deleteAccount": "Elimina account",
     "deleteConfirm": "Eliminare l'account? Hai 30 giorni per annullare contattando il supporto.",
-    "deleteError": "Impossibile eliminare l'account."
+    "deleteError": "Impossibile eliminare l'account.",
+    "cancel": "Annulla"
   },
   "Pwa": {
     "installTitle": "Installa OneMore",
     "installBody": "Aggiungi l'app alla home per aprirla come un'app nativa.",
     "installCta": "Installa",
-    "installDismiss": "Non ora"
+    "installDismiss": "Non ora",
+    "iosStepShare": "Tocca Condividi in Safari",
+    "iosStepAdd": "Scegli “Aggiungi a Home”"
+  },
+  "Gym": {
+    "releaseToRefresh": "Rilascia per aggiornare",
+    "refreshing": "Aggiornamento…"
   },
   "Sync": {
     "pending": "{count, plural, one {# modifica in attesa di sync} other {# modifiche in attesa di sync}}",

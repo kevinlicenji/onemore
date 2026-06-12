@@ -4,8 +4,11 @@ import { Button } from '@onemore/ui';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 
+import { useWakeLock } from '@/hooks/use-wake-lock';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { playRestCompleteChime } from '@/lib/rest-timer-alert';
 import { getElapsedRestSeconds } from '@/lib/rest-elapsed-seconds';
+import { triggerHaptic } from '@/lib/haptic';
 
 type RestTimerVariant = 'default' | 'gym';
 
@@ -40,6 +43,8 @@ export function RestTimer({
   const onRestCompleteRef = useRef(onRestComplete);
   const restCompleteSignaledRef = useRef(false);
   const reducedMotion = useReducedMotion();
+  const isActive = remaining > 0;
+  useWakeLock(isActive);
 
   useEffect(() => {
     onNextSetRef.current = onNextSet;
@@ -61,6 +66,8 @@ export function RestTimer({
       return;
     }
     restCompleteSignaledRef.current = true;
+    triggerHaptic('medium');
+    playRestCompleteChime();
     onRestCompleteRef.current?.();
   }, [remaining]);
 

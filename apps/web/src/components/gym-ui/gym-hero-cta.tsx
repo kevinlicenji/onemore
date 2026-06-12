@@ -21,11 +21,13 @@ export function GymHeroCta({ title, description, action, className }: GymHeroCta
         className,
       )}
     >
-      <p className="text-lg font-semibold tracking-tight">{title}</p>
+      <p className="w-full text-pretty text-lg font-semibold tracking-tight">{title}</p>
       {description ? (
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <p className="mt-1 w-full text-pretty text-sm text-muted-foreground">{description}</p>
       ) : null}
-      <div className="mt-4">{action}</div>
+      <div className="mt-4 w-full [&_a]:flex [&_a]:min-h-11 [&_a]:w-full [&_a]:items-center [&_a]:justify-center [&_button]:min-h-11 [&_button]:w-full">
+        {action}
+      </div>
     </div>
   );
 }

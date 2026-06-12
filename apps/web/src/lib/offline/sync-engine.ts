@@ -7,6 +7,7 @@ import type {
 } from '@onemore/shared';
 
 import { API_BASE_URL } from '@/lib/api-config';
+import { generateClientUuid } from '@/lib/generate-client-uuid';
 
 import { offlineDb } from './db';
 
@@ -58,11 +59,11 @@ export async function flushSyncQueue(accessToken: string): Promise<SyncBatchResp
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
-      'Idempotency-Key': crypto.randomUUID(),
+      'Idempotency-Key': generateClientUuid(),
     },
     credentials: 'include',
     body: JSON.stringify({
-      clientSyncId: crypto.randomUUID(),
+      clientSyncId: generateClientUuid(),
       mutations: rows.map((row) => row.mutation),
     }),
   });

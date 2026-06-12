@@ -4,11 +4,13 @@ import type { ExerciseListItem } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import { useEffect, useState } from 'react';
 
+import { GymAdaptiveOverlay } from '@/components/gym-ui/gym-adaptive-overlay';
+import { GymSearchField } from '@/components/gym-ui/gym-search-field';
 import { MetricInput } from '@/components/metric-input';
-import { AnimatedDialog } from '@/components/motion/animated-dialog';
 import { getExerciseDisplayName } from '@/lib/exercise-display-name';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
 import { fetchExercises } from '@/lib/api-auth';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 
 export interface ProgramExerciseDraft {
   exerciseLibraryId: string;
@@ -54,6 +56,7 @@ export function AddProgramExerciseModal({
   onClose,
   onAdd,
 }: AddProgramExerciseModalProps): React.ReactElement | null {
+  const isDesktop = useIsDesktop();
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<ExerciseListItem[]>([]);
   const [selected, setSelected] = useState<ExerciseListItem | null>(null);
@@ -62,7 +65,6 @@ export function AddProgramExerciseModal({
   const [restSeconds, setRestSeconds] = useState(90);
   const [targetWeightKg, setTargetWeightKg] = useState<number | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -74,7 +76,6 @@ export function AddProgramExerciseModal({
       setRestSeconds(90);
       setTargetWeightKg(null);
       setIsSearching(false);
-      setViewportHeight(null);
       return;
     }
 
@@ -101,43 +102,6 @@ export function AddProgramExerciseModal({
     };
   }, [accessToken, open, search]);
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const viewport = window.visualViewport;
-    if (!viewport) {
-      return;
-    }
-
-    function syncViewportHeight(): void {
-      setViewportHeight(viewport?.height ?? null);
-    }
-
-    syncViewportHeight();
-    viewport.addEventListener('resize', syncViewportHeight);
-    viewport.addEventListener('scroll', syncViewportHeight);
-
-    return () => {
-      viewport.removeEventListener('resize', syncViewportHeight);
-      viewport.removeEventListener('scroll', syncViewportHeight);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open]);
-
   if (!open) {
     return null;
   }
@@ -159,39 +123,43 @@ export function AddProgramExerciseModal({
   }
 
   const listEmpty = !isSearching && results.length === 0;
-  const modalHeight = viewportHeight !== null ? `${viewportHeight}px` : 'min(92dvh, 100%)';
+
+  const searchInput = isDesktop ? (
+    <input
+      autoComplete="off"
+      autoCorrect="off"
+      className="w-full rounded-md border px-3 py-2 text-base"
+      enterKeyHint="search"
+      inputMode="search"
+      placeholder={labels.search}
+      type="search"
+      value={search}
+      onChange={(event) => {
+        setSearch(event.target.value);
+      }}
+    />
+  ) : (
+    <GymSearchField placeholder={labels.search} value={search} onChange={setSearch} />
+  );
 
   return (
-    <AnimatedDialog
-      ariaLabelledby="add-program-exercise-title"
-      className="flex w-full max-w-lg flex-col overflow-hidden rounded-t-2xl p-0 sm:rounded-2xl"
-      overlayClassName="z-[60] flex items-end p-0 sm:items-center sm:p-4"
+    <GymAdaptiveOverlay
+      ariaLabel={labels.title}
+      open={open}
+      tall={!isDesktop}
+      title={labels.title}
+      onClose={onClose}
     >
-      <div
-        className="flex min-h-0 w-full flex-col bg-background p-4"
-        style={{ height: modalHeight, maxHeight: modalHeight }}
-      >
-        <h2 id="add-program-exercise-title" className="shrink-0 text-lg font-semibold">
-          {labels.title}
-        </h2>
+      <div className={isDesktop ? undefined : 'flex min-h-0 flex-1 flex-col gap-3'}>
 
-        <input
-          autoComplete="off"
-          autoCorrect="off"
-          className="mt-4 shrink-0 w-full rounded-md border px-3 py-2 text-base"
-          enterKeyHint="search"
-          inputMode="search"
-          placeholder={labels.search}
-          type="search"
-          value={search}
-          onChange={(event) => {
-            setSearch(event.target.value);
-          }}
-        />
+        {searchInput}
 
         <ul
-          className="mt-3 min-h-[9rem] flex-1 overflow-y-auto overscroll-contain rounded-md border [-webkit-overflow-scrolling:touch]"
-          style={{ maxHeight: selected ? '38vh' : undefined }}
+          className={
+            isDesktop
+              ? 'mt-3 max-h-60 overflow-y-auto rounded-md border'
+              : 'min-h-[9rem] flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-gym-separator bg-gym-surface'
+          }
         >
           {isSearching && (
             <li className="px-3 py-4 text-sm text-muted-foreground">{labels.searching}</li>
@@ -205,7 +173,7 @@ export function AddProgramExerciseModal({
               return (
                 <li key={exercise.id}>
                   <button
-                    className="w-full px-3 py-3 text-left hover:bg-muted/50 data-[selected=true]:bg-primary/10"
+                    className="w-full px-3 py-3 text-left transition-colors hover:bg-muted/50 active:bg-muted/60 data-[selected=true]:bg-primary/10"
                     data-selected={isSelected}
                     type="button"
                     onClick={() => {
@@ -222,8 +190,8 @@ export function AddProgramExerciseModal({
             })}
         </ul>
 
-        {selected && (
-          <div className="mt-4 shrink-0 grid grid-cols-2 gap-3">
+        {selected ? (
+          <div className="shrink-0 grid grid-cols-2 gap-3">
             <MetricInput
               kind="sets"
               label={labels.targetSets}
@@ -260,17 +228,22 @@ export function AddProgramExerciseModal({
               }}
             />
           </div>
-        )}
+        ) : null}
 
-        <div className="mt-4 shrink-0 flex gap-2 pb-[max(0px,env(safe-area-inset-bottom))]">
-          <Button className="flex-1" type="button" variant="outline" onClick={onClose}>
+        <div className="shrink-0 flex gap-2">
+          <Button className="min-h-12 flex-1" type="button" variant="outline" onClick={onClose}>
             {labels.cancel}
           </Button>
-          <Button className="flex-1" disabled={!selected} type="button" onClick={handleConfirm}>
+          <Button
+            className="min-h-12 flex-1"
+            disabled={!selected}
+            type="button"
+            onClick={handleConfirm}
+          >
             {labels.add}
           </Button>
         </div>
       </div>
-    </AnimatedDialog>
+    </GymAdaptiveOverlay>
   );
 }

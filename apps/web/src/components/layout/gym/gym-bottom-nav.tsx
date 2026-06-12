@@ -43,7 +43,7 @@ export function GymBottomNav({ locale, route }: GymBottomNavProps): React.ReactE
     <>
       <nav
         aria-label={t('ariaLabel')}
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-gym-separator bg-background/92 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgba(0,0,0,0.06)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/80"
+        className="fixed bottom-0 left-0 right-0 z-40 border-t border-gym-separator bg-gym-surface/92 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgba(0,0,0,0.06)] backdrop-blur-xl supports-[backdrop-filter]:bg-gym-surface/80 dark:shadow-[0_-10px_28px_rgba(0,0,0,0.45)]"
       >
         <div className="relative mx-auto grid h-16 max-w-lg grid-cols-5 items-end px-2">
           {leftItems.map((item) => {

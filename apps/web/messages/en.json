@@ -1,8 +1,11 @@
 {
   "Auth": {
     "loginTitle": "Sign in",
+    "loginSubtitle": "Enter your credentials to continue.",
     "registerTitle": "Create account",
+    "registerSubtitle": "Sign up for free and start training.",
     "forgotTitle": "Forgot password",
+    "forgotSubtitle": "Enter your email and we will send you a reset link.",
     "email": "Email",
     "loginIdentifier": "Email or username",
     "password": "Password",
@@ -248,7 +251,10 @@
   "Offline": {
     "title": "You are offline",
     "body": "This page is not cached. Go back online to continue.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "resumeCta": "Resume {label}",
+    "resumeWorkout": "workout",
+    "resumeFreeWorkout": "Free workout"
   },
   "Progress": {
     "prTitle": "New personal record!",
@@ -394,7 +400,18 @@
     "substituteError": "Could not substitute exercise.",
     "exerciseSkipped": "Exercise skipped.",
     "sessionNotes": "Session notes",
-    "sessionNotesPlaceholder": "How you felt, energy, observations…"
+    "sessionNotesPlaceholder": "How you felt, energy, observations…",
+    "elapsedLabel": "Elapsed",
+    "previousSetLabel": "Last",
+    "summaryTitle": "Workout complete!",
+    "summaryDone": "Done",
+    "summaryDuration": "Duration",
+    "summarySets": "Sets",
+    "summaryVolume": "Volume",
+    "summaryPrCount": "PRs",
+    "summaryPrTitle": "New personal records",
+    "summaryNotReady": "Workout summary is not ready yet.",
+    "viewHistory": "View history"
   },
   "Settings": {
     "title": "Settings",
@@ -448,13 +465,20 @@
     "exportError": "Could not start export.",
     "deleteAccount": "Delete account",
     "deleteConfirm": "Delete your account? You have 30 days to cancel by contacting support.",
-    "deleteError": "Could not delete account."
+    "deleteError": "Could not delete account.",
+    "cancel": "Cancel"
   },
   "Pwa": {
     "installTitle": "Install OneMore",
     "installBody": "Add the app to your home screen for a native-like experience.",
     "installCta": "Install",
-    "installDismiss": "Not now"
+    "installDismiss": "Not now",
+    "iosStepShare": "Tap Share in Safari",
+    "iosStepAdd": "Choose “Add to Home Screen”"
+  },
+  "Gym": {
+    "releaseToRefresh": "Release to refresh",
+    "refreshing": "Refreshing…"
   },
   "Sync": {
     "pending": "{count, plural, one {# change pending sync} other {# changes pending sync}}",

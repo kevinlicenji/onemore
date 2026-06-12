@@ -25,9 +25,11 @@ import {
   upsertWorkoutSet,
 } from '@/lib/api-auth';
 
+import { generateClientUuid } from '@/lib/generate-client-uuid';
 import { isInvalidAccessTokenError, refreshAccessToken } from '@/lib/refresh-access-token';
 
 import { offlineDb } from './db';
+import { loadPreviousSetsMap } from './resolve-previous-set';
 import { enqueueMutation, flushSyncQueue, isBrowserOnline } from './sync-engine';
 
 export interface WorkoutClientAuthOptions {
@@ -45,15 +47,19 @@ async function syncIfOnline(accessToken: string): Promise<void> {
   }
 }
 
-function buildLocalProgrammedSession(
+async function buildLocalProgrammedSession(
   input: StartWorkoutSessionInput,
   preview: NextWorkoutPreview,
-): WorkoutSessionDetail {
+): Promise<WorkoutSessionDetail> {
   const startedAt = new Date().toISOString();
   const selectedDayId = input.workoutDayId ?? preview.workoutDayId;
   const selectedDay =
     preview.days.find((day) => day.workoutDayId === selectedDayId) ?? preview.days[0] ?? null;
   const dayExercises = selectedDay?.exercises ?? preview.exercises;
+  const previousByExercise = await loadPreviousSetsMap(
+    dayExercises.map((item) => item.exerciseLibraryId),
+    input.id,
+  );
 
   return {
     id: input.id,
@@ -67,7 +73,7 @@ function buildLocalProgrammedSession(
     durationSeconds: null,
     privateNotes: null,
     exercises: dayExercises.map((item, index) => {
-      const executionId = crypto.randomUUID();
+      const executionId = generateClientUuid();
       return {
         id: executionId,
         exerciseLibraryId: item.exerciseLibraryId,
@@ -84,7 +90,7 @@ function buildLocalProgrammedSession(
         exercise: item.exercise,
         previousSet: null,
         sets: Array.from({ length: item.targetSets }, (_, setIndex) => ({
-          id: crypto.randomUUID(),
+          id: generateClientUuid(),
           setNumber: setIndex + 1,
           weightKg: null,
           reps: null,
@@ -227,7 +233,7 @@ export async function startWorkoutSessionClient(
 
   if (input.sessionType === 'programmed') {
     const preview = await getNextWorkoutPreviewClient(accessToken);
-    const session = buildLocalProgrammedSession(input, preview);
+    const session = await buildLocalProgrammedSession(input, preview);
     await persistSessionLocally(session);
     return session;
   }
@@ -417,8 +423,9 @@ export async function addWorkoutExerciseClient(
     throw new Error('Session not found locally');
   }
 
-  const executionId = crypto.randomUUID();
+  const executionId = generateClientUuid();
   const startedAt = new Date().toISOString();
+  const previousByExercise = await loadPreviousSetsMap([exercise.id], sessionId);
   const newExercise = {
     id: executionId,
     exerciseLibraryId: exercise.id,
@@ -437,9 +444,9 @@ export async function addWorkoutExerciseClient(
       slug: exercise.slug,
       names: exercise.names,
     },
-    previousSet: null,
+    previousSet: previousByExercise.get(exercise.id) ?? null,
     sets: Array.from({ length: payload.targetSets }, (_, index) => ({
-      id: crypto.randomUUID(),
+      id: generateClientUuid(),
       setNumber: index + 1,
       weightKg: null,
       reps: payload.targetReps,
@@ -614,7 +621,7 @@ export async function addWorkoutExerciseSetClient(
   sessionId: string,
   executionId: string,
 ): Promise<WorkoutSessionDetail> {
-  const setId = crypto.randomUUID();
+  const setId = generateClientUuid();
   const clientTimestamp = new Date().toISOString();
 
   if (isBrowserOnline()) {

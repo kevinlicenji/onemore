@@ -21,7 +21,7 @@ export function GymStatTile({ label, value, unit, className }: GymStatTileProps)
         className,
       )}
     >
-      <p className="text-mobile-footnote font-medium text-muted-foreground">{label}</p>
+      <p className="text-pretty text-mobile-footnote font-medium text-muted-foreground">{label}</p>
       <div className="mt-2">
         <p className="text-2xl font-bold tabular-nums tracking-tight">{value}</p>
         {unit ? <p className="text-xs text-muted-foreground">{unit}</p> : null}

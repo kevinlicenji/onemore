@@ -5,10 +5,19 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactElement, ReactNode } from 'react';
 
+import {
+  gymMobileHorizontalPadding,
+  gymMobileStackedActionsClassName,
+} from '@/lib/gym-mobile-layout';
+
+type GymPageHeaderActionsLayout = 'inline' | 'stacked';
+
 interface GymPageHeaderProps {
   title: string;
   description?: string;
   actions?: ReactNode;
+  /** Stacked = full-width CTAs below copy; inline = compact slot beside the title. */
+  actionsLayout?: GymPageHeaderActionsLayout;
   backHref?: string;
   backLabel?: string;
   className?: string;
@@ -21,14 +30,19 @@ export function GymPageHeader({
   title,
   description,
   actions,
+  actionsLayout = 'stacked',
   backHref,
   backLabel = 'Back',
   className,
 }: GymPageHeaderProps): ReactElement {
+  const showInlineActions = Boolean(actions) && actionsLayout === 'inline';
+  const showStackedActions = Boolean(actions) && actionsLayout === 'stacked';
+
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 -mx-4 border-b border-gym-separator/80 bg-background/90 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-md supports-[backdrop-filter]:bg-background/75',
+        'sticky top-0 z-30 w-full border-b border-gym-separator/80 bg-background/90 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-md supports-[backdrop-filter]:bg-background/75 dark:bg-gym-surface/88 dark:supports-[backdrop-filter]:bg-gym-surface/72',
+        gymMobileHorizontalPadding,
         className,
       )}
     >
@@ -43,16 +57,23 @@ export function GymPageHeader({
       ) : null}
 
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-mobile-large-title tracking-tight">{title}</h1>
-          {description ? (
-            <p className="mt-1 text-mobile-footnote leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          ) : null}
-        </div>
-        {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+        <h1 className="min-w-0 flex-1 text-balance text-mobile-large-title tracking-tight">
+          {title}
+        </h1>
+        {showInlineActions ? (
+          <div className="flex shrink-0 items-center gap-2">{actions}</div>
+        ) : null}
       </div>
+
+      {description ? (
+        <p className="mt-1 w-full text-pretty text-mobile-footnote leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      ) : null}
+
+      {showStackedActions ? (
+        <div className={cn('mt-4', gymMobileStackedActionsClassName)}>{actions}</div>
+      ) : null}
     </header>
   );
 }

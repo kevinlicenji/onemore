@@ -56,10 +56,21 @@ export function PrCelebration({
 
         <div className="relative flex flex-1 flex-col justify-center px-6 py-8">
           <motion.div
-            animate={reducedMotion ? undefined : { scale: 1, opacity: 1 }}
-            className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/15 text-green-600"
+            animate={
+              reducedMotion
+                ? { scale: 1, opacity: 1 }
+                : { scale: [1, 1.08, 1], opacity: 1 }
+            }
+            className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/15 text-green-600 ring-2 ring-green-500/25 dark:text-green-400"
             initial={reducedMotion ? undefined : { scale: 0.6, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={
+              reducedMotion
+                ? { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }
+                : {
+                    scale: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' },
+                    opacity: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+                  }
+            }
           >
             <svg
               aria-hidden
@@ -86,7 +97,17 @@ export function PrCelebration({
           <StaggerGroup className="mt-8 flex flex-col gap-3">
             {records.map((record) => (
               <StaggerItem key={record.id}>
-                <div className="rounded-2xl border-2 border-green-500/30 bg-card p-4 shadow-sm">
+                <motion.div
+                  animate={
+                    reducedMotion ? undefined : { boxShadow: ['0 0 0 0 hsl(142 60% 45% / 0)', '0 0 0 6px hsl(142 60% 45% / 0.12)', '0 0 0 0 hsl(142 60% 45% / 0)'] }
+                  }
+                  className="rounded-2xl border-2 border-green-500/30 bg-card p-4 shadow-sm"
+                  transition={
+                    reducedMotion
+                      ? undefined
+                      : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+                  }
+                >
                   <p className="text-lg font-semibold">{record.exerciseName}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {t(`prType_${record.prType}`)}
@@ -94,7 +115,7 @@ export function PrCelebration({
                   <p className="mt-2 text-2xl font-bold tabular-nums text-green-600 dark:text-green-400">
                     {formatPrValue(record)}
                   </p>
-                </div>
+                </motion.div>
               </StaggerItem>
             ))}
           </StaggerGroup>

@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { completeOnboarding, patchOnboarding } from '@/lib/api-auth';
@@ -172,7 +173,6 @@ export function OnboardingWizard(): React.ReactElement {
       title={stepTitle}
       description={stepSubtitle}
       variant={isDesktop ? 'default' : 'centered'}
-      mobileClassName="max-w-md"
     >
       <div className={isDesktop ? 'grid max-w-3xl gap-3 sm:grid-cols-2' : 'flex flex-col gap-3'}>
         {stepId === 'goal' &&
@@ -251,23 +251,42 @@ export function OnboardingWizard(): React.ReactElement {
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      <div className={`flex gap-3 ${isDesktop ? 'max-w-3xl' : ''}`}>
-        {stepIndex > 0 ? (
-          <Button type="button" variant="outline" onClick={handleBack} disabled={loading}>
-            {t('back')}
+      {isDesktop ? (
+        <div className="flex max-w-3xl gap-3">
+          {stepIndex > 0 ? (
+            <Button type="button" variant="outline" onClick={handleBack} disabled={loading}>
+              {t('back')}
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            className="flex-1"
+            disabled={!canContinue || loading}
+            onClick={() => {
+              void handleNext();
+            }}
+          >
+            {stepIndex === STEP_IDS.length - 1 ? t('finish') : t('continue')}
           </Button>
-        ) : null}
-        <Button
-          type="button"
-          className="flex-1"
-          disabled={!canContinue || loading}
-          onClick={() => {
-            void handleNext();
-          }}
-        >
-          {stepIndex === STEP_IDS.length - 1 ? t('finish') : t('continue')}
-        </Button>
-      </div>
+        </div>
+      ) : (
+        <GymMobileActions>
+          <Button
+            type="button"
+            disabled={!canContinue || loading}
+            onClick={() => {
+              void handleNext();
+            }}
+          >
+            {stepIndex === STEP_IDS.length - 1 ? t('finish') : t('continue')}
+          </Button>
+          {stepIndex > 0 ? (
+            <Button type="button" variant="outline" onClick={handleBack} disabled={loading}>
+              {t('back')}
+            </Button>
+          ) : null}
+        </GymMobileActions>
+      )}
     </AdaptivePageShell>
   );
 }

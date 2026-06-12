@@ -56,7 +56,10 @@
   --ring: 217 95% 58%;
   --accent: 142 60% 52%;
   --accent-foreground: 222 47% 8%;
-  --gym-tint: 224 40% 12%;
+  --gym-tint: 224 42% 9%;
+  --gym-surface: 222 38% 7%;
+  --gym-surface-elevated: 222 36% 10%;
+  --gym-separator: 217 24% 16%;
 }
 
 .dark[data-color-theme='midnight'] {
@@ -65,7 +68,10 @@
   --ring: 225 88% 55%;
   --accent: 200 75% 55%;
   --accent-foreground: 222 47% 8%;
-  --gym-tint: 230 35% 10%;
+  --gym-tint: 230 36% 8%;
+  --gym-surface: 230 34% 7%;
+  --gym-surface-elevated: 230 32% 10%;
+  --gym-separator: 230 24% 15%;
 }
 
 .dark[data-color-theme='arctic'] {
@@ -74,7 +80,10 @@
   --ring: 205 100% 55%;
   --accent: 186 80% 50%;
   --accent-foreground: 222 47% 8%;
-  --gym-tint: 205 40% 11%;
+  --gym-tint: 205 38% 9%;
+  --gym-surface: 205 36% 7%;
+  --gym-surface-elevated: 205 34% 10%;
+  --gym-separator: 205 24% 15%;
 }
 
 .dark[data-color-theme='cobalt'] {
@@ -83,7 +92,10 @@
   --ring: 220 94% 52%;
   --accent: 158 58% 50%;
   --accent-foreground: 222 47% 8%;
-  --gym-tint: 221 38% 10%;
+  --gym-tint: 221 38% 9%;
+  --gym-surface: 221 36% 7%;
+  --gym-surface-elevated: 221 34% 10%;
+  --gym-separator: 221 24% 15%;
 }
 
 .dark[data-color-theme='pulse'] {
@@ -92,7 +104,10 @@
   --ring: 217 95% 58%;
   --accent: 25 90% 58%;
   --accent-foreground: 222 47% 8%;
-  --gym-tint: 224 38% 11%;
+  --gym-tint: 224 38% 9%;
+  --gym-surface: 224 36% 7%;
+  --gym-surface-elevated: 224 34% 10%;
+  --gym-separator: 224 24% 15%;
 }
 
 /* Font stacks — data-font on <html> */

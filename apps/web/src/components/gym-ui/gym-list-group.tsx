@@ -16,7 +16,7 @@ export function GymListGroup({ children, className, title }: GymListGroupProps):
   return (
     <section className={cn('flex flex-col gap-2', className)}>
       {title ? (
-        <h3 className="px-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {title}
         </h3>
       ) : null}

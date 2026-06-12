@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
 import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
@@ -96,14 +97,14 @@ export default function ProgramTemplatesPage(): React.ReactElement {
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
         {!isDesktop ? (
-          <>
-            <Button asChild variant="outline">
+          <GymMobileActions>
+            <Button asChild>
               <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
             </Button>
-            <Button asChild variant="ghost">
+            <Button asChild variant="outline">
               <Link href={`/${locale}/programs`}>{t('backToPrograms')}</Link>
             </Button>
-          </>
+          </GymMobileActions>
         ) : null}
       </AdaptivePageShell>
     </RequireAuth>

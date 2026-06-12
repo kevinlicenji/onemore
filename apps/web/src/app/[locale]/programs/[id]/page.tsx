@@ -8,6 +8,8 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
+import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { ProgramDayList } from '@/components/program-day-list';
 import { RequireAuth } from '@/components/require-auth';
@@ -25,6 +27,7 @@ export default function ProgramDetailPage(): React.ReactElement {
   const [program, setProgram] = useState<ProgramDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (!accessToken || !programId) {
@@ -38,7 +41,7 @@ export default function ProgramDetailPage(): React.ReactElement {
   }, [accessToken, programId, t]);
 
   async function handleDelete(): Promise<void> {
-    if (!accessToken || !window.confirm(t('deleteConfirm'))) {
+    if (!accessToken) {
       return;
     }
     setDeleting(true);
@@ -49,6 +52,7 @@ export default function ProgramDetailPage(): React.ReactElement {
       setError(err instanceof Error ? err.message : t('deleteError'));
     } finally {
       setDeleting(false);
+      setDeleteConfirmOpen(false);
     }
   }
 
@@ -66,7 +70,7 @@ export default function ProgramDetailPage(): React.ReactElement {
           disabled={deleting}
           type="button"
           onClick={() => {
-            void handleDelete();
+            setDeleteConfirmOpen(true);
           }}
         >
           {t('deleteProgram')}
@@ -103,19 +107,19 @@ export default function ProgramDetailPage(): React.ReactElement {
         )}
 
         {!isDesktop ? (
-          <div className="flex flex-col gap-2">
-            <Button asChild className="min-h-11">
+          <GymMobileActions>
+            <Button asChild>
               <Link href={`/${locale}/workouts/start`}>{t('startWorkoutFromProgram')}</Link>
             </Button>
             <Button asChild variant="outline">
               <Link href={`/${locale}/programs/${programId}/edit`}>{t('editProgram')}</Link>
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               disabled={deleting}
               type="button"
               onClick={() => {
-                void handleDelete();
+                setDeleteConfirmOpen(true);
               }}
             >
               {t('deleteProgram')}
@@ -123,8 +127,23 @@ export default function ProgramDetailPage(): React.ReactElement {
             <Button asChild variant="ghost">
               <Link href={`/${locale}/programs`}>{t('backToPrograms')}</Link>
             </Button>
-          </div>
+          </GymMobileActions>
         ) : null}
+        <GymActionSheet
+          cancelLabel={t('cancel')}
+          confirmLabel={t('deleteProgram')}
+          destructive
+          loading={deleting}
+          message={t('deleteConfirm')}
+          open={deleteConfirmOpen}
+          title={t('deleteProgram')}
+          onCancel={() => {
+            setDeleteConfirmOpen(false);
+          }}
+          onConfirm={() => {
+            void handleDelete();
+          }}
+        />
       </AdaptivePageShell>
     </RequireAuth>
   );

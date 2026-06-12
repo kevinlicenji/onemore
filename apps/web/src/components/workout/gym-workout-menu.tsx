@@ -1,7 +1,9 @@
 'use client';
 
-import { Button } from '@onemore/ui';
-import { useEffect, useRef, useState } from 'react';
+import { Button, cn } from '@onemore/ui';
+import { useState } from 'react';
+
+import { GymSheet } from '@/components/gym-ui/gym-sheet';
 
 interface GymWorkoutMenuProps {
   labels: {
@@ -28,7 +30,7 @@ interface GymWorkoutMenuProps {
 }
 
 /**
- * Overflow menu for gym workout session actions (finish, abandon, exercise tools).
+ * Workout overflow actions as a bottom sheet (mobile gym pattern).
  */
 export function GymWorkoutMenu({
   labels,
@@ -45,31 +47,27 @@ export function GymWorkoutMenu({
   onAbandon,
 }: GymWorkoutMenuProps): React.ReactElement {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handlePointerDown(event: PointerEvent): void {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
-  }, []);
 
   function handleAction(action: () => void): void {
     setOpen(false);
     action();
   }
 
+  const actions = [
+    { label: labels.notes, onClick: onNotes },
+    ...(showSubstitute ? [{ label: labels.substitute, onClick: onSubstitute }] : []),
+    ...(showSkipSet ? [{ label: labels.skipSet, onClick: onSkipSet }] : []),
+    ...(showAddSet ? [{ label: labels.addSet, onClick: onAddSet }] : []),
+    { label: labels.skipExercise, onClick: onSkipExercise },
+    { label: labels.finishWorkout, onClick: onFinishWorkout, emphasis: true as const },
+    { label: labels.abandon, onClick: onAbandon, destructive: true as const },
+  ];
+
   return (
-    <div ref={containerRef} className="relative shrink-0">
+    <>
       <Button
         aria-expanded={open}
-        aria-haspopup="menu"
+        aria-haspopup="dialog"
         aria-label={labels.menu}
         className="min-h-11 min-w-11 px-0"
         disabled={disabled}
@@ -77,96 +75,40 @@ export function GymWorkoutMenu({
         type="button"
         variant="outline"
         onClick={() => {
-          setOpen((value) => !value);
+          setOpen(true);
         }}
       >
         ···
       </Button>
 
-      {open && (
-        <div
-          className="absolute right-0 z-30 mt-1 min-w-44 overflow-hidden rounded-lg border bg-background shadow-lg"
-          role="menu"
-        >
-          <button
-            className="block w-full px-4 py-3 text-left text-sm hover:bg-muted/60"
-            role="menuitem"
-            type="button"
-            onClick={() => {
-              handleAction(onNotes);
-            }}
-          >
-            {labels.notes}
-          </button>
-          {showSubstitute && (
-            <button
-              className="block w-full px-4 py-3 text-left text-sm hover:bg-muted/60"
-              role="menuitem"
-              type="button"
-              onClick={() => {
-                handleAction(onSubstitute);
-              }}
-            >
-              {labels.substitute}
-            </button>
-          )}
-          {showSkipSet && (
-            <button
-              className="block w-full px-4 py-3 text-left text-sm hover:bg-muted/60"
-              role="menuitem"
-              type="button"
-              onClick={() => {
-                handleAction(onSkipSet);
-              }}
-            >
-              {labels.skipSet}
-            </button>
-          )}
-          {showAddSet && (
-            <button
-              className="block w-full px-4 py-3 text-left text-sm hover:bg-muted/60"
-              role="menuitem"
-              type="button"
-              onClick={() => {
-                handleAction(onAddSet);
-              }}
-            >
-              {labels.addSet}
-            </button>
-          )}
-          <button
-            className="block w-full px-4 py-3 text-left text-sm hover:bg-muted/60"
-            role="menuitem"
-            type="button"
-            onClick={() => {
-              handleAction(onSkipExercise);
-            }}
-          >
-            {labels.skipExercise}
-          </button>
-          <div className="border-t" />
-          <button
-            className="block w-full px-4 py-3 text-left text-sm font-medium hover:bg-muted/60"
-            role="menuitem"
-            type="button"
-            onClick={() => {
-              handleAction(onFinishWorkout);
-            }}
-          >
-            {labels.finishWorkout}
-          </button>
-          <button
-            className="block w-full px-4 py-3 text-left text-sm text-destructive hover:bg-muted/60"
-            role="menuitem"
-            type="button"
-            onClick={() => {
-              handleAction(onAbandon);
-            }}
-          >
-            {labels.abandon}
-          </button>
-        </div>
-      )}
-    </div>
+      <GymSheet
+        ariaLabel={labels.menu}
+        open={open}
+        title={labels.menu}
+        onClose={() => {
+          setOpen(false);
+        }}
+      >
+        <ul className="overflow-hidden rounded-2xl border border-gym-separator bg-gym-surface">
+          {actions.map((action, index) => (
+            <li key={action.label} className={cn(index > 0 && 'border-t border-gym-separator')}>
+              <button
+                className={cn(
+                  'flex min-h-12 w-full items-center px-4 py-3 text-left text-base transition-colors active:bg-muted/50',
+                  action.destructive && 'font-medium text-destructive',
+                  action.emphasis && 'font-semibold text-primary',
+                )}
+                type="button"
+                onClick={() => {
+                  handleAction(action.onClick);
+                }}
+              >
+                {action.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </GymSheet>
+    </>
   );
 }

@@ -19,6 +19,37 @@ interface GymListRowProps {
   onClick?: () => void;
 }
 
+interface RowTextBlockProps {
+  title: ReactNode;
+  subtitle?: ReactNode;
+  meta?: ReactNode;
+  active?: boolean;
+}
+
+function RowTextBlock({ title, subtitle, meta, active }: RowTextBlockProps): ReactElement {
+  return (
+    <div className="min-w-0 flex-1">
+      <div
+        className={cn(
+          'w-full text-pretty font-semibold leading-snug text-foreground',
+          active && 'text-primary',
+        )}
+      >
+        {title}
+      </div>
+      {subtitle || meta ? (
+        <div className="mt-0.5 flex w-full flex-wrap items-center gap-x-1.5 gap-y-1 text-mobile-footnote text-muted-foreground">
+          {subtitle ? <span className="min-w-0 text-pretty">{subtitle}</span> : null}
+          {meta ? <span className="shrink-0">{meta}</span> : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+const rowClassName =
+  'flex w-full min-h-[3.25rem] items-center gap-3 px-4 py-3 text-left transition-colors';
+
 /**
  * Single row inside a GymListGroup with optional chevron and two-line layout.
  */
@@ -35,34 +66,6 @@ export function GymListRow({
   className,
   onClick,
 }: GymListRowProps): ReactElement {
-  const content = (
-    <>
-      {icon ? <span className="shrink-0 text-primary">{icon}</span> : null}
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-          <span className={cn('font-semibold text-foreground', active && 'text-primary')}>
-            {title}
-          </span>
-          {meta ? <span className="text-mobile-footnote text-muted-foreground">{meta}</span> : null}
-        </div>
-        {subtitle ? (
-          <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
-        ) : null}
-      </div>
-      {trailing}
-      {showChevron ? (
-        <ChevronRight aria-hidden className="h-5 w-5 shrink-0 text-muted-foreground/70" />
-      ) : null}
-    </>
-  );
-
-  const rowClassName = cn(
-    'flex w-full min-h-[3.25rem] items-center gap-3 px-4 py-3 text-left transition-colors',
-    onClick || href ? 'active:bg-muted/50' : '',
-    active && 'bg-primary/6',
-    disabled && 'opacity-60',
-  );
-
   if (href) {
     return (
       <li
@@ -72,21 +75,12 @@ export function GymListRow({
           className,
         )}
       >
-        <Link className={cn(rowClassName, 'min-w-0 flex-1')} href={href}>
+        <Link
+          className={cn(rowClassName, 'min-w-0 flex-1 active:bg-muted/50', active && 'bg-primary/6')}
+          href={href}
+        >
           {icon ? <span className="shrink-0 text-primary">{icon}</span> : null}
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-              <span className={cn('font-semibold text-foreground', active && 'text-primary')}>
-                {title}
-              </span>
-              {meta ? (
-                <span className="text-mobile-footnote text-muted-foreground">{meta}</span>
-              ) : null}
-            </div>
-            {subtitle ? (
-              <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
-            ) : null}
-          </div>
+          <RowTextBlock active={active} meta={meta} subtitle={subtitle} title={title} />
           {showChevron ? (
             <ChevronRight aria-hidden className="h-5 w-5 shrink-0 text-muted-foreground/70" />
           ) : null}
@@ -99,8 +93,18 @@ export function GymListRow({
   if (onClick) {
     return (
       <li className={cn('border-b border-gym-separator last:border-b-0', className)}>
-        <button className={rowClassName} disabled={disabled} type="button" onClick={onClick}>
-          {content}
+        <button
+          className={cn(rowClassName, 'active:bg-muted/50', active && 'bg-primary/6', disabled && 'opacity-60')}
+          disabled={disabled}
+          type="button"
+          onClick={onClick}
+        >
+          {icon ? <span className="shrink-0 text-primary">{icon}</span> : null}
+          <RowTextBlock active={active} meta={meta} subtitle={subtitle} title={title} />
+          {trailing}
+          {showChevron ? (
+            <ChevronRight aria-hidden className="h-5 w-5 shrink-0 text-muted-foreground/70" />
+          ) : null}
         </button>
       </li>
     );
@@ -114,7 +118,12 @@ export function GymListRow({
         className,
       )}
     >
-      {content}
+      {icon ? <span className="shrink-0 text-primary">{icon}</span> : null}
+      <RowTextBlock active={active} meta={meta} subtitle={subtitle} title={title} />
+      {trailing}
+      {showChevron ? (
+        <ChevronRight aria-hidden className="h-5 w-5 shrink-0 text-muted-foreground/70" />
+      ) : null}
     </li>
   );
 }

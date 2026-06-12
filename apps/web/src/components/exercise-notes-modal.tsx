@@ -3,6 +3,8 @@
 import { Button } from '@onemore/ui';
 import { useEffect, useState } from 'react';
 
+import { GymAdaptiveOverlay } from '@/components/gym-ui/gym-adaptive-overlay';
+
 interface ExerciseNotesModalProps {
   open: boolean;
   title: string;
@@ -16,7 +18,7 @@ interface ExerciseNotesModalProps {
 }
 
 /**
- * Modal editor for per-exercise workout notes.
+ * Adaptive overlay editor for per-exercise workout notes.
  */
 export function ExerciseNotesModal({
   open,
@@ -37,61 +39,32 @@ export function ExerciseNotesModal({
     }
   }, [open, initialValue]);
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open, onClose]);
-
-  if (!open) {
-    return null;
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex animate-in fade-in-0 items-end justify-center bg-black/40 p-4 duration-200 sm:items-center">
-      <button
-        aria-label={cancelLabel}
-        className="absolute inset-0"
-        type="button"
-        onClick={onClose}
+    <GymAdaptiveOverlay ariaLabel={title} open={open} title={title} onClose={onClose}>
+      <textarea
+        autoFocus
+        className="min-h-28 w-full rounded-xl border bg-background px-3 py-2 text-sm"
+        placeholder={placeholder}
+        value={draft}
+        onChange={(event) => {
+          setDraft(event.target.value);
+        }}
       />
-      <div className="relative z-10 w-full max-w-md animate-in fade-in-0 zoom-in-95 rounded-lg border bg-background p-4 shadow-lg duration-200">
-        <h3 className="text-base font-semibold">{title}</h3>
-        <textarea
-          autoFocus
-          className="mt-3 min-h-28 w-full rounded-md border px-3 py-2 text-sm"
-          placeholder={placeholder}
-          value={draft}
-          onChange={(event) => {
-            setDraft(event.target.value);
+      <div className="flex gap-2">
+        <Button className="min-h-12 flex-1" disabled={saving} type="button" variant="outline" onClick={onClose}>
+          {cancelLabel}
+        </Button>
+        <Button
+          className="min-h-12 flex-1"
+          disabled={saving}
+          type="button"
+          onClick={() => {
+            onSave(draft);
           }}
-        />
-        <div className="mt-4 flex justify-end gap-2">
-          <Button disabled={saving} type="button" variant="outline" onClick={onClose}>
-            {cancelLabel}
-          </Button>
-          <Button
-            disabled={saving}
-            type="button"
-            onClick={() => {
-              onSave(draft);
-            }}
-          >
-            {saveLabel}
-          </Button>
-        </div>
+        >
+          {saveLabel}
+        </Button>
       </div>
-    </div>
+    </GymAdaptiveOverlay>
   );
 }

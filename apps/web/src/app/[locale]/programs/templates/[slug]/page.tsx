@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { ProgramDayList } from '@/components/program-day-list';
 import { RequireAuth } from '@/components/require-auth';
@@ -68,8 +69,8 @@ export default function ProgramTemplateDetailPage(): React.ReactElement {
         )}
 
         {!isDesktop ? (
-          <div className="flex flex-col gap-2">
-            <Button asChild className="min-h-11">
+          <GymMobileActions>
+            <Button asChild>
               <Link href={`/${locale}/programs/new?template=${encodeURIComponent(slug)}`}>
                 {t('customizeTemplate')}
               </Link>
@@ -77,7 +78,7 @@ export default function ProgramTemplateDetailPage(): React.ReactElement {
             <Button asChild variant="outline">
               <Link href={`/${locale}/programs/templates`}>{t('backToTemplates')}</Link>
             </Button>
-          </div>
+          </GymMobileActions>
         ) : null}
       </AdaptivePageShell>
     </RequireAuth>

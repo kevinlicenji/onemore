@@ -12,7 +12,10 @@ import { AppearanceModePicker } from '@/components/appearance/appearance-mode-pi
 import { ColorThemePicker } from '@/components/appearance/color-theme-picker';
 import { FontPicker } from '@/components/appearance/font-picker';
 import { useAuth } from '@/components/auth-provider';
+import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
+import { GymListRow } from '@/components/gym-ui/gym-list-row';
+import { GymToggleRow } from '@/components/gym-ui/gym-toggle-row';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { PageSection } from '@/components/layout/desktop/page-section';
 import { RequireAuth } from '@/components/require-auth';
@@ -40,6 +43,7 @@ export default function SettingsPage(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const load = useCallback(async (): Promise<void> => {
     if (!accessToken) {
@@ -114,7 +118,7 @@ export default function SettingsPage(): React.ReactElement {
   }
 
   async function handleDeleteAccount(): Promise<void> {
-    if (!accessToken || !window.confirm(t('deleteConfirm'))) {
+    if (!accessToken) {
       return;
     }
     setLoading(true);
@@ -127,6 +131,7 @@ export default function SettingsPage(): React.ReactElement {
       setError(err instanceof Error ? err.message : t('deleteError'));
     } finally {
       setLoading(false);
+      setDeleteConfirmOpen(false);
     }
   }
 
@@ -212,64 +217,63 @@ export default function SettingsPage(): React.ReactElement {
           </PageSection>
         )}
 
-        <div className={isDesktop ? 'grid gap-6 lg:grid-cols-2' : 'flex flex-col gap-6'}>
-          <PageSection title={t('motivationTitle')} description={t('motivationSubtitle')}>
-            <Card>
-              <CardContent className="flex flex-wrap gap-2 p-6">
-                {[1, 2, 3].map((level) => (
-                  <Button
-                    key={level}
-                    disabled={loading}
-                    type="button"
-                    variant={profile.motivationLevel === level ? 'default' : 'outline'}
-                    onClick={() => {
-                      void handleMotivationChange(level);
-                    }}
-                  >
-                    {t(`motivationLevel${String(level)}`)}
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
-          </PageSection>
+        {!isDesktop ? (
+          <div className="flex flex-col gap-6">
+            <GymListGroup title={t('motivationTitle')}>
+              {[1, 2, 3].map((level) => (
+                <GymListRow
+                  key={level}
+                  disabled={loading}
+                  showChevron={false}
+                  title={t(`motivationLevel${String(level)}`)}
+                  trailing={
+                    profile.motivationLevel === level ? (
+                      <span aria-hidden className="text-primary">
+                        ✓
+                      </span>
+                    ) : null
+                  }
+                  onClick={() => {
+                    void handleMotivationChange(level);
+                  }}
+                />
+              ))}
+            </GymListGroup>
 
-          <PageSection title={t('notificationsTitle')}>
-            <Card>
-              <CardContent className="space-y-4 p-6 text-sm">
-                <label className="flex items-center justify-between gap-4">
-                  {t('workoutReminders')}
-                  <input
-                    checked={notifications.workoutReminders}
-                    disabled={loading}
-                    type="checkbox"
-                    onChange={(e) => {
-                      void saveNotifications({ workoutReminders: e.target.checked });
-                    }}
-                  />
-                </label>
-                <label className="flex items-center justify-between gap-4">
-                  {t('progressUpdates')}
-                  <input
-                    checked={notifications.progressUpdates}
-                    disabled={loading}
-                    type="checkbox"
-                    onChange={(e) => {
-                      void saveNotifications({ progressUpdates: e.target.checked });
-                    }}
-                  />
-                </label>
-                <label className="flex items-center justify-between gap-4">
-                  {t('prCelebrations')}
-                  <input
-                    checked={notifications.prCelebrations}
-                    disabled={loading}
-                    type="checkbox"
-                    onChange={(e) => {
-                      void saveNotifications({ prCelebrations: e.target.checked });
-                    }}
-                  />
-                </label>
+            <GymListGroup title={t('notificationsTitle')}>
+              <li className="border-t border-gym-separator first:border-t-0">
+                <GymToggleRow
+                  checked={notifications.workoutReminders}
+                  disabled={loading}
+                  label={t('workoutReminders')}
+                  onChange={(checked) => {
+                    void saveNotifications({ workoutReminders: checked });
+                  }}
+                />
+              </li>
+              <li className="border-t border-gym-separator">
+                <GymToggleRow
+                  checked={notifications.progressUpdates}
+                  disabled={loading}
+                  label={t('progressUpdates')}
+                  onChange={(checked) => {
+                    void saveNotifications({ progressUpdates: checked });
+                  }}
+                />
+              </li>
+              <li className="border-t border-gym-separator">
+                <GymToggleRow
+                  checked={notifications.prCelebrations}
+                  disabled={loading}
+                  label={t('prCelebrations')}
+                  onChange={(checked) => {
+                    void saveNotifications({ prCelebrations: checked });
+                  }}
+                />
+              </li>
+              <li className="border-t border-gym-separator p-3">
                 <Button
+                  className="min-h-11 w-full"
                   disabled={loading}
                   type="button"
                   variant="outline"
@@ -279,48 +283,157 @@ export default function SettingsPage(): React.ReactElement {
                 >
                   {t('enablePush')}
                 </Button>
-              </CardContent>
-            </Card>
-          </PageSection>
+              </li>
+            </GymListGroup>
 
-          <PageSection
-            title={t('privacyTitle')}
-            description={t('exportHelp')}
-            className={isDesktop ? 'lg:col-span-2' : undefined}
-          >
-            <Card>
-              <CardContent className="p-6">
-                {exportJob ? (
-                  <p className="text-sm text-muted-foreground">
-                    {t('exportStatus', { status: exportJob.status })}
-                  </p>
-                ) : null}
-                <div className="mt-4 flex flex-wrap gap-3">
+            <GymListGroup title={t('privacyTitle')}>
+              {exportJob ? (
+                <li className="border-b border-gym-separator px-4 py-3 text-sm text-muted-foreground">
+                  {t('exportStatus', { status: exportJob.status })}
+                </li>
+              ) : null}
+              <GymListRow
+                showChevron={false}
+                title={t('requestExport')}
+                onClick={() => {
+                  void handleExport();
+                }}
+              />
+              <GymListRow
+                showChevron={false}
+                title={t('deleteAccount')}
+                onClick={() => {
+                  setDeleteConfirmOpen(true);
+                }}
+              />
+            </GymListGroup>
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <PageSection title={t('motivationTitle')} description={t('motivationSubtitle')}>
+              <Card>
+                <CardContent className="flex flex-wrap gap-2 p-6">
+                  {[1, 2, 3].map((level) => (
+                    <Button
+                      key={level}
+                      disabled={loading}
+                      type="button"
+                      variant={profile.motivationLevel === level ? 'default' : 'outline'}
+                      onClick={() => {
+                        void handleMotivationChange(level);
+                      }}
+                    >
+                      {t(`motivationLevel${String(level)}`)}
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
+            </PageSection>
+
+            <PageSection title={t('notificationsTitle')}>
+              <Card>
+                <CardContent className="space-y-4 p-6 text-sm">
+                  <label className="flex items-center justify-between gap-4">
+                    {t('workoutReminders')}
+                    <input
+                      checked={notifications.workoutReminders}
+                      disabled={loading}
+                      type="checkbox"
+                      onChange={(e) => {
+                        void saveNotifications({ workoutReminders: e.target.checked });
+                      }}
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-4">
+                    {t('progressUpdates')}
+                    <input
+                      checked={notifications.progressUpdates}
+                      disabled={loading}
+                      type="checkbox"
+                      onChange={(e) => {
+                        void saveNotifications({ progressUpdates: e.target.checked });
+                      }}
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-4">
+                    {t('prCelebrations')}
+                    <input
+                      checked={notifications.prCelebrations}
+                      disabled={loading}
+                      type="checkbox"
+                      onChange={(e) => {
+                        void saveNotifications({ prCelebrations: e.target.checked });
+                      }}
+                    />
+                  </label>
                   <Button
                     disabled={loading}
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      void handleExport();
+                      void handleEnablePush();
                     }}
                   >
-                    {t('requestExport')}
+                    {t('enablePush')}
                   </Button>
-                  <Button
-                    disabled={loading}
-                    type="button"
-                    variant="destructive"
-                    onClick={() => {
-                      void handleDeleteAccount();
-                    }}
-                  >
-                    {t('deleteAccount')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </PageSection>
-        </div>
+                </CardContent>
+              </Card>
+            </PageSection>
+
+            <PageSection
+              title={t('privacyTitle')}
+              description={t('exportHelp')}
+              className="lg:col-span-2"
+            >
+              <Card>
+                <CardContent className="p-6">
+                  {exportJob ? (
+                    <p className="text-sm text-muted-foreground">
+                      {t('exportStatus', { status: exportJob.status })}
+                    </p>
+                  ) : null}
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Button
+                      disabled={loading}
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        void handleExport();
+                      }}
+                    >
+                      {t('requestExport')}
+                    </Button>
+                    <Button
+                      disabled={loading}
+                      type="button"
+                      variant="destructive"
+                      onClick={() => {
+                        setDeleteConfirmOpen(true);
+                      }}
+                    >
+                      {t('deleteAccount')}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </PageSection>
+          </div>
+        )}
+        <GymActionSheet
+          cancelLabel={t('cancel')}
+          confirmLabel={t('deleteAccount')}
+          destructive
+          loading={loading}
+          message={t('deleteConfirm')}
+          open={deleteConfirmOpen}
+          title={t('deleteAccount')}
+          onCancel={() => {
+            setDeleteConfirmOpen(false);
+          }}
+          onConfirm={() => {
+            void handleDeleteAccount();
+          }}
+        />
       </AdaptivePageShell>
     </RequireAuth>
   );

@@ -24,6 +24,13 @@ const withSerwist = withSerwistInit({
 const nextConfig: NextConfig = {
   output: 'standalone',
   transpilePackages: ['@onemore/ui', '@onemore/shared', '@onemore/api-client'],
+  // Avoid bundling Sentry/OpenTelemetry instrumentation (uses dynamic require).
+  serverExternalPackages: [
+    '@sentry/nextjs',
+    '@sentry/node',
+    '@opentelemetry/instrumentation',
+    'require-in-the-middle',
+  ],
 };
 
 const configWithIntl = withNextIntl(nextConfig);

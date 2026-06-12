@@ -168,7 +168,7 @@ export default function DashboardPage(): React.ReactElement {
     <RequireAuth>
       <AdaptivePageShell
         title={t('title')}
-        description={subtitle}
+        description={isDesktop ? subtitle : undefined}
         actions={isDesktop ? startWorkoutButton : undefined}
       >
         {loadError ? <p className="text-sm text-destructive">{loadError}</p> : null}

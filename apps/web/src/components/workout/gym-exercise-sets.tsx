@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 
+import { GymCompletedCheck } from '@/components/gym-ui/gym-completed-check';
 import { NumberStepper } from '@/components/number-stepper';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import {
@@ -12,6 +13,7 @@ import {
 } from '@/lib/workout-exercise-set-state';
 import {
   formatLoggedSetLine,
+  formatPreviousSetLine,
   formatSetPrescriptionLine,
 } from '@/lib/workout-set-display';
 
@@ -27,6 +29,7 @@ interface GymExerciseSetsProps {
     placeholderReps: string;
     placeholderWeight: string;
     failureReps: string;
+    previousSetLabel: string;
   };
   formatSetLabel: (setNumber: number) => string;
   formatSetProgress: (current: number, total: number) => string;
@@ -64,6 +67,11 @@ export function GymExerciseSets({
     },
   });
   const { prescription } = exercise;
+  const previousSetLine = formatPreviousSetLine(
+    exercise.previousSet?.weightKg ?? null,
+    exercise.previousSet?.reps ?? null,
+    labels.failureReps,
+  );
   const totalSets = exercise.sets.length;
   const completedCount = setState.completedSets.length;
   const motionTransition = reducedMotion
@@ -80,19 +88,7 @@ export function GymExerciseSets({
               className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 text-sm"
             >
               {set.isCompleted ? (
-                <svg
-                  aria-hidden
-                  className="h-4 w-4 shrink-0 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2.5"
-                  viewBox="0 0 24 24"
-                >
-                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                  <path d="m8 12.5 2.5 2.5L16 9.5" />
-                </svg>
+                <GymCompletedCheck />
               ) : (
                 <span className="h-4 w-4 shrink-0 text-muted-foreground">—</span>
               )}
@@ -125,6 +121,13 @@ export function GymExerciseSets({
             initial={reducedMotion ? undefined : activeSetTransition.initial}
             transition={motionTransition}
           >
+            {previousSetLine ? (
+              <p className="mb-3 rounded-xl bg-gym-tint/80 px-3 py-2 text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{labels.previousSetLabel}</span>
+                {' · '}
+                {previousSetLine}
+              </p>
+            ) : null}
             <div className="flex items-baseline justify-between gap-2">
               <p className="text-lg font-semibold">
                 {formatSetLabel(setState.activeSet.setNumber)}

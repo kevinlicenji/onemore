@@ -48,3 +48,20 @@ export function formatLoggedSetLine(
 export function isExtraSet(setNumber: number, prescribedSets: number): boolean {
   return setNumber > prescribedSets;
 }
+
+/**
+ * @returns Previous-session benchmark line such as `80 kg × 10`, or null when unknown.
+ */
+export function formatPreviousSetLine(
+  weightKg: number | null,
+  reps: number | null,
+  failureLabel: string,
+): string | null {
+  if (reps === null && weightKg === null) {
+    return null;
+  }
+  const repsPart =
+    reps !== null ? formatTargetRepsLabel(reps, failureLabel) : failureLabel;
+  const weightPart = weightKg !== null ? `${weightKg} kg` : '—';
+  return `${weightPart} × ${repsPart}`;
+}

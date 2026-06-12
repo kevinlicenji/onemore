@@ -313,7 +313,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     try {
       await completeWorkoutSessionClient(accessToken, session.id);
       trackEvent('workout_completed', { session_id: session.id });
-      router.push(`/${locale}/dashboard`);
+      if (typeof window !== 'undefined' && newPrs.length > 0) {
+        sessionStorage.setItem(`workout-summary-prs-${session.id}`, JSON.stringify(newPrs));
+      }
+      router.push(`/${locale}/workouts/${session.id}/summary`);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('completeError'));
     } finally {
@@ -482,6 +485,8 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     prevExercise: t('prevExercise'),
     nextExercise: t('nextExercise'),
     swipeHint: t('swipeHint'),
+    elapsedLabel: t('elapsedLabel'),
+    previousSetLabel: t('previousSetLabel'),
   };
 
   if (!isDesktop) {

@@ -1,14 +1,18 @@
 'use client';
 
 import { registerBodySchema } from '@onemore/shared';
-import { Button, Card, CardContent, Input } from '@onemore/ui';
+import { Button } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { ZodError } from 'zod';
 
+import { AuthErrorMessage } from '@/components/auth/auth-error-message';
+import { AuthPageContent } from '@/components/auth/auth-page-content';
 import { registerAccount, useAuth } from '@/components/auth-provider';
+import { GymAuthField } from '@/components/gym-ui/gym-auth-field';
+import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { fetchUserProfile, resolveAuthenticatedHomePath } from '@/lib/api-auth';
 import { identifyUser } from '@/lib/analytics';
@@ -58,76 +62,81 @@ export default function RegisterPage(): React.ReactElement {
   }
 
   return (
-    <AdaptivePageShell title={t('registerTitle')} variant="centered">
-      <Card className="w-full">
-        <CardContent className="p-6">
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={(e) => {
-              void handleSubmit(e);
-            }}
-          >
-            <label className="flex flex-col gap-1.5 text-sm font-medium">
-              {t('email')}
-              <Input
-                autoComplete="email"
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
-                required
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm font-medium">
-              {t('username')}
-              <Input
-                autoComplete="username"
-                maxLength={30}
-                minLength={3}
-                pattern="[A-Za-z0-9_]{3,30}"
-                title={t('usernameHint')}
-                value={username}
-                onChange={(e) => {
-                  setUsername(e.target.value.replace(/@/g, ''));
-                }}
-                required
-              />
-              <span className="text-xs font-normal text-muted-foreground">{t('usernameHint')}</span>
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm font-medium">
-              {t('password')}
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
-                required
-                minLength={8}
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm font-medium">
-              {t('birthYear')}
-              <Input
-                type="number"
-                value={birthYear}
-                onChange={(e) => {
-                  setBirthYear(Number(e.target.value));
-                }}
-                required
-              />
-            </label>
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
-            <Button type="submit" disabled={loading} className="w-full">
-              {t('registerSubmit')}
+    <AdaptivePageShell
+      backHref={`/${locale}/login`}
+      backLabel={t('goLogin')}
+      description={t('registerSubtitle')}
+      title={t('registerTitle')}
+      variant="centered"
+    >
+      <AuthPageContent
+        footer={
+          <GymMobileActions>
+            <Button asChild variant="outline">
+              <Link href={`/${locale}/login`}>{t('goLogin')}</Link>
             </Button>
-          </form>
-        </CardContent>
-      </Card>
-      <Link className="text-center text-sm text-primary hover:underline" href={`/${locale}/login`}>
-        {t('goLogin')}
-      </Link>
+          </GymMobileActions>
+        }
+      >
+        <form
+          className="flex w-full flex-col gap-4"
+          onSubmit={(e) => {
+            void handleSubmit(e);
+          }}
+        >
+          <GymAuthField
+            autoComplete="email"
+            label={t('email')}
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+            }}
+            required
+          />
+          <GymAuthField
+            autoComplete="username"
+            hint={t('usernameHint')}
+            label={t('username')}
+            maxLength={30}
+            minLength={3}
+            pattern="[A-Za-z0-9_]{3,30}"
+            title={t('usernameHint')}
+            value={username}
+            onChange={(e) => {
+              setUsername(e.target.value.replace(/@/g, ''));
+            }}
+            required
+          />
+          <GymAuthField
+            autoComplete="new-password"
+            label={t('password')}
+            minLength={8}
+            type="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+            required
+          />
+          <GymAuthField
+            inputMode="numeric"
+            label={t('birthYear')}
+            max={new Date().getFullYear()}
+            min={1920}
+            type="number"
+            value={birthYear}
+            onChange={(e) => {
+              setBirthYear(Number(e.target.value));
+            }}
+            required
+          />
+          {error ? <AuthErrorMessage message={error} /> : null}
+          <Button className="min-h-11 w-full text-base" disabled={loading} type="submit">
+            {t('registerSubmit')}
+          </Button>
+        </form>
+      </AuthPageContent>
     </AdaptivePageShell>
   );
 }
