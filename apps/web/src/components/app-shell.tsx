@@ -4,65 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { buildMobileNavItems } from '@/lib/nav-items';
+import { shouldHideShell } from '@/lib/shell-routes';
+
 interface AppShellProps {
   locale: string;
   children: React.ReactNode;
 }
 
-interface NavItem {
-  href: string;
-  labelKey: 'navDashboard' | 'navPrograms' | 'navWorkout' | 'navHistory' | 'navSettings';
-  match: (route: string) => boolean;
-}
-
-function buildNavItems(locale: string): NavItem[] {
-  return [
-    {
-      href: `/${locale}/dashboard`,
-      labelKey: 'navDashboard',
-      match: (route) => route === 'dashboard',
-    },
-    {
-      href: `/${locale}/programs`,
-      labelKey: 'navPrograms',
-      match: (route) => route === 'programs' || route.startsWith('programs/'),
-    },
-    {
-      href: `/${locale}/workouts/start`,
-      labelKey: 'navWorkout',
-      match: (route) => route === 'workouts/start',
-    },
-    {
-      href: `/${locale}/history`,
-      labelKey: 'navHistory',
-      match: (route) => route === 'history' || route.startsWith('history/'),
-    },
-    {
-      href: `/${locale}/settings`,
-      labelKey: 'navSettings',
-      match: (route) => route === 'settings' || route === 'exercises',
-    },
-  ];
-}
-
-function shouldHideShell(route: string): boolean {
-  if (route === '') {
-    return true;
-  }
-  if (route === 'login' || route === 'register' || route === 'forgot-password') {
-    return true;
-  }
-  if (route.startsWith('onboarding') || route === 'offline') {
-    return true;
-  }
-  if (route.startsWith('workouts/') && route !== 'workouts/start') {
-    return true;
-  }
-  return false;
-}
-
 /**
- * Authenticated app chrome with persistent bottom navigation.
+ * Legacy mobile app chrome with persistent bottom navigation.
  */
 export function AppShell({ locale, children }: AppShellProps): React.ReactElement {
   const pathname = usePathname();
@@ -71,7 +22,7 @@ export function AppShell({ locale, children }: AppShellProps): React.ReactElemen
   const segments = pathname.split('/').filter(Boolean);
   const route = segments.slice(1).join('/');
   const hideShell = shouldHideShell(route);
-  const navItems = buildNavItems(locale);
+  const navItems = buildMobileNavItems(locale);
 
   if (hideShell) {
     return <>{children}</>;
