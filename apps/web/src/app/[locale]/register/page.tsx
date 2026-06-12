@@ -1,15 +1,15 @@
 'use client';
 
-import { Button } from '@onemore/ui';
+import { registerBodySchema } from '@onemore/shared';
+import { Button, Card, CardContent, Input } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-
-import { registerBodySchema } from '@onemore/shared';
 import { ZodError } from 'zod';
 
 import { registerAccount, useAuth } from '@/components/auth-provider';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { fetchUserProfile, resolveAuthenticatedHomePath } from '@/lib/api-auth';
 import { identifyUser } from '@/lib/analytics';
 
@@ -58,77 +58,76 @@ export default function RegisterPage(): React.ReactElement {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-bold">{t('registerTitle')}</h1>
-      <form
-        className="flex flex-col gap-4"
-        onSubmit={(e) => {
-          void handleSubmit(e);
-        }}
-      >
-        <label className="flex flex-col gap-1 text-sm">
-          {t('email')}
-          <input
-            autoComplete="email"
-            className="rounded-md border px-3 py-2"
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
+    <AdaptivePageShell title={t('registerTitle')} variant="centered">
+      <Card className="w-full">
+        <CardContent className="p-6">
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              void handleSubmit(e);
             }}
-            required
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          {t('username')}
-          <input
-            autoComplete="username"
-            className="rounded-md border px-3 py-2"
-            maxLength={30}
-            minLength={3}
-            pattern="[A-Za-z0-9_]{3,30}"
-            title={t('usernameHint')}
-            value={username}
-            onChange={(e) => {
-              setUsername(e.target.value.replace(/@/g, ''));
-            }}
-            required
-          />
-          <span className="text-xs text-muted-foreground">{t('usernameHint')}</span>
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          {t('password')}
-          <input
-            className="rounded-md border px-3 py-2"
-            type="password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-            }}
-            required
-            minLength={8}
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          {t('birthYear')}
-          <input
-            className="rounded-md border px-3 py-2"
-            type="number"
-            value={birthYear}
-            onChange={(e) => {
-              setBirthYear(Number(e.target.value));
-            }}
-            required
-          />
-        </label>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" disabled={loading}>
-          {t('registerSubmit')}
-        </Button>
-      </form>
-      <Link className="text-sm" href={`/${locale}/login`}>
+          >
+            <label className="flex flex-col gap-1.5 text-sm font-medium">
+              {t('email')}
+              <Input
+                autoComplete="email"
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
+                required
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 text-sm font-medium">
+              {t('username')}
+              <Input
+                autoComplete="username"
+                maxLength={30}
+                minLength={3}
+                pattern="[A-Za-z0-9_]{3,30}"
+                title={t('usernameHint')}
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value.replace(/@/g, ''));
+                }}
+                required
+              />
+              <span className="text-xs font-normal text-muted-foreground">{t('usernameHint')}</span>
+            </label>
+            <label className="flex flex-col gap-1.5 text-sm font-medium">
+              {t('password')}
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
+                required
+                minLength={8}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 text-sm font-medium">
+              {t('birthYear')}
+              <Input
+                type="number"
+                value={birthYear}
+                onChange={(e) => {
+                  setBirthYear(Number(e.target.value));
+                }}
+                required
+              />
+            </label>
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            <Button type="submit" disabled={loading} className="w-full">
+              {t('registerSubmit')}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+      <Link className="text-center text-sm text-primary hover:underline" href={`/${locale}/login`}>
         {t('goLogin')}
       </Link>
-    </main>
+    </AdaptivePageShell>
   );
 }

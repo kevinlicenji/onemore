@@ -1,13 +1,15 @@
 'use client';
 
-import { Button } from '@onemore/ui';
+import { Button, Card, CardContent } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { RequireAuth } from '@/components/require-auth';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { fetchProgramTemplates } from '@/lib/api-auth';
 import { recommendTemplateSlug } from '@/lib/recommend-template';
 
@@ -16,6 +18,7 @@ export default function ChooseProgramPage(): React.ReactElement {
   const { accessToken, profile } = useAuth();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
+  const isDesktop = useIsDesktop();
   const [recommendedSlug, setRecommendedSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,48 +51,51 @@ export default function ChooseProgramPage(): React.ReactElement {
 
   return (
     <RequireAuth>
-      <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 p-6">
-        <div>
-          <h1 className="text-2xl font-bold">{t('chooseProgram.title')}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{t('chooseProgram.subtitle')}</p>
+      <AdaptivePageShell
+        title={t('chooseProgram.title')}
+        description={t('chooseProgram.subtitle')}
+        variant={isDesktop ? 'default' : 'centered'}
+      >
+        <div className={isDesktop ? 'grid max-w-3xl gap-4' : 'flex flex-col gap-4'}>
+          {recommendedSlug ? (
+            <Card className="border-primary/40 bg-primary/5">
+              <CardContent className="p-6">
+                <p className="font-medium">{t('chooseProgram.recommendedTitle')}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t('chooseProgram.recommendedHint')}
+                </p>
+                <Button asChild className="mt-4">
+                  <Link href={recommendedHref}>{t('chooseProgram.recommendedCta')}</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          <Button
+            asChild
+            className="h-auto min-h-11 py-4"
+            variant={recommendedSlug ? 'outline' : 'default'}
+          >
+            <Link href={`/${locale}/programs/templates`}>
+              <span className="block font-medium">{t('chooseProgram.templateTitle')}</span>
+              <span className="block text-sm font-normal opacity-80">
+                {t('chooseProgram.templateDescription')}
+              </span>
+            </Link>
+          </Button>
+          <Button asChild className="h-auto min-h-11 py-4" variant="outline">
+            <Link href={`/${locale}/programs/new`}>
+              <span className="block font-medium">{t('chooseProgram.manualTitle')}</span>
+              <span className="block text-sm font-normal opacity-80">
+                {t('chooseProgram.manualDescription')}
+              </span>
+            </Link>
+          </Button>
+          <Button asChild variant="ghost">
+            <Link href={`/${locale}/dashboard`}>{t('chooseProgram.skipToDashboard')}</Link>
+          </Button>
         </div>
-
-        {recommendedSlug && (
-          <div className="rounded-lg border border-primary/40 bg-primary/5 p-4">
-            <p className="text-sm font-medium">{t('chooseProgram.recommendedTitle')}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t('chooseProgram.recommendedHint')}
-            </p>
-            <Button asChild className="mt-3 min-h-11 w-full">
-              <Link href={recommendedHref}>{t('chooseProgram.recommendedCta')}</Link>
-            </Button>
-          </div>
-        )}
-
-        <Button
-          asChild
-          className="h-auto min-h-11 py-4"
-          variant={recommendedSlug ? 'outline' : 'default'}
-        >
-          <Link href={`/${locale}/programs/templates`}>
-            <span className="block font-medium">{t('chooseProgram.templateTitle')}</span>
-            <span className="block text-sm font-normal opacity-80">
-              {t('chooseProgram.templateDescription')}
-            </span>
-          </Link>
-        </Button>
-        <Button asChild className="h-auto min-h-11 py-4" variant="outline">
-          <Link href={`/${locale}/programs/new`}>
-            <span className="block font-medium">{t('chooseProgram.manualTitle')}</span>
-            <span className="block text-sm font-normal opacity-80">
-              {t('chooseProgram.manualDescription')}
-            </span>
-          </Link>
-        </Button>
-        <Button asChild variant="ghost">
-          <Link href={`/${locale}/dashboard`}>{t('chooseProgram.skipToDashboard')}</Link>
-        </Button>
-      </main>
+      </AdaptivePageShell>
     </RequireAuth>
   );
 }

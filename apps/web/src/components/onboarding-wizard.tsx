@@ -12,6 +12,8 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { completeOnboarding, patchOnboarding } from '@/lib/api-auth';
 import { trackOnboardingCompleted, trackOnboardingStepCompleted } from '@/lib/analytics';
 
@@ -78,6 +80,7 @@ export function OnboardingWizard(): React.ReactElement {
   const router = useRouter();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
+  const isDesktop = useIsDesktop();
   const { accessToken, profile, setProfile } = useAuth();
   const [stepIndex, setStepIndex] = useState(0);
   const [state, setState] = useState<WizardState>({
@@ -161,15 +164,17 @@ export function OnboardingWizard(): React.ReactElement {
     setStepIndex((value) => Math.max(0, value - 1));
   }
 
-  return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 p-6">
-      <div>
-        <p className="text-sm text-muted-foreground">{progressLabel}</p>
-        <h1 className="mt-2 text-2xl font-bold">{t(`steps.${stepId}.title`)}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t(`steps.${stepId}.subtitle`)}</p>
-      </div>
+  const stepTitle = t(`steps.${stepId}.title`);
+  const stepSubtitle = `${progressLabel} · ${t(`steps.${stepId}.subtitle`)}`;
 
-      <div className="flex flex-col gap-3">
+  return (
+    <AdaptivePageShell
+      title={stepTitle}
+      description={stepSubtitle}
+      variant={isDesktop ? 'default' : 'centered'}
+      mobileClassName="max-w-md"
+    >
+      <div className={isDesktop ? 'grid max-w-3xl gap-3 sm:grid-cols-2' : 'flex flex-col gap-3'}>
         {stepId === 'goal' &&
           GOALS.map((goal) => (
             <button
@@ -244,14 +249,14 @@ export function OnboardingWizard(): React.ReactElement {
           ))}
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      <div className="flex gap-3">
-        {stepIndex > 0 && (
+      <div className={`flex gap-3 ${isDesktop ? 'max-w-3xl' : ''}`}>
+        {stepIndex > 0 ? (
           <Button type="button" variant="outline" onClick={handleBack} disabled={loading}>
             {t('back')}
           </Button>
-        )}
+        ) : null}
         <Button
           type="button"
           className="flex-1"
@@ -263,6 +268,6 @@ export function OnboardingWizard(): React.ReactElement {
           {stepIndex === STEP_IDS.length - 1 ? t('finish') : t('continue')}
         </Button>
       </div>
-    </main>
+    </AdaptivePageShell>
   );
 }

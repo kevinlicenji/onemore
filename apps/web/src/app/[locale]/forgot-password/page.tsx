@@ -1,11 +1,12 @@
 'use client';
 
-import { Button } from '@onemore/ui';
+import { Button, Card, CardContent, Input } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { API_BASE_URL } from '@/lib/api-config';
 
 export default function ForgotPasswordPage(): React.ReactElement {
@@ -32,36 +33,40 @@ export default function ForgotPasswordPage(): React.ReactElement {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-bold">{t('forgotTitle')}</h1>
+    <AdaptivePageShell title={t('forgotTitle')} variant="centered">
       {sent ? (
-        <p className="text-sm text-muted-foreground">{t('forgotSuccess')}</p>
+        <p className="text-center text-sm text-muted-foreground">{t('forgotSuccess')}</p>
       ) : (
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={(e) => {
-            void handleSubmit(e);
-          }}
-        >
-          <label className="flex flex-col gap-1 text-sm">
-            {t('email')}
-            <input
-              className="rounded-md border px-3 py-2"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
+        <Card className="w-full">
+          <CardContent className="p-6">
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={(e) => {
+                void handleSubmit(e);
               }}
-              required
-            />
-          </label>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit">{t('forgotSubmit')}</Button>
-        </form>
+            >
+              <label className="flex flex-col gap-1.5 text-sm font-medium">
+                {t('email')}
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                  }}
+                  required
+                />
+              </label>
+              {error ? <p className="text-sm text-destructive">{error}</p> : null}
+              <Button type="submit" className="w-full">
+                {t('forgotSubmit')}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       )}
-      <Link className="text-sm" href={`/${locale}/login`}>
+      <Link className="text-center text-sm text-primary hover:underline" href={`/${locale}/login`}>
         {t('goLogin')}
       </Link>
-    </main>
+    </AdaptivePageShell>
   );
 }

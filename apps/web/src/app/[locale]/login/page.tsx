@@ -1,11 +1,12 @@
 'use client';
 
-import { Button } from '@onemore/ui';
+import { Button, Card, CardContent, Input } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { loginWithPassword, useAuth } from '@/components/auth-provider';
 import { fetchUserProfile, resolveAuthenticatedHomePath } from '@/lib/api-auth';
 import { identifyUser } from '@/lib/analytics';
@@ -40,44 +41,49 @@ export default function LoginPage(): React.ReactElement {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-bold">{t('loginTitle')}</h1>
-      <form className="flex flex-col gap-4" onSubmit={(e) => void handleSubmit(e)}>
-        <label className="flex flex-col gap-1 text-sm">
-          {t('loginIdentifier')}
-          <input
-            autoComplete="username"
-            className="rounded-md border px-3 py-2"
-            type="text"
-            value={identifier}
-            onChange={(e) => {
-              setIdentifier(e.target.value);
-            }}
-            required
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          {t('password')}
-          <input
-            className="rounded-md border px-3 py-2"
-            type="password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-            }}
-            required
-          />
-        </label>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" disabled={loading}>
-          {t('loginSubmit')}
-        </Button>
-      </form>
-      <p className="text-sm text-muted-foreground">
-        <Link href={`/${locale}/register`}>{t('goRegister')}</Link>
+    <AdaptivePageShell title={t('loginTitle')} variant="centered">
+      <Card className="w-full">
+        <CardContent className="p-6">
+          <form className="flex flex-col gap-4" onSubmit={(e) => void handleSubmit(e)}>
+            <label className="flex flex-col gap-1.5 text-sm font-medium">
+              {t('loginIdentifier')}
+              <Input
+                autoComplete="username"
+                type="text"
+                value={identifier}
+                onChange={(e) => {
+                  setIdentifier(e.target.value);
+                }}
+                required
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 text-sm font-medium">
+              {t('password')}
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
+                required
+              />
+            </label>
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            <Button type="submit" disabled={loading} className="w-full">
+              {t('loginSubmit')}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+      <p className="text-center text-sm text-muted-foreground">
+        <Link href={`/${locale}/register`} className="text-primary hover:underline">
+          {t('goRegister')}
+        </Link>
         {' · '}
-        <Link href={`/${locale}/forgot-password`}>{t('goForgotPassword')}</Link>
+        <Link href={`/${locale}/forgot-password`} className="text-primary hover:underline">
+          {t('goForgotPassword')}
+        </Link>
       </p>
-    </main>
+    </AdaptivePageShell>
   );
 }
