@@ -3,6 +3,7 @@ export * from './constants/equipment-types.js';
 export * from './constants/exercise-categories.js';
 export * from './constants/exercise-filters.js';
 export * from './constants/muscle-groups.js';
+export * from './constants/reps-prescription.js';
 export * from './lib/aggregate-muscle-groups.js';
 export * from './constants/template-meta.js';
 export * from './schemas/auth.js';

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { TARGET_REPS_TO_FAILURE } from '../constants/reps-prescription.js';
 import { createProgramSchema } from './program.js';
 
 describe('createProgramSchema', () => {
@@ -21,6 +22,26 @@ describe('createProgramSchema', () => {
       ],
     });
     expect(result.days.length).toBe(1);
+  });
+
+  it('accepts failure reps prescription', () => {
+    const result = createProgramSchema.parse({
+      name: 'Failure day',
+      days: [
+        {
+          label: 'Day A',
+          exercises: [
+            {
+              exerciseLibraryId: '00000000-0000-4000-8000-000000000001',
+              targetSets: 3,
+              targetReps: TARGET_REPS_TO_FAILURE,
+              restSeconds: 120,
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.days[0]?.exercises[0]?.targetReps).toBe(TARGET_REPS_TO_FAILURE);
   });
 
   it('rejects program without exercises', () => {
