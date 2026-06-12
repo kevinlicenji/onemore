@@ -4,6 +4,7 @@ import {
   applyBeginnerTemplate,
   assertWorkoutTouchTargets,
   completeOnboardingWizard,
+  completeSetButtons,
   dismissPrModalIfVisible,
   fetchSessionDetail,
   registerAthlete,
@@ -22,7 +23,7 @@ test.describe('athlete journey: register → onboarding → workout → sync', (
     const sessionId = await startProgrammedWorkout(page);
     await assertWorkoutTouchTargets(page);
 
-    const completeButtons = page.getByRole('button', { name: 'Completa serie' });
+    const completeButtons = completeSetButtons(page);
     await completeButtons.first().click();
     await dismissPrModalIfVisible(page);
     await skipRestTimerIfVisible(page);

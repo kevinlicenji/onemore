@@ -103,6 +103,16 @@ export async function completeOnboardingWizard(page: Page): Promise<void> {
 
 export const BEGINNER_FULL_BODY_TEMPLATE_SLUG = 'beginner_full_body_gym';
 
+/** Desktop workout UI uses "Completato"; mobile gym shell uses "Completa serie". */
+export const COMPLETE_SET_BUTTON = /Completato|Completa serie/;
+
+/**
+ * Locator for the primary complete-set control in either workout layout.
+ */
+export function completeSetButtons(page: Page) {
+  return page.getByRole('button', { name: COMPLETE_SET_BUTTON });
+}
+
 /**
  * Customize and save the beginner full-body gym template.
  */
@@ -158,7 +168,7 @@ export async function startProgrammedWorkout(page: Page): Promise<string> {
 
   const session = (await response.json()) as { id: string };
   await page.waitForURL(new RegExp(`/it/workouts/${session.id}$`));
-  await page.getByRole('button', { name: 'Completa serie' }).first().waitFor();
+  await completeSetButtons(page).first().waitFor();
   return session.id;
 }
 
@@ -197,7 +207,7 @@ export async function skipRestTimerIfVisible(page: Page): Promise<void> {
  */
 export async function assertWorkoutTouchTargets(page: Page): Promise<void> {
   const minSize = 44;
-  const completeSet = page.getByRole('button', { name: 'Completa serie' }).first();
+  const completeSet = completeSetButtons(page).first();
   const finishWorkout = page.getByRole('button', { name: 'Termina workout' });
 
   for (const target of [completeSet, finishWorkout]) {
