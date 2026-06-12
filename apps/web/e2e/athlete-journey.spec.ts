@@ -31,17 +31,15 @@ test.describe('athlete journey: register → onboarding → workout → sync', (
     await completeButtons.nth(1).click();
     await expect(completeButtons).toHaveCount(1);
 
-    const syncResponse = page.waitForResponse(
-      (response) =>
-        response.url().includes('/api/v1/sync/batch') &&
-        response.request().method() === 'POST' &&
-        response.ok(),
-    );
-    await page.context().setOffline(false);
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event('online'));
-    });
-    await syncResponse;
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/sync/batch') &&
+          response.request().method() === 'POST' &&
+          response.ok(),
+      ),
+      page.context().setOffline(false),
+    ]);
 
     const synced = await fetchSessionDetail(request, user.accessToken, sessionId);
     const completedSets = synced.exercises.flatMap((exercise) =>
@@ -52,7 +50,7 @@ test.describe('athlete journey: register → onboarding → workout → sync', (
     await page.getByRole('button', { name: 'Termina workout' }).click();
     await page.waitForURL(/\/it\/dashboard$/);
 
-    await page.getByRole('link', { name: 'Storico workout' }).click();
+    await page.getByRole('link', { name: 'Storico' }).click();
     await page.waitForURL(/\/it\/history$/);
     await expect(page.getByText('Day A').first()).toBeVisible();
   });

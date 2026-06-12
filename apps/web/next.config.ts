@@ -14,7 +14,8 @@ const revision = gitRevision && gitRevision.length > 0 ? gitRevision : randomUUI
 const withSerwist = withSerwistInit({
   swSrc: 'src/sw.ts',
   swDest: 'public/sw.js',
-  disable: process.env.NODE_ENV === 'development',
+  disable:
+    process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_E2E_BYPASS === 'true',
   additionalPrecacheEntries: [
     { url: '/it/offline', revision },
     { url: '/en/offline', revision },
