@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 import {
   applyBeginnerTemplate,
   assertWorkoutTouchTargets,
+  completeActiveSet,
   completeOnboardingWizard,
   completeSetButtons,
   dismissPrModalIfVisible,
@@ -10,6 +11,7 @@ import {
   registerAthlete,
   skipRestTimerIfVisible,
   startProgrammedWorkout,
+  waitForActiveCompleteSet,
 } from './helpers/journey';
 
 test.describe('athlete journey: register → onboarding → workout → sync', () => {
@@ -24,12 +26,15 @@ test.describe('athlete journey: register → onboarding → workout → sync', (
     await assertWorkoutTouchTargets(page);
 
     const completeButtons = completeSetButtons(page);
+
+    // First set online; desktop shows one active complete button at a time.
+    await completeActiveSet(page);
+
+    await page.context().setOffline(true);
+    await waitForActiveCompleteSet(page);
     await completeButtons.first().click();
     await dismissPrModalIfVisible(page);
     await skipRestTimerIfVisible(page);
-
-    await page.context().setOffline(true);
-    await completeButtons.nth(1).click();
     await expect(completeButtons).toHaveCount(1);
 
     await Promise.all([

@@ -114,6 +114,26 @@ export function completeSetButtons(page: Page) {
 }
 
 /**
+ * Wait until the active complete-set button is visible and enabled.
+ */
+export async function waitForActiveCompleteSet(page: Page): Promise<void> {
+  const button = completeSetButtons(page).first();
+  await button.waitFor({ state: 'visible', timeout: 30_000 });
+  await expect(button).toBeEnabled({ timeout: 30_000 });
+}
+
+/**
+ * Complete the current set, dismiss PR/rest overlays, and wait for the next set.
+ */
+export async function completeActiveSet(page: Page): Promise<void> {
+  await waitForActiveCompleteSet(page);
+  await completeSetButtons(page).first().click();
+  await dismissPrModalIfVisible(page);
+  await skipRestTimerIfVisible(page);
+  await waitForActiveCompleteSet(page);
+}
+
+/**
  * Customize and save the beginner full-body gym template.
  */
 export async function applyBeginnerTemplate(page: Page): Promise<void> {
@@ -187,8 +207,11 @@ export async function skipAllSetsOnCurrentExercise(page: Page): Promise<void> {
  */
 export async function dismissPrModalIfVisible(page: Page): Promise<void> {
   const dismiss = page.getByRole('button', { name: 'Continua' });
-  if (await dismiss.isVisible().catch(() => false)) {
+  try {
+    await dismiss.waitFor({ state: 'visible', timeout: 5_000 });
     await dismiss.click();
+  } catch {
+    // PR celebration not shown for this set.
   }
 }
 
@@ -197,8 +220,11 @@ export async function dismissPrModalIfVisible(page: Page): Promise<void> {
  */
 export async function skipRestTimerIfVisible(page: Page): Promise<void> {
   const nextSet = page.getByRole('button', { name: /Prossima serie|Next set/i });
-  if (await nextSet.isVisible().catch(() => false)) {
+  try {
+    await nextSet.waitFor({ state: 'visible', timeout: 15_000 });
     await nextSet.click();
+  } catch {
+    // Rest overlay not shown — next set may already be active.
   }
 }
 
