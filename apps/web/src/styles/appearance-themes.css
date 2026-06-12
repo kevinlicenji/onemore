@@ -1,0 +1,117 @@
+/**
+ * Color palettes — applied via data-color-theme on <html>.
+ * Default (ocean) uses intense saturated blue.
+ */
+
+:root,
+:root[data-color-theme='ocean'] {
+  --primary: 224 88% 45%;
+  --primary-foreground: 210 40% 98%;
+  --ring: 224 88% 45%;
+  --accent: 142 72% 42%;
+  --accent-foreground: 0 0% 100%;
+  --gym-tint: 224 60% 96%;
+}
+
+:root[data-color-theme='midnight'] {
+  --primary: 230 78% 38%;
+  --primary-foreground: 210 40% 98%;
+  --ring: 230 78% 38%;
+  --accent: 200 80% 48%;
+  --accent-foreground: 0 0% 100%;
+  --gym-tint: 230 35% 95%;
+}
+
+:root[data-color-theme='arctic'] {
+  --primary: 205 96% 42%;
+  --primary-foreground: 210 40% 98%;
+  --ring: 205 96% 42%;
+  --accent: 186 85% 42%;
+  --accent-foreground: 0 0% 100%;
+  --gym-tint: 205 70% 96%;
+}
+
+:root[data-color-theme='cobalt'] {
+  --primary: 221 92% 40%;
+  --primary-foreground: 210 40% 98%;
+  --ring: 221 92% 40%;
+  --accent: 158 64% 45%;
+  --accent-foreground: 0 0% 100%;
+  --gym-tint: 221 45% 95%;
+}
+
+:root[data-color-theme='pulse'] {
+  --primary: 224 88% 45%;
+  --primary-foreground: 210 40% 98%;
+  --ring: 224 88% 45%;
+  --accent: 25 95% 53%;
+  --accent-foreground: 0 0% 100%;
+  --gym-tint: 224 55% 96%;
+}
+
+.dark[data-color-theme='ocean'],
+.dark {
+  --primary: 217 95% 58%;
+  --primary-foreground: 222 47% 8%;
+  --ring: 217 95% 58%;
+  --accent: 142 60% 52%;
+  --accent-foreground: 222 47% 8%;
+  --gym-tint: 224 40% 12%;
+}
+
+.dark[data-color-theme='midnight'] {
+  --primary: 225 88% 55%;
+  --primary-foreground: 222 47% 8%;
+  --ring: 225 88% 55%;
+  --accent: 200 75% 55%;
+  --accent-foreground: 222 47% 8%;
+  --gym-tint: 230 35% 10%;
+}
+
+.dark[data-color-theme='arctic'] {
+  --primary: 205 100% 55%;
+  --primary-foreground: 222 47% 8%;
+  --ring: 205 100% 55%;
+  --accent: 186 80% 50%;
+  --accent-foreground: 222 47% 8%;
+  --gym-tint: 205 40% 11%;
+}
+
+.dark[data-color-theme='cobalt'] {
+  --primary: 220 94% 52%;
+  --primary-foreground: 222 47% 8%;
+  --ring: 220 94% 52%;
+  --accent: 158 58% 50%;
+  --accent-foreground: 222 47% 8%;
+  --gym-tint: 221 38% 10%;
+}
+
+.dark[data-color-theme='pulse'] {
+  --primary: 217 95% 58%;
+  --primary-foreground: 222 47% 8%;
+  --ring: 217 95% 58%;
+  --accent: 25 90% 58%;
+  --accent-foreground: 222 47% 8%;
+  --gym-tint: 224 38% 11%;
+}
+
+/* Font stacks — data-font on <html> */
+[data-font='plus-jakarta'] {
+  --font-sans-active: var(--font-plus-jakarta);
+}
+
+[data-font='inter'] {
+  --font-sans-active: var(--font-inter);
+}
+
+[data-font='dm-sans'] {
+  --font-sans-active: var(--font-dm-sans);
+}
+
+[data-font='outfit'] {
+  --font-sans-active: var(--font-outfit);
+}
+
+[data-font='system'] {
+  --font-sans-active: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+}
