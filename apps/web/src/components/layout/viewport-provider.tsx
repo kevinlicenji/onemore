@@ -25,10 +25,14 @@ export function ViewportProvider({ children }: ViewportProviderProps): ReactElem
 
   useEffect(() => {
     const media = window.matchMedia(DESKTOP_MEDIA);
-    const update = (): void => setIsDesktop(media.matches);
+    const update = (): void => {
+      setIsDesktop(media.matches);
+    };
     update();
     media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
+    return () => {
+      media.removeEventListener('change', update);
+    };
   }, []);
 
   return <ViewportContext.Provider value={isDesktop}>{children}</ViewportContext.Provider>;

@@ -20,8 +20,8 @@ export function formatSetPrescriptionLine(
   failureLabel = 'Cedimento',
 ): string {
   const repsPart = formatTargetRepsLabel(targetReps, failureLabel);
-  const weightPart = targetWeightKg !== null ? `${targetWeightKg}kg` : '—';
-  return `${repsPart} x ${weightPart} (${restSeconds}')`;
+  const weightPart = targetWeightKg !== null ? `${String(targetWeightKg)}kg` : '—';
+  return `${repsPart} x ${weightPart} (${String(restSeconds)}')`;
 }
 
 /**
@@ -34,12 +34,12 @@ export function formatLoggedSetLine(
   targetReps: number,
 ): string {
   const loggedReps = reps ?? targetReps;
-  const weightPart = weightKg !== null ? `${weightKg}kg` : '—';
-  const base = `${loggedReps} x ${weightPart}`;
+  const weightPart = weightKg !== null ? `${String(weightKg)}kg` : '—';
+  const base = `${String(loggedReps)} x ${weightPart}`;
   if (restSeconds === null) {
     return base;
   }
-  return `${base} (${restSeconds}')`;
+  return `${base} (${String(restSeconds)}')`;
 }
 
 /**
@@ -61,6 +61,6 @@ export function formatPreviousSetLine(
     return null;
   }
   const repsPart = reps !== null ? formatTargetRepsLabel(reps, failureLabel) : failureLabel;
-  const weightPart = weightKg !== null ? `${weightKg} kg` : '—';
+  const weightPart = weightKg !== null ? `${String(weightKg)} kg` : '—';
   return `${weightPart} × ${repsPart}`;
 }

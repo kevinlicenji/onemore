@@ -19,10 +19,14 @@ export function useIsDesktop(): boolean | null {
     }
 
     const media = window.matchMedia(DESKTOP_MEDIA);
-    const update = (): void => setLocalIsDesktop(media.matches);
+    const update = (): void => {
+      setLocalIsDesktop(media.matches);
+    };
     update();
     media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
+    return () => {
+      media.removeEventListener('change', update);
+    };
   }, [fromProvider]);
 
   if (fromProvider !== undefined) {

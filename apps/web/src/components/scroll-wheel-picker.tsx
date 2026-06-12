@@ -181,8 +181,8 @@ export function ScrollWheelPicker<T extends string | number>({
                 style={{
                   height: WHEEL_ITEM_HEIGHT,
                   opacity: style.opacity,
-                  transform: `scale(${style.scale}) rotateX(${distance * -14}deg) translateZ(${Math.max(0, 24 - Math.abs(distance) * 12)}px)`,
-                  fontSize: `${style.fontSizeRem}rem`,
+                  transform: `scale(${String(style.scale)}) rotateX(${String(distance * -14)}deg) translateZ(${String(Math.max(0, 24 - Math.abs(distance) * 12))}px)`,
+                  fontSize: `${String(style.fontSizeRem)}rem`,
                   fontWeight: style.fontWeight,
                   color: isSelected ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
                 }}

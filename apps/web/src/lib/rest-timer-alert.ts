@@ -9,10 +9,9 @@ export function playRestCompleteChime(): void {
   }
 
   try {
-    const AudioContextCtor =
-      window.AudioContext ??
-      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextCtor) {
+    const windowWithWebkit = window as Window & { webkitAudioContext?: typeof AudioContext };
+    const AudioContextCtor = windowWithWebkit.webkitAudioContext ?? window.AudioContext;
+    if (typeof AudioContextCtor !== 'function') {
       return;
     }
 

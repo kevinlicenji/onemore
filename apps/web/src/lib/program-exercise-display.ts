@@ -11,6 +11,6 @@ export function formatProgramExerciseSummary(
   failureLabel: string,
 ): string {
   const repsPart = formatTargetRepsLabel(targetReps, failureLabel);
-  const weightPart = targetWeightKg !== null ? `${targetWeightKg} kg` : '—';
-  return `${targetSets} x ${repsPart} x ${weightPart} (${restSeconds}')`;
+  const weightPart = targetWeightKg !== null ? `${String(targetWeightKg)} kg` : '—';
+  return `${String(targetSets)} x ${repsPart} x ${weightPart} (${String(restSeconds)}')`;
 }

@@ -11,7 +11,7 @@ describe('playRestCompleteChime', () => {
     vi.stubGlobal('window', {
       AudioContext: undefined,
       webkitAudioContext: undefined,
-    } as unknown as Window);
+    });
     expect(() => {
       playRestCompleteChime();
     }).not.toThrow();

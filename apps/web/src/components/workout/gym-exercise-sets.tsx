@@ -159,7 +159,11 @@ export function GymExerciseSets({
                 step={1}
                 value={setState.activeSet.reps}
                 onChange={(value) => {
-                  onUpdateSetValue(setState.activeSet!.id, 'reps', value);
+                  const activeSet = setState.activeSet;
+                  if (!activeSet) {
+                    return;
+                  }
+                  onUpdateSetValue(activeSet.id, 'reps', value);
                 }}
               />
               <NumberStepper
@@ -173,7 +177,11 @@ export function GymExerciseSets({
                 step={0.5}
                 value={setState.activeSet.weightKg}
                 onChange={(value) => {
-                  onUpdateSetValue(setState.activeSet!.id, 'weightKg', value);
+                  const activeSet = setState.activeSet;
+                  if (!activeSet) {
+                    return;
+                  }
+                  onUpdateSetValue(activeSet.id, 'weightKg', value);
                 }}
               />
             </div>

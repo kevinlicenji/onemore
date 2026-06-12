@@ -56,7 +56,7 @@ export function GymPullToRefresh({
             aria-hidden
             className={cn('h-4 w-4 text-primary', isRefreshing && 'animate-spin')}
             style={{
-              transform: isRefreshing ? undefined : `rotate(${progress * 320}deg)`,
+              transform: isRefreshing ? undefined : `rotate(${String(progress * 320)}deg)`,
             }}
           />
           {indicatorLabel ? <span>{indicatorLabel}</span> : null}

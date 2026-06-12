@@ -29,5 +29,5 @@ export const onRequestError: RequestErrorHandler = async (error, request, contex
   }
 
   const Sentry = await import('@sentry/nextjs');
-  await Sentry.captureRequestError(error, request, context);
+  Sentry.captureRequestError(error, request, context);
 };

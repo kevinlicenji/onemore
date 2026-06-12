@@ -47,7 +47,7 @@ export function GymPrConfetti(): React.ReactElement | null {
           key={particle.id}
           className="absolute rounded-sm"
           style={{
-            left: `${particle.leftPercent}%`,
+            left: `${String(particle.leftPercent)}%`,
             top: '-8%',
             width: particle.size,
             height: particle.size * 1.4,

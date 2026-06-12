@@ -12,10 +12,14 @@ export function useReducedMotion(): boolean {
 
   useEffect(() => {
     const media = globalThis.matchMedia(REDUCED_MOTION_MEDIA);
-    const update = (): void => setReduced(prefersReducedMotion());
+    const update = (): void => {
+      setReduced(prefersReducedMotion());
+    };
     update();
     media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
+    return () => {
+      media.removeEventListener('change', update);
+    };
   }, []);
 
   return reduced;

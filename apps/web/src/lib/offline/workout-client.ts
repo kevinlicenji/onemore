@@ -88,7 +88,7 @@ async function buildLocalProgrammedSession(
           coachNote: item.coachNote,
         },
         exercise: item.exercise,
-        previousSet: null,
+        previousSet: previousByExercise.get(item.exerciseLibraryId) ?? null,
         sets: Array.from({ length: item.targetSets }, (_, setIndex) => ({
           id: generateClientUuid(),
           setNumber: setIndex + 1,

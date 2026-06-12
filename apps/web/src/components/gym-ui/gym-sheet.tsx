@@ -91,7 +91,7 @@ export function GymSheet({
 
   const maxHeight =
     viewportHeight !== null
-      ? `${viewportHeight}px`
+      ? `${String(viewportHeight)}px`
       : tall
         ? 'min(92dvh, 100%)'
         : 'min(88dvh, 100%)';
@@ -144,7 +144,7 @@ export function GymSheet({
         style={{
           maxHeight,
           height: tall ? maxHeight : undefined,
-          transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
+          transform: dragOffset > 0 ? `translateY(${String(dragOffset)}px)` : undefined,
         }}
         {...sheetMotion}
       >

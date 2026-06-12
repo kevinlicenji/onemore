@@ -2,7 +2,7 @@ import type { HTMLAttributes, ReactElement } from 'react';
 
 import { cn } from '../lib/utils.js';
 
-interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {}
+type SkeletonProps = HTMLAttributes<HTMLDivElement>;
 
 /**
  * Placeholder shimmer block for loading states.

@@ -22,10 +22,12 @@ export function formatWorkoutDuration(seconds: number): string {
   const secs = total % 60;
 
   if (hours > 0) {
-    return secs > 0 || minutes === 0 ? `${hours}h ${minutes}m` : `${hours}h ${minutes}m`;
+    return secs > 0 || minutes === 0
+      ? `${String(hours)}h ${String(minutes)}m`
+      : `${String(hours)}h ${String(minutes)}m`;
   }
   if (minutes > 0) {
-    return secs > 0 ? `${minutes}m ${secs}s` : `${minutes}m`;
+    return secs > 0 ? `${String(minutes)}m ${String(secs)}s` : `${String(minutes)}m`;
   }
-  return `${secs}s`;
+  return `${String(secs)}s`;
 }

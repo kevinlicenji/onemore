@@ -58,14 +58,11 @@ describe('ExercisesService', () => {
 
     await service.list('user-1', { limit: 10, category: 'legs', equipmentGroup: 'machines' });
 
-    expect(prisma.exerciseLibrary.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          category: 'legs',
-          equipment: { in: ['machine', 'smith_machine'] },
-        }),
-      }),
-    );
+    type ListArgs = { where?: { category?: string; equipment?: { in: string[] } } };
+    const calls = prisma.exerciseLibrary.findMany.mock.calls as unknown as Array<[ListArgs]>;
+    const listArgs = calls[0]?.[0];
+    expect(listArgs?.where?.category).toBe('legs');
+    expect(listArgs?.where?.equipment).toEqual({ in: ['machine', 'smith_machine'] });
   });
 
   it('applies muscle filter when listing', async () => {
@@ -74,13 +71,10 @@ describe('ExercisesService', () => {
 
     await service.list('user-1', { limit: 10, muscle: 'hamstrings' });
 
-    expect(prisma.exerciseLibrary.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          primaryMuscles: { string_contains: '"hamstrings"' },
-        }),
-      }),
-    );
+    type ListArgs = { where?: { primaryMuscles?: { string_contains: string } } };
+    const calls = prisma.exerciseLibrary.findMany.mock.calls as unknown as Array<[ListArgs]>;
+    const listArgs = calls[0]?.[0];
+    expect(listArgs?.where?.primaryMuscles).toEqual({ string_contains: '"hamstrings"' });
   });
 
   it('creates a custom exercise', async () => {
