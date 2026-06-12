@@ -101,6 +101,8 @@ export async function completeOnboardingWizard(page: Page): Promise<void> {
   await page.waitForURL(/\/it\/(onboarding\/choose-program|dashboard)$/);
 }
 
+export const BEGINNER_FULL_BODY_TEMPLATE_SLUG = 'beginner_full_body_gym';
+
 /**
  * Customize and save the beginner full-body gym template.
  */
@@ -113,7 +115,11 @@ export async function applyBeginnerTemplate(page: Page): Promise<void> {
     await page.getByRole('link', { name: /Usa un template/i }).click();
   }
   await page.waitForURL(/\/it\/programs\/templates$/);
-  await page.getByRole('link', { name: 'Beginner Full Body' }).click();
+  const templateLink = page.locator(
+    `a[href*="/programs/templates/${BEGINNER_FULL_BODY_TEMPLATE_SLUG}"]`,
+  );
+  await templateLink.first().waitFor({ state: 'visible', timeout: 30_000 });
+  await templateLink.first().click();
   await page.waitForURL(/\/it\/programs\/templates\//);
   await page.getByRole('link', { name: /Personalizza e salva/i }).click();
   await page.waitForURL(/\/it\/programs\/new\?template=/);
