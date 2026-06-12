@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
+import { ActiveWorkoutBanner } from '@/components/active-workout-banner';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { SyncStatusBadge } from '@/components/sync-status-badge';
 import { fetchAnalyticsDashboard } from '@/lib/api-auth';
@@ -72,6 +73,8 @@ export default function DashboardPage(): React.ReactElement {
         </div>
 
         {loadError && <p className="text-sm text-red-600">{loadError}</p>}
+
+        <ActiveWorkoutBanner />
 
         {dashboard && (
           <div className="grid grid-cols-2 gap-3">

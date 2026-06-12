@@ -170,20 +170,35 @@ export async function getNextWorkoutPreviewClient(
   };
 }
 
+function countCompletedSets(session: WorkoutSessionDetail): number {
+  return session.exercises.reduce(
+    (total, exercise) =>
+      total + exercise.sets.filter((set) => set.isCompleted && !set.isWarmup).length,
+    0,
+  );
+}
+
 export async function getActiveWorkoutSessionClient(
   accessToken: string,
 ): Promise<WorkoutSessionDetail | null> {
   const local = await offlineDb.sessions.where('status').equals('in_progress').first();
 
+  if (!isBrowserOnline()) {
+    return local ?? null;
+  }
+
+  const remote = await fetchActiveWorkoutSession(accessToken);
+
+  if (local && remote) {
+    const preferred = countCompletedSets(local) >= countCompletedSets(remote) ? local : remote;
+    await offlineDb.sessions.put(preferred);
+    return preferred;
+  }
+
   if (local) {
     return local;
   }
 
-  if (!isBrowserOnline()) {
-    return null;
-  }
-
-  const remote = await fetchActiveWorkoutSession(accessToken);
   if (remote) {
     await offlineDb.sessions.put(remote);
   }

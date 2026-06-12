@@ -23,6 +23,10 @@ out/
 .turbo/
 *.tsbuildinfo
 
+# Serwist generated service worker
+apps/web/public/sw.js
+apps/web/public/swe-worker*
+
 # Playwright
 apps/web/test-results/
 apps/web/playwright-report/

@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
 import {
+  abandonWorkoutSessionClient,
   getActiveWorkoutSessionClient,
   getNextWorkoutPreviewClient,
   startWorkoutSessionClient,
@@ -53,8 +54,29 @@ export default function StartWorkoutPage(): React.ReactElement {
       });
   }, [accessToken, t]);
 
+  async function handleAbandonActive(): Promise<void> {
+    if (!accessToken || !activeSession) {
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      await abandonWorkoutSessionClient(accessToken, activeSession.id);
+      setActiveSession(null);
+      await refreshPendingCount();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('abandonError'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleStart(sessionType: 'programmed' | 'free'): Promise<void> {
     if (!accessToken) {
+      return;
+    }
+    if (activeSession) {
+      setError(t('activeSessionBlocksStart'));
       return;
     }
     if (sessionType === 'programmed' && !selectedDayId) {
@@ -93,16 +115,38 @@ export default function StartWorkoutPage(): React.ReactElement {
         </div>
 
         {activeSession && (
-          <div className="rounded-lg border p-4">
+          <div className="rounded-lg border border-primary/40 bg-primary/5 p-4">
             <p className="font-medium">{t('resumeTitle')}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t('resumeBody')}</p>
-            <Button asChild className="mt-3 w-full">
-              <Link href={`/${locale}/workouts/${activeSession.id}`}>{t('resumeCta')}</Link>
-            </Button>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {activeSession.workoutDayLabel ?? t('freeWorkoutTitle')}
+              {' · '}
+              {t('resumeProgress', {
+                completed: activeSession.exercises.filter(
+                  (exercise) => exercise.status === 'completed',
+                ).length,
+                total: activeSession.exercises.length,
+              })}
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              <Button asChild className="min-h-11 w-full">
+                <Link href={`/${locale}/workouts/${activeSession.id}`}>{t('resumeCta')}</Link>
+              </Button>
+              <Button
+                className="min-h-11"
+                disabled={loading}
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  void handleAbandonActive();
+                }}
+              >
+                {t('abandonActive')}
+              </Button>
+            </div>
           </div>
         )}
 
-        {preview?.hasActiveAssignment && preview.days.length > 0 && (
+        {preview?.hasActiveAssignment && preview.days.length > 0 && !activeSession && (
           <div className="rounded-lg border p-4">
             <p className="font-medium">{preview.programName}</p>
             <p className="mt-1 text-sm text-muted-foreground">{t('selectDayTitle')}</p>
@@ -136,16 +180,19 @@ export default function StartWorkoutPage(): React.ReactElement {
           </div>
         )}
 
-        <Button
-          disabled={loading}
-          type="button"
-          variant="outline"
-          onClick={() => {
-            void handleStart('free');
-          }}
-        >
-          {t('startFree')}
-        </Button>
+        {!activeSession && (
+          <Button
+            className="min-h-11"
+            disabled={loading}
+            type="button"
+            variant="outline"
+            onClick={() => {
+              void handleStart('free');
+            }}
+          >
+            {t('startFree')}
+          </Button>
+        )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
