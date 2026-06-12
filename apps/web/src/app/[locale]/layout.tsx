@@ -19,6 +19,16 @@ export const metadata: Metadata = {
   title: 'OneMore',
   description: 'Programs, workouts, and progress tracking for athletes.',
   manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+    shortcut: '/favicon-32.png',
+  },
   appleWebApp: { capable: true, title: 'OneMore' },
 };
 
@@ -27,8 +37,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#1d4fd8' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0b1220' },
   ],
 };
 

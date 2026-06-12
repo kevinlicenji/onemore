@@ -11,7 +11,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:install": "playwright install chromium"
+    "test:e2e:install": "playwright install chromium",
+    "icons:generate": "bash scripts/generate-app-icons.sh"
   },
   "dependencies": {
     "@onemore/api-client": "workspace:*",
