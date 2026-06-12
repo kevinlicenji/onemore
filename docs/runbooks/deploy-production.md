@@ -16,29 +16,28 @@
 
 1. Clone repo on VPS: `/opt/onemore`
 2. Copy `docker/.env.prod.example` → `docker/.env.prod` and fill secrets (JWT, Postgres, URLs)
-3. Configure NPM proxy hosts:
-   - `app.onemore.com` → `web:3000`
-   - `api.onemore.com` → `api:4000`
+3. Configure NPM proxy hosts (see checklist printed by `first-deploy.sh`):
+   - Web domain → `http://172.17.0.1:3000`
+   - API domain → `http://172.17.0.1:4000`
 4. Enable Cloudflare SSL mode **Full (strict)** with origin cert or Let's Encrypt via NPM
-5. Pull images and start the stack (see below)
-6. Run migrations and seed on the **empty** database:
+5. Pull images, start stack, migrate, and seed:
 
 ```bash
 cd /opt/onemore
-docker compose -f docker/compose.prod.yml --env-file docker/.env.prod exec -T api sh < docker/scripts/migrate.sh
-docker compose -f docker/compose.prod.yml --env-file docker/.env.prod exec -T api sh < docker/scripts/seed.sh
+chmod +x docker/scripts/*.sh
+./docker/scripts/first-deploy.sh
 ```
 
-`seed.sh` is idempotent — safe to re-run, but only required on first deploy.
+`first-deploy.sh` validates `docker/.env.prod`, starts the stack, runs migrations + seed, checks local health, then prints the NPM proxy checklist.
+
+`seed.sh` is idempotent — use `./docker/scripts/first-deploy.sh --skip-seed` to re-run without seeding.
 
 ## Deploy (routine)
 
 ```bash
 cd /opt/onemore
 git pull origin main
-docker compose -f docker/compose.prod.yml --env-file docker/.env.prod pull
-docker compose -f docker/compose.prod.yml --env-file docker/.env.prod up -d
-docker compose -f docker/compose.prod.yml --env-file docker/.env.prod exec -T api sh < docker/scripts/migrate.sh
+./docker/scripts/deploy.sh
 ```
 
 Or trigger GitHub Actions `Deploy` workflow (builds images + optional SSH to staging when secrets are set).

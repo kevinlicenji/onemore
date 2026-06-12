@@ -76,6 +76,9 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+    ports:
+      # Bind locally so Nginx Proxy Manager on the same VPS can forward to the API.
+      - '127.0.0.1:4000:4000'
     healthcheck:
       test:
         [
@@ -101,6 +104,9 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    ports:
+      # Bind locally so Nginx Proxy Manager on the same VPS can forward to the web app.
+      - '127.0.0.1:3000:3000'
     healthcheck:
       test:
         [
