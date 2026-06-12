@@ -135,8 +135,7 @@ export async function startProgrammedWorkout(page: Page): Promise<string> {
         res.request().method() === 'POST' &&
         res.ok(),
     ),
-    page.getByRole('button', { name: 'Day A' }).click(),
-    page.getByRole('button', { name: 'Inizia giorno selezionato' }).click(),
+    page.getByRole('button', { name: /Day A/ }).click(),
   ]);
 
   const session = (await response.json()) as { id: string };

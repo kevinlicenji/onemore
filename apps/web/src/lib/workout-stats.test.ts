@@ -20,6 +20,7 @@ const baseSession: WorkoutSessionDetail = {
       exerciseLibraryId: '550e8400-e29b-41d4-a716-446655440002',
       sortOrder: 0,
       status: 'completed',
+      athleteNotes: null,
       prescription: {
         targetSets: 2,
         targetReps: 8,
