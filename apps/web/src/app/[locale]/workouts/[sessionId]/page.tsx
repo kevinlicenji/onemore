@@ -11,11 +11,21 @@ import { useAuth } from '@/components/auth-provider';
 import { ExerciseActionsMenu } from '@/components/exercise-actions-menu';
 import { ExerciseNotesModal } from '@/components/exercise-notes-modal';
 import { ExerciseSearchCombobox } from '@/components/exercise-search-combobox';
-import { SetMetricInput } from '@/components/set-metric-input';
+import { MetricInput } from '@/components/metric-input';
 import { PrCelebration } from '@/components/pr-celebration';
 import { RestTimer } from '@/components/rest-timer';
 import { RequireAuth } from '@/components/require-auth';
 import { useSync } from '@/components/sync-provider';
+import { GymActiveWorkoutView } from '@/components/workout/gym-active-workout-view';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
+import {
+  buildExerciseSetViewState,
+  isExtraSet,
+} from '@/lib/workout-exercise-set-state';
+import {
+  formatLoggedSetLine,
+  formatSetPrescriptionLine,
+} from '@/lib/workout-set-display';
 import {
   abandonWorkoutSessionClient,
   addWorkoutExerciseClient,
@@ -53,6 +63,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   const [activeSetId, setActiveSetId] = useState<string | null>(null);
   const setRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { refreshPendingCount } = useSync();
+  const isDesktop = useIsDesktop();
 
   const loadSession = useCallback(async (): Promise<void> => {
     if (!accessToken || !sessionId) {
@@ -223,38 +234,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
   }
 
-  function formatPrescribedWeight(targetWeightKg: number | null): string {
-    if (targetWeightKg !== null) {
-      return String(targetWeightKg);
-    }
-    return '—';
-  }
-
-  function formatSetPrescriptionLine(
-    targetReps: number,
-    targetWeightKg: number | null,
-    restSeconds: number,
-  ): string {
-    const weightPart = targetWeightKg !== null ? `${targetWeightKg}kg` : '—';
-    return `${targetReps} x ${weightPart} (${restSeconds}')`;
-  }
-
-  function formatLoggedSetLine(
-    reps: number | null,
-    weightKg: number | null,
-    restSeconds: number | null,
-    targetReps: number,
-    targetWeightKg: number | null,
-  ): string {
-    const loggedReps = reps ?? targetReps;
-    const weightPart = weightKg !== null ? `${weightKg}kg` : '—';
-    const base = `${loggedReps} x ${weightPart}`;
-    if (restSeconds === null) {
-      return base;
-    }
-    return `${base} (${restSeconds}')`;
-  }
-
   function handleAccessTokenRefreshed(token: string): void {
     if (user) {
       setAuthSession(token, user);
@@ -278,10 +257,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           : exercise,
       ),
     });
-  }
-
-  function isExtraSet(setNumber: number, prescribedSets: number): boolean {
-    return setNumber > prescribedSets;
   }
 
   async function handleAddSet(): Promise<void> {
@@ -454,12 +429,144 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
   }
 
-  if (!session) {
+  if (!session || isDesktop === null) {
     return (
       <RequireAuth>
         <main className="mx-auto max-w-md p-6">
           <p className="text-sm text-muted-foreground">{t('loading')}</p>
         </main>
+      </RequireAuth>
+    );
+  }
+
+  const activeExercises = session.exercises.filter((exercise) => exercise.status !== 'skipped');
+  const exercisePosition =
+    currentExercise !== null
+      ? activeExercises.findIndex((exercise) => exercise.id === currentExercise.id) + 1
+      : 0;
+  const exerciseProgressText = t('exerciseProgress', {
+    current: Math.max(exercisePosition, 1),
+    total: Math.max(activeExercises.length, 1),
+  });
+
+  const gymLabels = {
+    freeWorkoutTitle: t('freeWorkoutTitle'),
+    restLabel: t('restLabel'),
+    nextSet: t('nextSet'),
+    skipRest: t('skipRest'),
+    searchExercises: t('searchExercises'),
+    searchNoResults: t('searchNoResults'),
+    searchingExercises: t('searchingExercises'),
+    addExercise: t('addExercise'),
+    exerciseSkipped: t('exerciseSkipped'),
+    setSkippedLabel: t('setSkippedLabel'),
+    reps: t('reps'),
+    weightKg: t('weightKg'),
+    completeSetGym: t('completeSetGym'),
+    addSet: t('addSet'),
+    exerciseActionsMenu: t('exerciseActionsMenu'),
+    menuNotes: t('menuNotes'),
+    substituteExercise: t('substituteExercise'),
+    skipExercise: t('skipExercise'),
+    skipSet: t('skipSet'),
+    finishWorkout: t('finishWorkout'),
+    abandon: t('abandon'),
+    notesPlaceholder: t('notesPlaceholder'),
+    notesModalTitle: t('notesModalTitle'),
+    saveNotes: t('saveNotes'),
+    cancel: t('cancel'),
+    editNotes: t('editNotes'),
+    placeholderReps: t('placeholderReps'),
+    placeholderWeight: t('placeholderWeight'),
+    failureReps: t('failureReps'),
+    prevExercise: t('prevExercise'),
+    nextExercise: t('nextExercise'),
+    swipeHint: t('swipeHint'),
+  };
+
+  if (!isDesktop) {
+    return (
+      <RequireAuth>
+        {newPrs.length > 0 && (
+          <PrCelebration
+            records={newPrs}
+            variant="gym"
+            onDismiss={() => {
+              setNewPrs([]);
+            }}
+          />
+        )}
+        <GymActiveWorkoutView
+          accessToken={accessToken}
+          actualRestBySetId={actualRestBySetId}
+          currentExercise={currentExercise}
+          error={error}
+          exerciseIndex={exerciseIndex}
+          exerciseProgressText={exerciseProgressText}
+          formatSetLabel={(setNumber) => t('setLabel', { number: setNumber })}
+          formatSetProgress={(current, total) => t('setProgress', { current, total })}
+          labels={gymLabels}
+          loading={loading}
+          locale={locale}
+          notesModalOpen={notesModalOpen}
+          notesSaving={notesSaving}
+          restTimerContext={restTimerContext}
+          session={session}
+          substituteMode={substituteMode}
+          onAbandon={() => {
+            void handleAbandon();
+          }}
+          onAddSet={() => {
+            void handleAddSet();
+          }}
+          onCompleteSet={(setId, setNumber) => {
+            void handleCompleteSet(setId, setNumber);
+          }}
+          onExerciseIndexChange={setExerciseIndex}
+          onFinishWorkout={() => {
+            void handleCompleteWorkout();
+          }}
+          onNotesModalClose={() => {
+            setNotesModalOpen(false);
+          }}
+          onNotesSave={(notes) => {
+            void handleExerciseNotesSave(notes);
+          }}
+          onOpenNotes={openNotesModal}
+          onOpenSubstitute={() => {
+            setSubstituteMode(true);
+          }}
+          onRestComplete={(setId, actualRestSeconds) => {
+            setActualRestBySetId((prev) => ({
+              ...prev,
+              [setId]: actualRestSeconds,
+            }));
+            setRestTimerContext(null);
+          }}
+          onSelectExerciseToAdd={(exerciseLibraryId) => {
+            void handleAddExercise(exerciseLibraryId);
+          }}
+          onSelectSubstitute={(exerciseLibraryId) => {
+            void handleSubstitute(exerciseLibraryId);
+          }}
+          onSkipExercise={() => {
+            void handleSkipExercise();
+          }}
+          onSkipRest={() => {
+            if (!restTimerContext) {
+              return;
+            }
+            setActualRestBySetId((prev) => ({
+              ...prev,
+              [restTimerContext.setId]: 0,
+            }));
+            setRestTimerContext(null);
+          }}
+          onSkipSet={(setId, setNumber) => {
+            void handleSkipSet(setId, setNumber);
+          }}
+          onUpdateSetValue={updateSetValue}
+        />
       </RequireAuth>
     );
   }
@@ -553,73 +660,17 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
             {(() => {
               const { prescription } = currentExercise;
-              const isResting = restTimerContext !== null;
-              const activeSet = isResting
-                ? null
-                : (currentExercise.sets.find((item) => !item.isCompleted && !item.isSkipped) ??
-                  null);
-              const previousWeight = currentExercise.previousSet?.weightKg;
-              const previousReps = currentExercise.previousSet?.reps;
-              const lastLoggedSet = [...currentExercise.sets]
-                .filter((item) => item.isCompleted && !item.isSkipped)
-                .sort((a, b) => b.setNumber - a.setNumber)[0];
-              const lastSetInExercise = [...currentExercise.sets].sort(
-                (a, b) => b.setNumber - a.setNumber,
-              )[0];
-              const extraPlaceholderSource = lastLoggedSet ?? lastSetInExercise;
-
-              function getRepsPlaceholder(forExtraSet: boolean): string {
-                if (forExtraSet) {
-                  if (extraPlaceholderSource?.reps !== null && extraPlaceholderSource?.reps !== undefined) {
-                    return String(extraPlaceholderSource.reps);
-                  }
-                  return t('placeholderReps');
-                }
-                if (previousReps !== null && previousReps !== undefined) {
-                  return String(previousReps);
-                }
-                return String(prescription.targetReps);
-              }
-
-              function getWeightPlaceholder(forExtraSet: boolean): string {
-                if (forExtraSet) {
-                  if (
-                    extraPlaceholderSource?.weightKg !== null &&
-                    extraPlaceholderSource?.weightKg !== undefined
-                  ) {
-                    return String(extraPlaceholderSource.weightKg);
-                  }
-                  return t('placeholderWeight');
-                }
-                if (previousWeight !== null && previousWeight !== undefined) {
-                  return String(previousWeight);
-                }
-                return formatPrescribedWeight(prescription.targetWeightKg) === '—'
-                  ? t('placeholderWeight')
-                  : formatPrescribedWeight(prescription.targetWeightKg);
-              }
-
-              const completedSets = currentExercise.sets.filter(
-                (item) => item.isCompleted || item.isSkipped,
-              );
-              const futureSets = isResting
-                ? currentExercise.sets.filter((item) => !item.isCompleted && !item.isSkipped)
-                : activeSet
-                  ? currentExercise.sets.filter(
-                      (item) =>
-                        !item.isCompleted && !item.isSkipped && item.id !== activeSet.id,
-                    )
-                  : [];
-
-              function getDisplayedRestSeconds(setId: string): number | null {
-                if (restTimerContext?.setId === setId) {
-                  return null;
-                }
-                if (actualRestBySetId[setId] !== undefined) {
-                  return actualRestBySetId[setId];
-                }
-                return prescription.restSeconds;
-              }
+              const setState = buildExerciseSetViewState({
+                exercise: currentExercise,
+                restTimerContext,
+                actualRestBySetId,
+                labels: {
+                  placeholderReps: t('placeholderReps'),
+                  placeholderWeight: t('placeholderWeight'),
+                  failureReps: t('failureReps'),
+                },
+              });
+              const { activeSet, completedSets, futureSets, isResting } = setState;
 
               return (
                 <div className="flex flex-col gap-3">
@@ -673,9 +724,8 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                           {formatLoggedSetLine(
                             set.reps,
                             set.weightKg,
-                            getDisplayedRestSeconds(set.id),
+                            setState.getDisplayedRestSeconds(set.id),
                             prescription.targetReps,
-                            prescription.targetWeightKg,
                           )}
                         </span>
                       )}
@@ -705,30 +755,30 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                               prescription.targetReps,
                               prescription.targetWeightKg,
                               prescription.restSeconds,
+                              t('failureReps'),
                             )}
                           </p>
                         )}
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2">
-                        <SetMetricInput
-                          inputMode="numeric"
-                          max={100}
-                          placeholder={getRepsPlaceholder(
+                        <MetricInput
+                          kind="reps"
+                          label={t('reps')}
+                          placeholder={setState.getRepsPlaceholder(
                             isExtraSet(activeSet.setNumber, prescription.targetSets),
                           )}
-                          size="sm"
                           value={activeSet.reps}
                           onChange={(value) => {
                             updateSetValue(activeSet.id, 'reps', value);
                           }}
                         />
-                        <SetMetricInput
-                          max={500}
-                          placeholder={getWeightPlaceholder(
+                        <MetricInput
+                          kind="weight"
+                          label={t('weightKg')}
+                          placeholder={setState.getWeightPlaceholder(
                             isExtraSet(activeSet.setNumber, prescription.targetSets),
                           )}
-                          size="sm"
                           value={activeSet.weightKg}
                           onChange={(value) => {
                             updateSetValue(activeSet.id, 'weightKg', value);

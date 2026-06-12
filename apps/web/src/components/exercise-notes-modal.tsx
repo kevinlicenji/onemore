@@ -59,14 +59,14 @@ export function ExerciseNotesModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
+    <div className="fixed inset-0 z-50 flex animate-in fade-in-0 items-end justify-center bg-black/40 p-4 duration-200 sm:items-center">
       <button
         aria-label={cancelLabel}
         className="absolute inset-0"
         type="button"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-md rounded-lg border bg-background p-4 shadow-lg">
+      <div className="relative z-10 w-full max-w-md animate-in fade-in-0 zoom-in-95 rounded-lg border bg-background p-4 shadow-lg duration-200">
         <h3 className="text-base font-semibold">{title}</h3>
         <textarea
           autoFocus
