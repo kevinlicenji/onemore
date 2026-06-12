@@ -2,15 +2,16 @@
 
 import { Suspense } from 'react';
 
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { NewProgramPageContent } from './new-program-content';
 
 export default function NewProgramPage(): React.ReactElement {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto flex min-h-screen max-w-md items-center justify-center p-6">
+        <AdaptivePageShell title="…">
           <p className="text-sm text-muted-foreground">Loading…</p>
-        </main>
+        </AdaptivePageShell>
       }
     >
       <NewProgramPageContent />

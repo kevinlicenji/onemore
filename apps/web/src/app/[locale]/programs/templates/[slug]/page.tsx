@@ -8,8 +8,10 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { ProgramDayList } from '@/components/program-day-list';
 import { RequireAuth } from '@/components/require-auth';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { fetchProgramTemplateDetail } from '@/lib/api-auth';
 import { pickLocalizedText } from '@/lib/pick-localized-text';
 
@@ -19,6 +21,7 @@ export default function ProgramTemplateDetailPage(): React.ReactElement {
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const slug = typeof params.slug === 'string' ? params.slug : '';
+  const isDesktop = useIsDesktop();
   const [template, setTemplate] = useState<ProgramDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,37 +36,50 @@ export default function ProgramTemplateDetailPage(): React.ReactElement {
       });
   }, [accessToken, slug, t]);
 
+  const guideText =
+    template?.guide !== undefined && template.guide !== null
+      ? pickLocalizedText(template.guide, locale)
+      : undefined;
+
+  const headerActions = (
+    <Button asChild>
+      <Link href={`/${locale}/programs/new?template=${encodeURIComponent(slug)}`}>
+        {t('customizeTemplate')}
+      </Link>
+    </Button>
+  );
+
   return (
     <RequireAuth>
-      <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 p-6">
+      <AdaptivePageShell
+        title={template?.name ?? t('loadingProgram')}
+        description={guideText ?? t('templateDetailSubtitle')}
+        actions={isDesktop ? headerActions : undefined}
+        variant="wide"
+      >
         {template ? (
-          <>
-            <div>
-              <h1 className="text-2xl font-bold">{template.name}</h1>
-              {template.guide && (
-                <p className="mt-3 text-sm leading-relaxed text-foreground/90">
-                  {pickLocalizedText(template.guide, locale)}
-                </p>
-              )}
-              <p className="mt-2 text-sm text-muted-foreground">{t('templateDetailSubtitle')}</p>
-            </div>
-            <ProgramDayList days={template.days} locale={locale} />
-          </>
+          <ProgramDayList
+            days={template.days}
+            locale={locale}
+            className={isDesktop ? 'grid grid-cols-1 gap-4 xl:grid-cols-2' : undefined}
+          />
         ) : (
           <p className="text-sm text-muted-foreground">{error ?? t('loadingProgram')}</p>
         )}
 
-        <div className="flex flex-col gap-2">
-          <Button asChild>
-            <Link href={`/${locale}/programs/new?template=${encodeURIComponent(slug)}`}>
-              {t('customizeTemplate')}
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href={`/${locale}/programs/templates`}>{t('backToTemplates')}</Link>
-          </Button>
-        </div>
-      </main>
+        {!isDesktop ? (
+          <div className="flex flex-col gap-2">
+            <Button asChild className="min-h-11">
+              <Link href={`/${locale}/programs/new?template=${encodeURIComponent(slug)}`}>
+                {t('customizeTemplate')}
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href={`/${locale}/programs/templates`}>{t('backToTemplates')}</Link>
+            </Button>
+          </div>
+        ) : null}
+      </AdaptivePageShell>
     </RequireAuth>
   );
 }

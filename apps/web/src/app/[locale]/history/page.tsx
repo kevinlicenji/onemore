@@ -1,14 +1,21 @@
 'use client';
 
 import type { HistorySessionSummary } from '@onemore/shared';
-import { Button } from '@onemore/ui';
+import { Badge, Button, Card, CardContent, Input } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { GymListGroup } from '@/components/gym-ui/gym-list-group';
+import { GymListRow } from '@/components/gym-ui/gym-list-row';
+import { GymSegmentedControl } from '@/components/gym-ui/gym-segmented-control';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
+import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
+import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
 import { RequireAuth } from '@/components/require-auth';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { fetchHistorySessions } from '@/lib/api-auth';
 import { buildHistoryDateRange, type HistoryDatePreset } from '@/lib/history-filters';
 
@@ -27,6 +34,7 @@ export default function HistoryPage(): React.ReactElement {
   const { accessToken } = useAuth();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
+  const isDesktop = useIsDesktop();
 
   const [items, setItems] = useState<HistorySessionSummary[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -35,6 +43,11 @@ export default function HistoryPage(): React.ReactElement {
   const [preset, setPreset] = useState<HistoryDatePreset>('all');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
+
+  const filterOptions = useMemo(
+    () => PRESETS.map((value) => ({ value, label: t(`filter_${value}`) })),
+    [t],
+  );
 
   const loadPage = useCallback(
     async (nextCursor?: string, replace = false): Promise<void> => {
@@ -65,36 +78,100 @@ export default function HistoryPage(): React.ReactElement {
     void loadPage(undefined, true);
   }, [loadPage]);
 
+  function sessionMeta(session: HistorySessionSummary): string {
+    const date = session.completedAt
+      ? formatDate(session.completedAt, locale)
+      : formatDate(session.startedAt, locale);
+    const duration =
+      session.durationSeconds !== null
+        ? ` · ${String(Math.round(session.durationSeconds / 60))} min`
+        : '';
+    return `${date} · ${t('sessionMeta', {
+      sets: session.totalSets,
+      volume: session.totalVolumeKg,
+    })}${duration}`;
+  }
+
+  const sessionListMobile = (
+    <GymListGroup>
+      {items.map((session) => (
+        <GymListRow
+          key={session.id}
+          href={`/${locale}/history/${session.id}`}
+          meta={
+            <Badge className="ml-1 shrink-0" variant="secondary">
+              {session.sessionType === 'free' ? t('typeFree') : t('typeProgrammed')}
+            </Badge>
+          }
+          showChevron
+          subtitle={sessionMeta(session)}
+          title={session.workoutDayLabel ?? t('freeWorkout')}
+        />
+      ))}
+    </GymListGroup>
+  );
+
+  const sessionListDesktop = (
+    <StaggerGroup className="grid gap-3 sm:grid-cols-2">
+      {items.map((session) => (
+        <StaggerItem key={session.id}>
+          <Link href={`/${locale}/history/${session.id}`}>
+            <Card className="transition-colors hover:bg-muted/30">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-semibold">{session.workoutDayLabel ?? t('freeWorkout')}</p>
+                  <Badge variant="secondary">
+                    {session.sessionType === 'free' ? t('typeFree') : t('typeProgrammed')}
+                  </Badge>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{sessionMeta(session)}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </StaggerItem>
+      ))}
+    </StaggerGroup>
+  );
+
   return (
     <RequireAuth>
-      <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-4 p-6">
-        <div>
-          <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t('filterSubtitle')}</p>
-        </div>
+      <AdaptivePageShell
+        backHref={isDesktop ? undefined : `/${locale}/dashboard`}
+        backLabel={t('backToDashboard')}
+        title={t('title')}
+        description={t('filterSubtitle')}
+      >
+        {isDesktop ? (
+          <div className="flex flex-wrap gap-2">
+            {PRESETS.map((value) => (
+              <Button
+                key={value}
+                size="sm"
+                type="button"
+                variant={preset === value ? 'default' : 'outline'}
+                onClick={() => {
+                  setPreset(value);
+                }}
+              >
+                {t(`filter_${value}`)}
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <GymSegmentedControl
+            ariaLabel={t('filterSubtitle')}
+            options={filterOptions}
+            value={preset}
+            onChange={setPreset}
+          />
+        )}
 
-        <div className="flex flex-wrap gap-2">
-          {PRESETS.map((value) => (
-            <Button
-              key={value}
-              size="sm"
-              type="button"
-              variant={preset === value ? 'default' : 'outline'}
-              onClick={() => {
-                setPreset(value);
-              }}
-            >
-              {t(`filter_${value}`)}
-            </Button>
-          ))}
-        </div>
-
-        {preset === 'custom' && (
-          <div className="grid grid-cols-2 gap-2">
-            <label className="flex flex-col gap-1 text-xs">
+        {preset === 'custom' ? (
+          <div className={isDesktop ? 'grid max-w-xl grid-cols-3 gap-3' : 'grid grid-cols-2 gap-2'}>
+            <label className="flex flex-col gap-1 text-sm">
               {t('filterFrom')}
-              <input
-                className="min-h-11 rounded-md border px-3 text-sm"
+              <Input
+                className={isDesktop ? undefined : 'min-h-11'}
                 type="date"
                 value={customFrom}
                 onChange={(e) => {
@@ -102,10 +179,10 @@ export default function HistoryPage(): React.ReactElement {
                 }}
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs">
+            <label className="flex flex-col gap-1 text-sm">
               {t('filterTo')}
-              <input
-                className="min-h-11 rounded-md border px-3 text-sm"
+              <Input
+                className={isDesktop ? undefined : 'min-h-11'}
                 type="date"
                 value={customTo}
                 onChange={(e) => {
@@ -113,58 +190,38 @@ export default function HistoryPage(): React.ReactElement {
                 }}
               />
             </label>
-            <Button
-              className="col-span-2 min-h-11"
-              type="button"
-              variant="outline"
-              onClick={() => {
-                void loadPage(undefined, true);
-              }}
-            >
-              {t('filterApply')}
-            </Button>
-          </div>
-        )}
-
-        {error && <p className="text-sm text-red-600">{error}</p>}
-
-        {items.length === 0 && !loading && !error && (
-          <p className="text-sm text-muted-foreground">{t('empty')}</p>
-        )}
-
-        <ul className="flex flex-col gap-2">
-          {items.map((session) => (
-            <li key={session.id}>
-              <Link
-                className="block rounded-lg border p-4 transition hover:bg-muted/50"
-                href={`/${locale}/history/${session.id}`}
+            <div className={isDesktop ? 'flex items-end' : 'col-span-2'}>
+              <Button
+                className={isDesktop ? 'w-full' : 'min-h-11 w-full'}
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  void loadPage(undefined, true);
+                }}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <p className="font-medium">{session.workoutDayLabel ?? t('freeWorkout')}</p>
-                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs">
-                    {session.sessionType === 'free' ? t('typeFree') : t('typeProgrammed')}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {session.completedAt
-                    ? formatDate(session.completedAt, locale)
-                    : formatDate(session.startedAt, locale)}
-                  {' · '}
-                  {t('sessionMeta', {
-                    sets: session.totalSets,
-                    volume: session.totalVolumeKg,
-                  })}
-                  {session.durationSeconds !== null &&
-                    ` · ${String(Math.round(session.durationSeconds / 60))} min`}
-                </p>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                {t('filterApply')}
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
-        {cursor && (
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+        {loading && items.length === 0 ? (
+          <CardGridSkeleton count={isDesktop ? 4 : 3} columns="2" />
+        ) : items.length === 0 && !error ? (
+          <p className="text-sm text-muted-foreground">{t('empty')}</p>
+        ) : isDesktop ? (
+          sessionListDesktop
+        ) : (
+          <StaggerGroup compact>
+            <StaggerItem>{sessionListMobile}</StaggerItem>
+          </StaggerGroup>
+        )}
+
+        {cursor ? (
           <Button
-            className="min-h-11"
+            className={isDesktop ? 'w-fit' : 'min-h-11 w-full'}
             disabled={loading}
             type="button"
             variant="outline"
@@ -174,8 +231,8 @@ export default function HistoryPage(): React.ReactElement {
           >
             {loading ? t('loading') : t('loadMore')}
           </Button>
-        )}
-      </main>
+        ) : null}
+      </AdaptivePageShell>
     </RequireAuth>
   );
 }

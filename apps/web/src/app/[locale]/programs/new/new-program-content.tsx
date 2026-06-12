@@ -8,8 +8,10 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { ProgramBuilder, type BuilderDay } from '@/components/program-builder';
 import { RequireAuth } from '@/components/require-auth';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { createProgram, fetchProgramTemplateDetail, publishProgram } from '@/lib/api-auth';
 import { trackEvent } from '@/lib/analytics';
 
@@ -21,6 +23,7 @@ export function NewProgramPageContent(): React.ReactElement {
   const searchParams = useSearchParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const templateSlug = searchParams.get('template');
+  const isDesktop = useIsDesktop();
 
   const [initialName, setInitialName] = useState('');
   const [initialDays, setInitialDays] = useState<BuilderDay[] | undefined>(undefined);
@@ -73,14 +76,18 @@ export function NewProgramPageContent(): React.ReactElement {
 
   return (
     <RequireAuth>
-      <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 p-6">
-        <h1 className="text-2xl font-bold">
-          {templateSlug ? t('customizeTemplateTitle') : t('builderTitle')}
-        </h1>
-        {templateSlug && (
-          <p className="text-sm text-muted-foreground">{t('customizeTemplateHint')}</p>
-        )}
-
+      <AdaptivePageShell
+        title={templateSlug ? t('customizeTemplateTitle') : t('builderTitle')}
+        description={templateSlug ? t('customizeTemplateHint') : undefined}
+        variant="wide"
+        actions={
+          isDesktop ? (
+            <Button asChild variant="outline">
+              <Link href={`/${locale}/programs/templates`}>{t('useTemplate')}</Link>
+            </Button>
+          ) : undefined
+        }
+      >
         {loadingTemplate ? (
           <p className="text-sm text-muted-foreground">{t('loadingProgram')}</p>
         ) : (
@@ -94,10 +101,12 @@ export function NewProgramPageContent(): React.ReactElement {
           />
         )}
 
-        <Button asChild variant="ghost">
-          <Link href={`/${locale}/programs/templates`}>{t('useTemplate')}</Link>
-        </Button>
-      </main>
+        {!isDesktop ? (
+          <Button asChild variant="ghost">
+            <Link href={`/${locale}/programs/templates`}>{t('useTemplate')}</Link>
+          </Button>
+        ) : null}
+      </AdaptivePageShell>
     </RequireAuth>
   );
 }

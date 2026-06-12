@@ -1,7 +1,7 @@
 'use client';
 
 import type { AnalyticsDashboard } from '@onemore/shared';
-import { Button } from '@onemore/ui';
+import { Button, Card, CardContent, Skeleton } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -10,8 +10,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
 import { ActiveWorkoutBanner } from '@/components/active-workout-banner';
+import { GymHeroCta } from '@/components/gym-ui/gym-hero-cta';
+import { GymStatGrid } from '@/components/gym-ui/gym-stat-grid';
+import { GymStatTile } from '@/components/gym-ui/gym-stat-tile';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
+import { StatGrid } from '@/components/layout/desktop/stat-grid';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { SyncStatusBadge } from '@/components/sync-status-badge';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { fetchAnalyticsDashboard } from '@/lib/api-auth';
 
 function formatDate(iso: string, locale: string): string {
@@ -21,25 +27,93 @@ function formatDate(iso: string, locale: string): string {
   });
 }
 
+interface DashboardStatsProps {
+  dashboard: AnalyticsDashboard;
+  locale: string;
+  mobile?: boolean;
+}
+
+function DashboardStats({ dashboard, locale, mobile = false }: DashboardStatsProps): React.ReactElement {
+  const t = useTranslations('Dashboard');
+
+  if (mobile) {
+    return (
+      <GymStatGrid>
+        <GymStatTile label={t('streakLabel')} unit={t('streakUnit')} value={dashboard.streakWeeks} />
+        <GymStatTile label={t('weeklyVolumeLabel')} unit="kg" value={dashboard.weeklyVolumeKg} />
+        <GymStatTile label={t('workoutsThisWeekLabel')} value={dashboard.workoutsThisWeek} />
+        <GymStatTile
+          label={t('lastWorkoutLabel')}
+          value={
+            dashboard.lastWorkout
+              ? formatDate(dashboard.lastWorkout.completedAt, locale)
+              : t('noLastWorkout')
+          }
+        />
+      </GymStatGrid>
+    );
+  }
+
+  return (
+    <StatGrid>
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-sm text-muted-foreground">{t('streakLabel')}</p>
+          <p className="mt-2 text-3xl font-bold">{dashboard.streakWeeks}</p>
+          <p className="text-sm text-muted-foreground">{t('streakUnit')}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-sm text-muted-foreground">{t('weeklyVolumeLabel')}</p>
+          <p className="mt-2 text-3xl font-bold">{dashboard.weeklyVolumeKg}</p>
+          <p className="text-sm text-muted-foreground">kg</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-sm text-muted-foreground">{t('workoutsThisWeekLabel')}</p>
+          <p className="mt-2 text-3xl font-bold">{dashboard.workoutsThisWeek}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-sm text-muted-foreground">{t('lastWorkoutLabel')}</p>
+          <p className="mt-2 text-lg font-semibold">
+            {dashboard.lastWorkout
+              ? formatDate(dashboard.lastWorkout.completedAt, locale)
+              : t('noLastWorkout')}
+          </p>
+        </CardContent>
+      </Card>
+    </StatGrid>
+  );
+}
+
 export default function DashboardPage(): React.ReactElement {
   const t = useTranslations('Dashboard');
   const { profile, accessToken, isLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
+  const isDesktop = useIsDesktop();
 
   const [dashboard, setDashboard] = useState<AnalyticsDashboard | null>(null);
+  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadDashboard = useCallback(async (): Promise<void> => {
     if (!accessToken) {
       return;
     }
+    setLoading(true);
     try {
       const data = await fetchAnalyticsDashboard(accessToken);
       setDashboard(data);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : t('loadError'));
+    } finally {
+      setLoading(false);
     }
   }, [accessToken, t]);
 
@@ -59,66 +133,81 @@ export default function DashboardPage(): React.ReactElement {
     dashboard !== null &&
     (dashboard.lastWorkout !== null || dashboard.streakWeeks > 0);
 
+  const subtitle = hasActivity ? t('subtitle') : t('emptySubtitle');
+
+  const startWorkoutButton = (
+    <Button asChild className={isDesktop ? undefined : 'min-h-12 w-full text-base'}>
+      <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
+    </Button>
+  );
+
+  const emptyState = !hasActivity ? (
+    isDesktop ? (
+      <Card className="border-dashed">
+        <CardContent className="flex flex-col items-center p-8 text-center">
+          <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
+          <Button asChild className="mt-4">
+            <Link href={`/${locale}/programs`}>{t('pickProgramCta')}</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    ) : (
+      <GymHeroCta
+        description={t('emptyBody')}
+        title={t('pickProgramCta')}
+        action={
+          <Button asChild className="min-h-11 w-full" variant="outline">
+            <Link href={`/${locale}/programs`}>{t('myProgramsLink')}</Link>
+          </Button>
+        }
+      />
+    )
+  ) : null;
+
   return (
     <RequireAuth>
-      <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 p-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-          <p className="mt-2 text-muted-foreground">
-            {hasActivity ? t('subtitle') : t('emptySubtitle')}
-          </p>
-        </div>
-
-        {loadError && <p className="text-sm text-red-600">{loadError}</p>}
-
+      <AdaptivePageShell
+        title={t('title')}
+        description={subtitle}
+        actions={isDesktop ? startWorkoutButton : undefined}
+      >
+        {loadError ? <p className="text-sm text-destructive">{loadError}</p> : null}
         <ActiveWorkoutBanner />
 
-        {dashboard && (
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-lg border p-4">
-              <p className="text-xs text-muted-foreground">{t('streakLabel')}</p>
-              <p className="text-2xl font-bold">{dashboard.streakWeeks}</p>
-              <p className="text-xs text-muted-foreground">{t('streakUnit')}</p>
-            </div>
-            <div className="rounded-lg border p-4">
-              <p className="text-xs text-muted-foreground">{t('weeklyVolumeLabel')}</p>
-              <p className="text-2xl font-bold">{dashboard.weeklyVolumeKg}</p>
-              <p className="text-xs text-muted-foreground">kg</p>
-            </div>
-            <div className="rounded-lg border p-4">
-              <p className="text-xs text-muted-foreground">{t('workoutsThisWeekLabel')}</p>
-              <p className="text-2xl font-bold">{dashboard.workoutsThisWeek}</p>
-            </div>
-            <div className="rounded-lg border p-4">
-              <p className="text-xs text-muted-foreground">{t('lastWorkoutLabel')}</p>
-              <p className="text-sm font-medium">
-                {dashboard.lastWorkout
-                  ? formatDate(dashboard.lastWorkout.completedAt, locale)
-                  : t('noLastWorkout')}
-              </p>
-            </div>
-          </div>
-        )}
+        {!isDesktop && dashboard ? (
+          <GymHeroCta
+            description={subtitle}
+            title={t('startWorkoutCta')}
+            action={startWorkoutButton}
+          />
+        ) : null}
 
-        {dashboard && (
-          <Button asChild className="min-h-11 w-full">
-            <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
-          </Button>
-        )}
+        {loading && !dashboard ? (
+          isDesktop ? (
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+              <Skeleton className="h-28 rounded-lg" />
+              <Skeleton className="h-28 rounded-lg" />
+              <Skeleton className="h-28 rounded-lg" />
+              <Skeleton className="h-28 rounded-lg" />
+            </div>
+          ) : (
+            <GymStatGrid>
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-24 rounded-2xl" />
+            </GymStatGrid>
+          )
+        ) : null}
 
-        {!hasActivity && (
-          <div className="w-full rounded-lg border border-dashed p-8 text-center">
-            <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
-            <Button asChild className="mt-4">
-              <Link href={`/${locale}/programs`}>{t('pickProgramCta')}</Link>
-            </Button>
-          </div>
-        )}
+        {dashboard ? (
+          <DashboardStats dashboard={dashboard} locale={locale} mobile={isDesktop === false} />
+        ) : null}
 
+        {emptyState}
         <PwaInstallPrompt />
-
         <SyncStatusBadge />
-      </main>
+      </AdaptivePageShell>
     </RequireAuth>
   );
 }

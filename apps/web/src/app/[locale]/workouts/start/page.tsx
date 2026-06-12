@@ -1,24 +1,29 @@
 'use client';
 
 import type { NextWorkoutPreview, WorkoutSessionDetail } from '@onemore/shared';
-import { Button } from '@onemore/ui';
+import { Button, Card, CardContent } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-
-import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { GymHeroCta } from '@/components/gym-ui/gym-hero-cta';
+import { GymListGroup } from '@/components/gym-ui/gym-list-group';
+import { GymListRow } from '@/components/gym-ui/gym-list-row';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { RequireAuth } from '@/components/require-auth';
+import { useSync } from '@/components/sync-provider';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
+import { trackEvent } from '@/lib/analytics';
+import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
+import { triggerHaptic } from '@/lib/haptic';
 import {
   abandonWorkoutSessionClient,
   getActiveWorkoutSessionClient,
   getNextWorkoutPreviewClient,
   startWorkoutSessionClient,
 } from '@/lib/offline/workout-client';
-import { useSync } from '@/components/sync-provider';
-import { trackEvent } from '@/lib/analytics';
 
 export default function StartWorkoutPage(): React.ReactElement {
   const t = useTranslations('Workouts');
@@ -27,10 +32,11 @@ export default function StartWorkoutPage(): React.ReactElement {
   const router = useRouter();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
+  const isDesktop = useIsDesktop();
 
   const [preview, setPreview] = useState<NextWorkoutPreview | null>(null);
   const [activeSession, setActiveSession] = useState<WorkoutSessionDetail | null>(null);
-  const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
+  const [startingDayId, setStartingDayId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { refreshPendingCount } = useSync();
@@ -46,11 +52,6 @@ export default function StartWorkoutPage(): React.ReactElement {
       .then(([nextWorkout, session]) => {
         setPreview(nextWorkout);
         setActiveSession(session);
-        const defaultDay =
-          nextWorkout.days.find((day) => day.workoutDayId === nextWorkout.workoutDayId) ??
-          nextWorkout.days[0] ??
-          null;
-        setSelectedDayId(defaultDay?.workoutDayId ?? null);
       })
       .catch(() => {
         setError(t('loadError'));
@@ -74,7 +75,7 @@ export default function StartWorkoutPage(): React.ReactElement {
     }
   }
 
-  async function handleStart(sessionType: 'programmed' | 'free'): Promise<void> {
+  async function handleStartProgrammedDay(workoutDayId: string): Promise<void> {
     if (!accessToken) {
       return;
     }
@@ -82,23 +83,50 @@ export default function StartWorkoutPage(): React.ReactElement {
       setError(t('activeSessionBlocksStart'));
       return;
     }
-    if (sessionType === 'programmed' && !selectedDayId) {
-      setError(t('selectDayError'));
+    triggerHaptic('medium');
+    setLoading(true);
+    setStartingDayId(workoutDayId);
+    setError(null);
+    try {
+      const session = await startWorkoutSessionClient(accessToken, {
+        id: crypto.randomUUID(),
+        sessionType: 'programmed',
+        programAssignmentId: preview?.programAssignmentId ?? undefined,
+        workoutDayId,
+      });
+      trackEvent('workout_started', {
+        session_id: session.id,
+        session_type: 'programmed',
+      });
+      await refreshPendingCount();
+      router.push(`/${locale}/workouts/${session.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('startError'));
+    } finally {
+      setLoading(false);
+      setStartingDayId(null);
+    }
+  }
+
+  async function handleStartFree(): Promise<void> {
+    if (!accessToken) {
       return;
     }
+    if (activeSession) {
+      setError(t('activeSessionBlocksStart'));
+      return;
+    }
+    triggerHaptic('medium');
     setLoading(true);
     setError(null);
     try {
       const session = await startWorkoutSessionClient(accessToken, {
         id: crypto.randomUUID(),
-        sessionType,
-        programAssignmentId:
-          sessionType === 'programmed' ? (preview?.programAssignmentId ?? undefined) : undefined,
-        workoutDayId: sessionType === 'programmed' ? (selectedDayId ?? undefined) : undefined,
+        sessionType: 'free',
       });
       trackEvent('workout_started', {
         session_id: session.id,
-        session_type: sessionType,
+        session_type: 'free',
       });
       await refreshPendingCount();
       router.push(`/${locale}/workouts/${session.id}`);
@@ -109,104 +137,180 @@ export default function StartWorkoutPage(): React.ReactElement {
     }
   }
 
-  return (
-    <RequireAuth>
-      <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 p-6">
-        <div>
-          <h1 className="text-2xl font-bold">{t('startTitle')}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{t('startSubtitle')}</p>
-        </div>
-
-        {activeSession && (
-          <div className="rounded-lg border border-primary/40 bg-primary/5 p-4">
-            <p className="font-medium">{t('resumeTitle')}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {activeSession.workoutDayLabel ?? t('freeWorkoutTitle')}
-              {' · '}
-              {t('resumeProgress', {
-                completed: activeSession.exercises.filter(
-                  (exercise) => exercise.status === 'completed',
-                ).length,
-                total: activeSession.exercises.length,
-              })}
-            </p>
-            <div className="mt-3 flex flex-col gap-2">
-              <Button asChild className="min-h-11 w-full">
-                <Link href={`/${locale}/workouts/${activeSession.id}`}>{t('resumeCta')}</Link>
-              </Button>
-              <Button
-                className="min-h-11"
-                disabled={loading}
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  void handleAbandonActive();
-                }}
-              >
-                {t('abandonActive')}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {preview?.hasActiveAssignment && preview.days.length > 0 && !activeSession && (
-          <div className="rounded-lg border p-4">
-            <p className="font-medium">{preview.programName}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t('selectDayTitle')}</p>
-            <div className="mt-3 flex flex-col gap-2">
-              {preview.days.map((day) => (
-                <button
-                  key={day.workoutDayId}
-                  type="button"
-                  className={`rounded-lg border p-3 text-left ${selectedDayId === day.workoutDayId ? 'border-primary bg-primary/5' : ''}`}
-                  onClick={() => {
-                    setSelectedDayId(day.workoutDayId);
-                  }}
-                >
-                  <span className="font-medium">
-                    {day.label}
-                    {day.muscleGroups.length > 0
-                      ? ` — ${formatMuscleGroupsForLocale(day.muscleGroups, tMuscle)}`
-                      : ''}
-                    {' · '}
-                    {t('nextDayMeta', { count: day.exerciseCount })}
-                  </span>
-                </button>
-              ))}
-            </div>
+  const resumeBlock = activeSession ? (
+    isDesktop ? (
+      <Card className="border-primary/40 bg-primary/5">
+        <CardContent className="p-6">
+          <p className="font-semibold">{t('resumeTitle')}</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {activeSession.workoutDayLabel ?? t('freeWorkoutTitle')}
+            {' · '}
+            {t('resumeProgress', {
+              completed: activeSession.exercises.filter(
+                (exercise) => exercise.status === 'completed',
+              ).length,
+              total: activeSession.exercises.length,
+            })}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button asChild>
+              <Link href={`/${locale}/workouts/${activeSession.id}`}>{t('resumeCta')}</Link>
+            </Button>
             <Button
-              className="mt-3 w-full"
-              disabled={loading || !selectedDayId}
+              disabled={loading}
               type="button"
+              variant="outline"
               onClick={() => {
-                void handleStart('programmed');
+                void handleAbandonActive();
               }}
             >
-              {t('startSelectedDay')}
+              {t('abandonActive')}
             </Button>
           </div>
-        )}
+        </CardContent>
+      </Card>
+    ) : (
+      <GymHeroCta
+        description={t('resumeProgress', {
+          completed: activeSession.exercises.filter(
+            (exercise) => exercise.status === 'completed',
+          ).length,
+          total: activeSession.exercises.length,
+        })}
+        title={`${t('resumeTitle')} · ${activeSession.workoutDayLabel ?? t('freeWorkoutTitle')}`}
+        action={
+          <div className="flex flex-col gap-2">
+            <Button asChild className="min-h-11 w-full">
+              <Link href={`/${locale}/workouts/${activeSession.id}`}>{t('resumeCta')}</Link>
+            </Button>
+            <Button
+              className="min-h-11 w-full"
+              disabled={loading}
+              type="button"
+              variant="outline"
+              onClick={() => {
+                void handleAbandonActive();
+              }}
+            >
+              {t('abandonActive')}
+            </Button>
+          </div>
+        }
+      />
+    )
+  ) : null;
 
-        {!activeSession && (
-          <Button
-            className="min-h-11"
-            disabled={loading}
-            type="button"
-            variant="outline"
-            onClick={() => {
-              void handleStart('free');
-            }}
-          >
-            {t('startFree')}
-          </Button>
-        )}
+  const programDaysBlock =
+    preview?.hasActiveAssignment && preview.days.length > 0 && !activeSession ? (
+      isDesktop ? (
+        <Card>
+          <CardContent className="p-6">
+            <p className="font-semibold">{preview.programName}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t('selectDayTitle')}</p>
+            <div className="mt-4 flex flex-col gap-2">
+              {preview.days.map((day) => {
+                const isStarting = startingDayId === day.workoutDayId;
+                const muscles = formatMuscleGroupsForLocale(day.muscleGroups, tMuscle);
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+                return (
+                  <button
+                    key={day.workoutDayId}
+                    disabled={loading}
+                    type="button"
+                    className={`rounded-lg border p-3 text-left transition-colors hover:bg-muted/50 active:bg-muted/70 disabled:opacity-60 ${
+                      isStarting ? 'border-primary bg-primary/5' : ''
+                    }`}
+                    onClick={() => {
+                      void handleStartProgrammedDay(day.workoutDayId);
+                    }}
+                  >
+                    <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                      <span className="font-semibold text-foreground">{day.label}</span>
+                      <span aria-hidden className="text-xs text-muted-foreground">
+                        ·
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {t('nextDayMeta', { count: day.exerciseCount })}
+                      </span>
+                    </div>
+                    {muscles ? (
+                      <p className="mt-1 text-sm text-muted-foreground">{muscles}</p>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <GymListGroup title={preview.programName ?? undefined}>
+          {preview.days.map((day) => {
+            const muscles = formatMuscleGroupsForLocale(day.muscleGroups, tMuscle);
+            return (
+              <GymListRow
+                key={day.workoutDayId}
+                active={startingDayId === day.workoutDayId}
+                disabled={loading}
+                meta={
+                  <>
+                    <span aria-hidden>· </span>
+                    {t('nextDayMeta', { count: day.exerciseCount })}
+                  </>
+                }
+                subtitle={muscles}
+                title={day.label}
+                onClick={() => {
+                  void handleStartProgrammedDay(day.workoutDayId);
+                }}
+              />
+            );
+          })}
+        </GymListGroup>
+      )
+    ) : null;
 
-        <Button asChild variant="ghost">
-          <Link href={`/${locale}/dashboard`}>{t('backToDashboard')}</Link>
-        </Button>
-      </main>
+  return (
+    <RequireAuth>
+      <AdaptivePageShell
+        backHref={isDesktop ? undefined : `/${locale}/dashboard`}
+        backLabel={t('backToDashboard')}
+        title={t('startTitle')}
+        description={t('startSubtitle')}
+      >
+        <div className={isDesktop ? 'grid gap-6 lg:grid-cols-2' : 'flex flex-col gap-5'}>
+          {resumeBlock}
+          {programDaysBlock}
+        </div>
+
+        {!activeSession ? (
+          isDesktop ? (
+            <Button
+              className="w-fit"
+              disabled={loading}
+              type="button"
+              variant="outline"
+              onClick={() => {
+                void handleStartFree();
+              }}
+            >
+              {t('startFree')}
+            </Button>
+          ) : (
+            <GymListGroup>
+              <GymListRow
+                disabled={loading}
+                showChevron
+                title={t('startFree')}
+                onClick={() => {
+                  void handleStartFree();
+                }}
+              />
+            </GymListGroup>
+          )
+        ) : null}
+
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      </AdaptivePageShell>
     </RequireAuth>
   );
 }

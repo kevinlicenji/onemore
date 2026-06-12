@@ -8,8 +8,10 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { ProgramBuilder, type BuilderDay } from '@/components/program-builder';
 import { RequireAuth } from '@/components/require-auth';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { fetchProgramDetail, updateProgram } from '@/lib/api-auth';
 
 export default function EditProgramPage(): React.ReactElement {
@@ -19,6 +21,7 @@ export default function EditProgramPage(): React.ReactElement {
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const programId = typeof params.id === 'string' ? params.id : '';
+  const isDesktop = useIsDesktop();
 
   const [initialName, setInitialName] = useState('');
   const [initialDays, setInitialDays] = useState<BuilderDay[] | undefined>(undefined);
@@ -68,14 +71,22 @@ export default function EditProgramPage(): React.ReactElement {
 
   return (
     <RequireAuth>
-      <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 p-6">
-        <h1 className="text-2xl font-bold">{t('editProgramTitle')}</h1>
-        <p className="text-sm text-muted-foreground">{t('editProgramHint')}</p>
-
+      <AdaptivePageShell
+        title={t('editProgramTitle')}
+        description={t('editProgramHint')}
+        variant="wide"
+        actions={
+          isDesktop ? (
+            <Button asChild variant="outline">
+              <Link href={`/${locale}/programs/${programId}`}>{t('backToProgram')}</Link>
+            </Button>
+          ) : undefined
+        }
+      >
         {loading ? (
           <p className="text-sm text-muted-foreground">{t('loadingProgram')}</p>
         ) : error ? (
-          <p className="text-sm text-red-600">{error}</p>
+          <p className="text-sm text-destructive">{error}</p>
         ) : (
           <ProgramBuilder
             accessToken={accessToken ?? ''}
@@ -87,10 +98,12 @@ export default function EditProgramPage(): React.ReactElement {
           />
         )}
 
-        <Button asChild variant="ghost">
-          <Link href={`/${locale}/programs/${programId}`}>{t('backToProgram')}</Link>
-        </Button>
-      </main>
+        {!isDesktop ? (
+          <Button asChild variant="ghost">
+            <Link href={`/${locale}/programs/${programId}`}>{t('backToProgram')}</Link>
+          </Button>
+        ) : null}
+      </AdaptivePageShell>
     </RequireAuth>
   );
 }

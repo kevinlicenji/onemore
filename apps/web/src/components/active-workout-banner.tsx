@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { getActiveWorkoutSessionClient } from '@/lib/offline/workout-client';
 
 /**
@@ -18,6 +19,7 @@ export function ActiveWorkoutBanner(): React.ReactElement | null {
   const { accessToken } = useAuth();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
+  const isDesktop = useIsDesktop();
   const [session, setSession] = useState<WorkoutSessionDetail | null>(null);
 
   useEffect(() => {
@@ -36,8 +38,8 @@ export function ActiveWorkoutBanner(): React.ReactElement | null {
   }
 
   return (
-    <div className="rounded-lg border border-primary/40 bg-primary/5 p-4">
-      <p className="text-sm font-medium">{t('resumeTitle')}</p>
+    <div className="overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 to-gym-tint p-4 shadow-sm">
+      <p className="font-semibold">{t('resumeTitle')}</p>
       <p className="mt-1 text-sm text-muted-foreground">
         {session.workoutDayLabel ?? t('freeWorkoutTitle')}
         {' · '}
@@ -46,7 +48,7 @@ export function ActiveWorkoutBanner(): React.ReactElement | null {
           total: session.exercises.length,
         })}
       </p>
-      <Button asChild className="mt-3 min-h-11 w-full">
+      <Button asChild className={isDesktop ? 'mt-3' : 'mt-3 min-h-11 w-full'}>
         <Link href={`/${locale}/workouts/${session.id}`}>{t('resumeCta')}</Link>
       </Button>
     </div>

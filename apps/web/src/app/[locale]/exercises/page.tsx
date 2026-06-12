@@ -1,28 +1,31 @@
 'use client';
 
-import type { CreateCustomExercise, ExerciseListItem, MuscleGroup } from '@onemore/shared';
-import { EQUIPMENT_TYPES, FILTER_EQUIPMENT_TYPES, FILTER_EXERCISE_CATEGORIES } from '@onemore/shared';
-import { Button } from '@onemore/ui';
+import type { CreateCustomExercise, ExerciseListItem } from '@onemore/shared';
+import {
+  EQUIPMENT_TYPES,
+  FILTER_EQUIPMENT_TYPES,
+  FILTER_EXERCISE_CATEGORIES,
+  MUSCLE_GROUPS,
+  type MuscleGroup,
+} from '@onemore/shared';
+import { Button, Card, CardContent, Input } from '@onemore/ui';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
-import { MuscleGroupFilter } from '@/components/muscle-group-filter';
-import { MuscleTagPicker } from '@/components/muscle-tag-picker';
+import { GymListGroup } from '@/components/gym-ui/gym-list-group';
+import { GymListRow } from '@/components/gym-ui/gym-list-row';
+import { GymSearchField } from '@/components/gym-ui/gym-search-field';
+import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
+import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
+import { AnimatedDialog } from '@/components/motion/animated-dialog';
+import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
 import { RequireAuth } from '@/components/require-auth';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { createCustomExercise, fetchExercises, type ExerciseQueryFilters } from '@/lib/api-auth';
 
-type EquipmentGroup = NonNullable<ExerciseQueryFilters['equipmentGroup']>;
-
-const EQUIPMENT_GROUP_CHIPS: Array<{ id: EquipmentGroup | 'all'; labelKey: string }> = [
-  { id: 'all', labelKey: 'filterAll' },
-  { id: 'machines', labelKey: 'filterMachinesOnly' },
-  { id: 'bodyweight', labelKey: 'filterBodyweightOnly' },
-  { id: 'free_weights', labelKey: 'filterFreeWeights' },
-  { id: 'cables', labelKey: 'filterCables' },
-  { id: 'cardio', labelKey: 'filterCardio' },
-];
+const SEARCH_DEBOUNCE_MS = 250;
 
 function exerciseDisplayName(exercise: ExerciseListItem, locale: string): string {
   if (locale === 'it' && exercise.names.it) {
@@ -33,15 +36,17 @@ function exerciseDisplayName(exercise: ExerciseListItem, locale: string): string
 
 export default function ExercisesPage(): React.ReactElement {
   const t = useTranslations('Exercises');
+  const tMuscle = useTranslations('MuscleGroups');
   const { accessToken } = useAuth();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
+  const isDesktop = useIsDesktop();
 
   const [items, setItems] = useState<ExerciseListItem[]>([]);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [category, setCategory] = useState('');
   const [equipment, setEquipment] = useState('');
-  const [equipmentGroup, setEquipmentGroup] = useState<EquipmentGroup | 'all'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -54,14 +59,22 @@ export default function ExercisesPage(): React.ReactElement {
     isBodyweight: false,
   });
 
-  const hasActiveFilters =
-    category !== '' || equipment !== '' || equipmentGroup !== 'all' || muscle !== '';
+  const hasActiveFilters = category !== '' || equipment !== '';
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(handle);
+    };
+  }, [search]);
 
   const queryFilters = useMemo((): ExerciseQueryFilters => {
     const filters: ExerciseQueryFilters = { limit: 100 };
-    const trimmedSearch = search.trim();
-    if (trimmedSearch.length >= 2) {
-      filters.q = trimmedSearch;
+    if (debouncedSearch.length >= 1) {
+      filters.q = debouncedSearch;
     }
     if (category) {
       filters.category = category;
@@ -69,14 +82,8 @@ export default function ExercisesPage(): React.ReactElement {
     if (equipment) {
       filters.equipment = equipment;
     }
-    if (equipmentGroup !== 'all') {
-      filters.equipmentGroup = equipmentGroup;
-    }
-    if (muscle) {
-      filters.muscle = muscle;
-    }
     return filters;
-  }, [category, equipment, equipmentGroup, muscle, search]);
+  }, [category, debouncedSearch, equipment]);
 
   const loadExercises = useCallback(async (): Promise<void> => {
     if (!accessToken) {
@@ -101,22 +108,6 @@ export default function ExercisesPage(): React.ReactElement {
   function clearFilters(): void {
     setCategory('');
     setEquipment('');
-    setEquipmentGroup('all');
-    setMuscle('');
-  }
-
-  function handleEquipmentGroupChange(group: EquipmentGroup | 'all'): void {
-    setEquipmentGroup(group);
-    if (group !== 'all') {
-      setEquipment('');
-    }
-  }
-
-  function handleEquipmentChange(value: string): void {
-    setEquipment(value);
-    if (value) {
-      setEquipmentGroup('all');
-    }
   }
 
   function labelCategory(value: string): string {
@@ -134,6 +125,18 @@ export default function ExercisesPage(): React.ReactElement {
     return value.replace(/_/g, ' ');
   }
 
+  function closeForm(): void {
+    setShowForm(false);
+    setForm({
+      names: { en: '', it: '' },
+      category: 'custom',
+      primaryMuscles: ['chest'],
+      secondaryMuscles: [],
+      equipment: 'other',
+      isBodyweight: false,
+    });
+  }
+
   async function handleCreate(): Promise<void> {
     if (!accessToken || form.names.en.trim().length === 0 || form.primaryMuscles.length === 0) {
       return;
@@ -147,17 +150,10 @@ export default function ExercisesPage(): React.ReactElement {
           en: form.names.en.trim(),
           ...(form.names.it?.trim() ? { it: form.names.it.trim() } : {}),
         },
+        isBodyweight: form.equipment === 'bodyweight',
       };
       await createCustomExercise(accessToken, payload);
-      setShowForm(false);
-      setForm({
-        names: { en: '', it: '' },
-        category: 'custom',
-        primaryMuscles: ['chest'],
-        secondaryMuscles: [],
-        equipment: 'other',
-        isBodyweight: false,
-      });
+      closeForm();
       await loadExercises();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('createError'));
@@ -165,61 +161,64 @@ export default function ExercisesPage(): React.ReactElement {
     }
   }
 
+  const headerActions = (
+    <button
+      aria-label={t('addCustom')}
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-gym-separator bg-gym-surface text-xl leading-none text-primary shadow-sm transition-transform active:scale-95"
+      type="button"
+      onClick={() => {
+        setShowForm(true);
+      }}
+    >
+      +
+    </button>
+  );
+
+  const searchField = isDesktop ? (
+    <Input
+      className="max-w-md"
+      enterKeyHint="search"
+      inputMode="search"
+      placeholder={t('searchPlaceholder')}
+      type="search"
+      value={search}
+      onChange={(e) => {
+        setSearch(e.target.value);
+      }}
+    />
+  ) : (
+    <GymSearchField
+      placeholder={t('searchPlaceholder')}
+      value={search}
+      onChange={setSearch}
+    />
+  );
+
+  const exerciseListMobile = (
+    <GymListGroup>
+      {items.map((exercise) => (
+        <GymListRow
+          key={exercise.id}
+          meta={exercise.isCustom ? t('customBadge') : undefined}
+          subtitle={`${labelCategory(exercise.category)} · ${labelEquipment(exercise.equipment)}`}
+          title={exerciseDisplayName(exercise, locale)}
+        />
+      ))}
+    </GymListGroup>
+  );
+
   return (
     <RequireAuth>
-      <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-4 p-6">
-        <div>
-          <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
-        </div>
-
-        <div className="flex gap-2">
-          <input
-            className="min-h-11 flex-1 rounded-md border px-3 text-sm"
-            placeholder={t('searchPlaceholder')}
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-            }}
-          />
-          <Button
-            className="min-h-11"
-            type="button"
-            variant="outline"
-            onClick={() => void loadExercises()}
-          >
-            {t('search')}
-          </Button>
-        </div>
-
-        <MuscleGroupFilter
-          value={muscle}
-          onChange={(nextMuscle) => {
-            setMuscle(nextMuscle);
-          }}
-        />
+      <AdaptivePageShell
+        backHref={isDesktop ? undefined : `/${locale}/dashboard`}
+        backLabel={t('backToDashboard')}
+        title={t('title')}
+        variant="wide"
+        actions={headerActions}
+      >
+        {searchField}
 
         <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap gap-2">
-            {EQUIPMENT_GROUP_CHIPS.map((chip) => {
-              const active = equipmentGroup === chip.id;
-              return (
-                <Button
-                  key={chip.id}
-                  className="min-h-9"
-                  size="sm"
-                  type="button"
-                  variant={active ? 'default' : 'outline'}
-                  onClick={() => {
-                    handleEquipmentGroupChange(chip.id);
-                  }}
-                >
-                  {t(chip.labelKey as 'filterAll')}
-                </Button>
-              );
-            })}
-          </div>
-
           <div className="grid grid-cols-2 gap-2">
             <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               {t('filterCategory')}
@@ -244,7 +243,7 @@ export default function ExercisesPage(): React.ReactElement {
                 className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
                 value={equipment}
                 onChange={(e) => {
-                  handleEquipmentChange(e.target.value);
+                  setEquipment(e.target.value);
                 }}
               >
                 <option value="">{t('filterAll')}</option>
@@ -257,7 +256,7 @@ export default function ExercisesPage(): React.ReactElement {
             </label>
           </div>
 
-          {hasActiveFilters && (
+          {hasActiveFilters ? (
             <Button
               className="min-h-9 self-start"
               size="sm"
@@ -267,112 +266,120 @@ export default function ExercisesPage(): React.ReactElement {
             >
               {t('clearFilters')}
             </Button>
-          )}
+          ) : null}
         </div>
 
-        <Button
-          className="min-h-11"
-          type="button"
-          variant="outline"
-          onClick={() => {
-            setShowForm((value) => !value);
-          }}
-        >
-          {showForm ? t('hideCustomForm') : t('addCustom')}
-        </Button>
+        {showForm ? (
+          <AnimatedDialog
+            ariaLabelledby="create-custom-exercise-title"
+            className="max-w-md rounded-2xl p-0"
+            overlayClassName="z-[60] flex items-center justify-center p-4"
+            onOverlayClick={closeForm}
+          >
+            <div className="flex flex-col gap-3 p-6">
+              <h2 id="create-custom-exercise-title" className="text-lg font-semibold">
+                {t('addCustom')}
+              </h2>
+              <label className="flex flex-col gap-1 text-sm">
+                {t('nameEn')}
+                <Input
+                  value={form.names.en}
+                  onChange={(e) => {
+                    setForm((prev) => ({ ...prev, names: { ...prev.names, en: e.target.value } }));
+                  }}
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                {t('nameIt')}
+                <Input
+                  value={form.names.it ?? ''}
+                  onChange={(e) => {
+                    setForm((prev) => ({ ...prev, names: { ...prev.names, it: e.target.value } }));
+                  }}
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                {t('primaryMuscle')}
+                <select
+                  className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
+                  value={form.primaryMuscles[0] ?? 'chest'}
+                  onChange={(e) => {
+                    const nextMuscle = e.target.value as MuscleGroup;
+                    setForm((prev) => ({ ...prev, primaryMuscles: [nextMuscle] }));
+                  }}
+                >
+                  {MUSCLE_GROUPS.map((value) => (
+                    <option key={value} value={value}>
+                      {tMuscle(value)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                {t('equipmentField')}
+                <select
+                  className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
+                  value={form.equipment}
+                  onChange={(e) => {
+                    setForm((prev) => ({ ...prev, equipment: e.target.value }));
+                  }}
+                >
+                  {EQUIPMENT_TYPES.map((value) => (
+                    <option key={value} value={value}>
+                      {labelEquipment(value)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="mt-1 flex gap-2">
+                <Button className="flex-1" type="button" variant="outline" onClick={closeForm}>
+                  {t('cancelCustom')}
+                </Button>
+                <Button
+                  className="flex-1"
+                  disabled={loading || form.names.en.trim().length === 0}
+                  type="button"
+                  onClick={() => {
+                    void handleCreate();
+                  }}
+                >
+                  {t('saveCustom')}
+                </Button>
+              </div>
+            </div>
+          </AnimatedDialog>
+        ) : null}
 
-        {showForm && (
-          <div className="flex flex-col gap-3 rounded-lg border p-4">
-            <label className="flex flex-col gap-1 text-sm">
-              {t('nameEn')}
-              <input
-                className="rounded-md border px-3 py-2"
-                value={form.names.en}
-                onChange={(e) => {
-                  setForm((prev) => ({ ...prev, names: { ...prev.names, en: e.target.value } }));
-                }}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              {t('nameIt')}
-              <input
-                className="rounded-md border px-3 py-2"
-                value={form.names.it ?? ''}
-                onChange={(e) => {
-                  setForm((prev) => ({ ...prev, names: { ...prev.names, it: e.target.value } }));
-                }}
-              />
-            </label>
-            <MuscleTagPicker
-              value={form.primaryMuscles}
-              onChange={(tags) => {
-                setForm((prev) => ({ ...prev, primaryMuscles: tags }));
-              }}
-            />
-            <label className="flex flex-col gap-1 text-sm">
-              {t('equipmentField')}
-              <select
-                className="rounded-md border px-3 py-2"
-                value={form.equipment}
-                onChange={(e) => {
-                  const nextEquipment = e.target.value;
-                  setForm((prev) => ({
-                    ...prev,
-                    equipment: nextEquipment,
-                    isBodyweight: nextEquipment === 'bodyweight',
-                  }));
-                }}
-              >
-                {EQUIPMENT_TYPES.map((value) => (
-                  <option key={value} value={value}>
-                    {labelEquipment(value)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                checked={form.isBodyweight}
-                type="checkbox"
-                onChange={(e) => {
-                  setForm((prev) => ({ ...prev, isBodyweight: e.target.checked }));
-                }}
-              />
-              {t('bodyweight')}
-            </label>
-            <Button
-              className="min-h-11"
-              disabled={loading}
-              type="button"
-              onClick={() => void handleCreate()}
-            >
-              {t('saveCustom')}
-            </Button>
-          </div>
-        )}
-
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-muted-foreground">{t('loading')}</p>
+          <CardGridSkeleton count={isDesktop ? 9 : 4} columns="3" />
         ) : items.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('empty')}</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
+        ) : isDesktop ? (
+          <StaggerGroup className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {items.map((exercise) => (
-              <li key={exercise.id} className="rounded-lg border p-3">
-                <p className="font-medium">{exerciseDisplayName(exercise, locale)}</p>
-                <p className="text-xs text-muted-foreground">
-                  {labelCategory(exercise.category)}
-                  {exercise.isCustom ? ` · ${t('customBadge')}` : ''}
-                  {' · '}
-                  {labelEquipment(exercise.equipment)}
-                </p>
-              </li>
+              <StaggerItem key={exercise.id}>
+                <Card className="h-full">
+                  <CardContent className="p-4">
+                    <p className="font-medium">{exerciseDisplayName(exercise, locale)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {labelCategory(exercise.category)}
+                      {exercise.isCustom ? ` · ${t('customBadge')}` : ''}
+                      {' · '}
+                      {labelEquipment(exercise.equipment)}
+                    </p>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
             ))}
-          </ul>
+          </StaggerGroup>
+        ) : (
+          <StaggerGroup compact>
+            <StaggerItem>{exerciseListMobile}</StaggerItem>
+          </StaggerGroup>
         )}
-      </main>
+      </AdaptivePageShell>
     </RequireAuth>
   );
 }
