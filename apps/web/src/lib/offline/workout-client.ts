@@ -162,7 +162,7 @@ export async function getNextWorkoutPreviewClient(
     exerciseCount: cached.exerciseCount,
     programName: cached.programName,
     exercises: cached.exercises,
-    days: cached.days ?? [],
+    days: Array.isArray(cached.days) ? cached.days : [],
   };
 }
 

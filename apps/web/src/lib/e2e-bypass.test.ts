@@ -15,7 +15,9 @@ function createSessionStorage(): Storage {
     get length() {
       return store.size;
     },
-    clear: () => store.clear(),
+    clear: () => {
+      store.clear();
+    },
     getItem: (key: string) => store.get(key) ?? null,
     key: (index: number) => [...store.keys()][index] ?? null,
     removeItem: (key: string) => {
@@ -41,7 +43,7 @@ describe('allowInjectedE2eSession', () => {
     const sessionStorage = createSessionStorage();
     vi.stubGlobal('window', {
       location: { hostname: 'localhost', port: '3000' },
-    } as Window);
+    });
     vi.stubGlobal('sessionStorage', sessionStorage);
 
     expect(allowInjectedE2eSession()).toBe(false);
@@ -51,7 +53,7 @@ describe('allowInjectedE2eSession', () => {
     const sessionStorage = createSessionStorage();
     vi.stubGlobal('window', {
       location: { hostname: 'localhost', port: '3000' },
-    } as Window);
+    });
     vi.stubGlobal('sessionStorage', sessionStorage);
     sessionStorage.setItem(E2E_SESSION_STORAGE_KEY, '{}');
 
@@ -62,7 +64,7 @@ describe('allowInjectedE2eSession', () => {
     const sessionStorage = createSessionStorage();
     vi.stubGlobal('window', {
       location: { hostname: '127.0.0.1', port: '3010' },
-    } as Window);
+    });
     vi.stubGlobal('sessionStorage', sessionStorage);
 
     expect(isE2ePlaywrightHost()).toBe(true);
