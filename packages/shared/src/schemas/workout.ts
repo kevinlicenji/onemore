@@ -107,6 +107,13 @@ export const nextWorkoutDayExerciseSchema = z.object({
   }),
 });
 
+export const workoutDayOptionSchema = z.object({
+  workoutDayId: z.string().uuid(),
+  label: z.string(),
+  exerciseCount: z.number().int(),
+  exercises: z.array(nextWorkoutDayExerciseSchema),
+});
+
 export const nextWorkoutPreviewSchema = z.object({
   hasActiveAssignment: z.boolean(),
   programAssignmentId: z.string().uuid().nullable(),
@@ -115,6 +122,7 @@ export const nextWorkoutPreviewSchema = z.object({
   exerciseCount: z.number().int(),
   programName: z.string().nullable(),
   exercises: z.array(nextWorkoutDayExerciseSchema),
+  days: z.array(workoutDayOptionSchema),
 });
 
 export type PrescriptionSnapshot = z.infer<typeof prescriptionSnapshotSchema>;
@@ -122,4 +130,5 @@ export type StartWorkoutSessionInput = z.infer<typeof startWorkoutSessionSchema>
 export type UpsertSetLogInput = z.infer<typeof upsertSetLogSchema>;
 export type AddWorkoutExerciseInput = z.infer<typeof addWorkoutExerciseSchema>;
 export type WorkoutSessionDetail = z.infer<typeof workoutSessionDetailSchema>;
+export type WorkoutDayOption = z.infer<typeof workoutDayOptionSchema>;
 export type NextWorkoutPreview = z.infer<typeof nextWorkoutPreviewSchema>;

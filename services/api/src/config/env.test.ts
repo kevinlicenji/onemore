@@ -35,6 +35,22 @@ describe('loadEnv', () => {
     expect(() => loadEnv()).toThrow('Invalid environment configuration');
   });
 
+  it('treats empty optional URLs as unset', () => {
+    process.env = {
+      NODE_ENV: 'test',
+      API_PORT: '4000',
+      DATABASE_URL: 'postgresql://onemore:onemore_dev@localhost:55432/onemore',
+      JWT_PRIVATE_KEY_PATH: TEST_JWT_PRIVATE_KEY_PATH,
+      JWT_PUBLIC_KEY_PATH: TEST_JWT_PUBLIC_KEY_PATH,
+      SENTRY_DSN: '',
+      REDIS_URL: '',
+    };
+
+    const env = loadEnv();
+    expect(env.SENTRY_DSN).toBeUndefined();
+    expect(env.REDIS_URL).toBeUndefined();
+  });
+
   it('throws when JWT keys are missing', () => {
     process.env = {
       NODE_ENV: 'test',

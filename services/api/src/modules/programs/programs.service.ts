@@ -29,19 +29,27 @@ export class ProgramsService {
    * @param userId - Authenticated user id.
    */
   async listForUser(userId: string): Promise<ProgramSummary[]> {
-    const programs = await this.prisma.program.findMany({
-      where: { ownerUserId: userId, deletedAt: null, isTemplate: false },
-      orderBy: { updatedAt: 'desc' },
-      include: {
-        versions: {
-          orderBy: { versionNumber: 'desc' },
-          take: 1,
-          include: { workoutDays: true },
+    const [programs, activeAssignment] = await Promise.all([
+      this.prisma.program.findMany({
+        where: { ownerUserId: userId, deletedAt: null, isTemplate: false },
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          versions: {
+            orderBy: { versionNumber: 'desc' },
+            take: 1,
+            include: { workoutDays: true },
+          },
         },
-      },
-    });
+      }),
+      this.prisma.programAssignment.findFirst({
+        where: { clientUserId: userId, status: 'active' },
+        include: { programVersion: { select: { programId: true } } },
+      }),
+    ]);
 
-    return programs.map((program) => this.toSummary(program));
+    const activeProgramId = activeAssignment?.programVersion.programId ?? null;
+
+    return programs.map((program) => this.toSummary(program, program.id === activeProgramId));
   }
 
   /**
@@ -51,32 +59,39 @@ export class ProgramsService {
    * @param programId - Program id.
    */
   async getById(userId: string, programId: string): Promise<ProgramDetail> {
-    const program = await this.prisma.program.findFirst({
-      where: { id: programId, ownerUserId: userId, deletedAt: null },
-      include: {
-        versions: {
-          orderBy: { versionNumber: 'desc' },
-          take: 1,
-          include: {
-            workoutDays: {
-              orderBy: { sortOrder: 'asc' },
-              include: {
-                programExercises: {
-                  orderBy: { sortOrder: 'asc' },
-                  include: { exerciseLibrary: true },
+    const [program, activeAssignment] = await Promise.all([
+      this.prisma.program.findFirst({
+        where: { id: programId, ownerUserId: userId, deletedAt: null },
+        include: {
+          versions: {
+            orderBy: { versionNumber: 'desc' },
+            take: 1,
+            include: {
+              workoutDays: {
+                orderBy: { sortOrder: 'asc' },
+                include: {
+                  programExercises: {
+                    orderBy: { sortOrder: 'asc' },
+                    include: { exerciseLibrary: true },
+                  },
                 },
               },
             },
           },
         },
-      },
-    });
+      }),
+      this.prisma.programAssignment.findFirst({
+        where: { clientUserId: userId, status: 'active' },
+        include: { programVersion: { select: { programId: true } } },
+      }),
+    ]);
 
     if (!program) {
       throw new HttpError(404, 'Program not found', 'PROGRAM_NOT_FOUND');
     }
 
-    return this.toDetail(program);
+    const isActive = activeAssignment?.programVersion.programId === programId;
+    return this.toDetail(program, isActive);
   }
 
   /**
@@ -149,7 +164,205 @@ export class ProgramsService {
       data: { status: 'published', publishedAt: new Date() },
     });
 
+    const detail = await this.getById(userId, programId);
+    if (detail.versionId) {
+      await this.assignPublishedProgramAsActive(userId, detail.versionId);
+    }
+
+    return detail;
+  }
+
+  /**
+   * Replace program structure and publish a new version.
+   *
+   * @param userId - Owner user id.
+   * @param programId - Program id.
+   * @param input - Updated program structure.
+   */
+  async update(
+    userId: string,
+    programId: string,
+    input: CreateProgramInput,
+  ): Promise<ProgramDetail> {
+    await this.validateExerciseIds(
+      userId,
+      input.days.flatMap((day) => day.exercises.map((e) => e.exerciseLibraryId)),
+    );
+
+    const program = await this.prisma.program.findFirst({
+      where: { id: programId, ownerUserId: userId, deletedAt: null },
+      include: { versions: { orderBy: { versionNumber: 'desc' }, take: 1 } },
+    });
+
+    if (!program) {
+      throw new HttpError(404, 'Program not found', 'PROGRAM_NOT_FOUND');
+    }
+
+    const latestVersion = program.versions[0];
+    if (!latestVersion) {
+      throw new HttpError(409, 'Program has no versions', 'PROGRAM_NO_VERSION');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.program.update({
+        where: { id: programId },
+        data: { name: input.name, description: input.description },
+      });
+
+      let versionId = latestVersion.id;
+      if (latestVersion.status === 'published') {
+        const nextVersion = await tx.programVersion.create({
+          data: {
+            programId,
+            versionNumber: latestVersion.versionNumber + 1,
+            status: 'draft',
+            changeReason: 'manual',
+            previousVersionId: latestVersion.id,
+          },
+        });
+        versionId = nextVersion.id;
+      } else {
+        await tx.workoutDay.deleteMany({ where: { programVersionId: latestVersion.id } });
+      }
+
+      await this.createDaysAndExercises(tx, versionId, input.days);
+    });
+
+    return this.publish(userId, programId);
+  }
+
+  /**
+   * Soft-delete a program and pause its active assignment.
+   *
+   * @param userId - Owner user id.
+   * @param programId - Program id.
+   */
+  async delete(userId: string, programId: string): Promise<void> {
+    const program = await this.prisma.program.findFirst({
+      where: { id: programId, ownerUserId: userId, deletedAt: null },
+      include: { versions: { select: { id: true } } },
+    });
+
+    if (!program) {
+      throw new HttpError(404, 'Program not found', 'PROGRAM_NOT_FOUND');
+    }
+
+    const versionIds = program.versions.map((version) => version.id);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.program.update({
+        where: { id: programId },
+        data: { deletedAt: new Date() },
+      });
+
+      if (versionIds.length > 0) {
+        await tx.programAssignment.updateMany({
+          where: {
+            clientUserId: userId,
+            programVersionId: { in: versionIds },
+            status: 'active',
+          },
+          data: { status: 'paused' },
+        });
+      }
+    });
+  }
+
+  /**
+   * Set a published program as the user's only active assignment.
+   *
+   * @param userId - Owner user id.
+   * @param programId - Program id.
+   */
+  async activate(userId: string, programId: string): Promise<ProgramDetail> {
+    const program = await this.prisma.program.findFirst({
+      where: { id: programId, ownerUserId: userId, deletedAt: null },
+      include: {
+        versions: {
+          where: { status: 'published' },
+          orderBy: { versionNumber: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    const publishedVersion = program?.versions[0];
+    if (!program || !publishedVersion) {
+      throw new HttpError(404, 'Published program not found', 'PROGRAM_NOT_PUBLISHED');
+    }
+
+    await this.assignPublishedProgramAsActive(userId, publishedVersion.id);
     return this.getById(userId, programId);
+  }
+
+  private async assignPublishedProgramAsActive(
+    userId: string,
+    programVersionId: string,
+  ): Promise<void> {
+    const firstDay = await this.prisma.workoutDay.findFirst({
+      where: { programVersionId },
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.programAssignment.updateMany({
+        where: { clientUserId: userId, status: 'active' },
+        data: { status: 'paused' },
+      });
+
+      await tx.programAssignment.create({
+        data: {
+          programVersionId,
+          clientUserId: userId,
+          status: 'active',
+          startedAt: new Date(),
+          nextWorkoutDayId: firstDay?.id,
+        },
+      });
+    });
+  }
+
+  /**
+   * Get a published template with full day/exercise detail.
+   *
+   * @param templateSlug - Template key stored in program.name.
+   */
+  async getTemplateBySlug(templateSlug: string): Promise<ProgramDetail> {
+    const template = await this.prisma.program.findFirst({
+      where: { name: templateSlug, isTemplate: true, deletedAt: null },
+      include: {
+        versions: {
+          where: { status: 'published' },
+          orderBy: { versionNumber: 'desc' },
+          take: 1,
+          include: {
+            workoutDays: {
+              orderBy: { sortOrder: 'asc' },
+              include: {
+                programExercises: {
+                  orderBy: { sortOrder: 'asc' },
+                  include: { exerciseLibrary: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const published = template?.versions[0];
+    if (!template || !published) {
+      throw new HttpError(404, 'Template not found', 'TEMPLATE_NOT_FOUND');
+    }
+
+    const meta = this.parseTemplateMeta(template.description);
+    const detail = this.toDetail(template, false);
+    return {
+      ...detail,
+      name: meta.displayName?.en ?? template.name,
+      description: meta.displayName?.it ?? template.description,
+      isActive: false,
+    };
   }
 
   /**
@@ -270,24 +483,11 @@ export class ProgramsService {
         }
       }
 
-      const firstDayId = sourceVersion.workoutDays[0]
-        ? dayIdMap.get(sourceVersion.workoutDays[0].id)
-        : undefined;
-
-      await tx.programAssignment.create({
-        data: {
-          programVersionId: version.id,
-          clientUserId: userId,
-          status: 'active',
-          startedAt: new Date(),
-          nextWorkoutDayId: firstDayId,
-        },
-      });
-
-      return userProgram.id;
+      return { programId: userProgram.id, versionId: version.id };
     });
 
-    return this.getById(userId, programId);
+    await this.assignPublishedProgramAsActive(userId, programId.versionId);
+    return this.getById(userId, programId.programId);
   }
 
   private async validateExerciseIds(userId: string, exerciseIds: string[]): Promise<void> {
@@ -347,21 +547,24 @@ export class ProgramsService {
     }
   }
 
-  private toSummary(program: {
-    id: string;
-    name: string;
-    description: string | null;
-    objective: string | null;
-    isTemplate: boolean;
-    authorType: string;
-    createdAt: Date;
-    updatedAt: Date;
-    versions: Array<{
-      status: string;
-      versionNumber: number;
-      workoutDays: Array<{ id: string }>;
-    }>;
-  }): ProgramSummary {
+  private toSummary(
+    program: {
+      id: string;
+      name: string;
+      description: string | null;
+      objective: string | null;
+      isTemplate: boolean;
+      authorType: string;
+      createdAt: Date;
+      updatedAt: Date;
+      versions: Array<{
+        status: string;
+        versionNumber: number;
+        workoutDays: Array<{ id: string }>;
+      }>;
+    },
+    isActive = false,
+  ): ProgramSummary {
     const latest = program.versions[0];
     return {
       id: program.id,
@@ -373,48 +576,52 @@ export class ProgramsService {
       latestVersionStatus: latest ? (latest.status as ProgramSummary['latestVersionStatus']) : null,
       latestVersionNumber: latest?.versionNumber ?? null,
       daysCount: latest?.workoutDays.length ?? 0,
+      isActive,
       createdAt: program.createdAt.toISOString(),
       updatedAt: program.updatedAt.toISOString(),
     };
   }
 
-  private toDetail(program: {
-    id: string;
-    name: string;
-    description: string | null;
-    objective: string | null;
-    isTemplate: boolean;
-    authorType: string;
-    createdAt: Date;
-    updatedAt: Date;
-    versions: Array<{
+  private toDetail(
+    program: {
       id: string;
-      versionNumber: number;
-      status: string;
-      publishedAt: Date | null;
-      workoutDays: Array<{
+      name: string;
+      description: string | null;
+      objective: string | null;
+      isTemplate: boolean;
+      authorType: string;
+      createdAt: Date;
+      updatedAt: Date;
+      versions: Array<{
         id: string;
-        label: string;
-        sortOrder: number;
-        programExercises: Array<{
+        versionNumber: number;
+        status: string;
+        publishedAt: Date | null;
+        workoutDays: Array<{
           id: string;
-          exerciseLibraryId: string;
+          label: string;
           sortOrder: number;
-          targetSets: number;
-          targetReps: number;
-          restSeconds: number;
-          targetWeightKg: { toString(): string } | null;
-          coachNote: string | null;
-          exerciseLibrary: {
+          programExercises: Array<{
             id: string;
-            slug: string;
-            names: unknown;
-          };
+            exerciseLibraryId: string;
+            sortOrder: number;
+            targetSets: number;
+            targetReps: number;
+            restSeconds: number;
+            targetWeightKg: { toString(): string } | null;
+            coachNote: string | null;
+            exerciseLibrary: {
+              id: string;
+              slug: string;
+              names: unknown;
+            };
+          }>;
         }>;
       }>;
-    }>;
-  }): ProgramDetail {
-    const summary = this.toSummary(program);
+    },
+    isActive = false,
+  ): ProgramDetail {
+    const summary = this.toSummary(program, isActive);
     const version = program.versions[0];
 
     return {

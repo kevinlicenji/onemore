@@ -16,17 +16,6 @@ export function isE2ePlaywrightHost(): boolean {
 }
 
 /**
- * Local dev / CI browser tests (any port on loopback).
- */
-export function isLocalTestHost(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-  const { hostname } = window.location;
-  return hostname === '127.0.0.1' || hostname === 'localhost';
-}
-
-/**
  * Whether E2E session injection (storage + window hook) is allowed.
  */
 export function e2eBypassActive(): boolean {
@@ -39,9 +28,6 @@ export function e2eBypassActive(): boolean {
 export function allowInjectedE2eSession(): boolean {
   if (typeof window !== 'undefined') {
     if (sessionStorage.getItem(E2E_SESSION_STORAGE_KEY) !== null) {
-      return true;
-    }
-    if (isLocalTestHost()) {
       return true;
     }
   }

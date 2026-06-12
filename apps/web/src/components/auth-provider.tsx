@@ -150,6 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     }
 
     if (bypass) {
+      setIsLoading(false);
       return;
     }
 

@@ -26,6 +26,7 @@ export default function StartWorkoutPage(): React.ReactElement {
 
   const [preview, setPreview] = useState<NextWorkoutPreview | null>(null);
   const [activeSession, setActiveSession] = useState<WorkoutSessionDetail | null>(null);
+  const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { refreshPendingCount } = useSync();
@@ -41,6 +42,11 @@ export default function StartWorkoutPage(): React.ReactElement {
       .then(([nextWorkout, session]) => {
         setPreview(nextWorkout);
         setActiveSession(session);
+        const defaultDay =
+          nextWorkout.days.find((day) => day.workoutDayId === nextWorkout.workoutDayId) ??
+          nextWorkout.days[0] ??
+          null;
+        setSelectedDayId(defaultDay?.workoutDayId ?? null);
       })
       .catch(() => {
         setError(t('loadError'));
@@ -51,6 +57,10 @@ export default function StartWorkoutPage(): React.ReactElement {
     if (!accessToken) {
       return;
     }
+    if (sessionType === 'programmed' && !selectedDayId) {
+      setError(t('selectDayError'));
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -59,8 +69,7 @@ export default function StartWorkoutPage(): React.ReactElement {
         sessionType,
         programAssignmentId:
           sessionType === 'programmed' ? (preview?.programAssignmentId ?? undefined) : undefined,
-        workoutDayId:
-          sessionType === 'programmed' ? (preview?.workoutDayId ?? undefined) : undefined,
+        workoutDayId: sessionType === 'programmed' ? (selectedDayId ?? undefined) : undefined,
       });
       trackEvent('workout_started', {
         session_id: session.id,
@@ -93,24 +102,36 @@ export default function StartWorkoutPage(): React.ReactElement {
           </div>
         )}
 
-        {preview?.hasActiveAssignment && preview.workoutDayId && (
+        {preview?.hasActiveAssignment && preview.days.length > 0 && (
           <div className="rounded-lg border p-4">
             <p className="font-medium">{preview.programName}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t('nextDayMeta', {
-                label: preview.workoutDayLabel ?? '',
-                count: preview.exerciseCount,
-              })}
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{t('selectDayTitle')}</p>
+            <div className="mt-3 flex flex-col gap-2">
+              {preview.days.map((day) => (
+                <button
+                  key={day.workoutDayId}
+                  type="button"
+                  className={`rounded-lg border p-3 text-left ${selectedDayId === day.workoutDayId ? 'border-primary bg-primary/5' : ''}`}
+                  onClick={() => {
+                    setSelectedDayId(day.workoutDayId);
+                  }}
+                >
+                  <span className="font-medium">{day.label}</span>
+                  <p className="text-sm text-muted-foreground">
+                    {t('nextDayMeta', { label: day.label, count: day.exerciseCount })}
+                  </p>
+                </button>
+              ))}
+            </div>
             <Button
               className="mt-3 w-full"
-              disabled={loading}
+              disabled={loading || !selectedDayId}
               type="button"
               onClick={() => {
                 void handleStart('programmed');
               }}
             >
-              {t('startProgrammed')}
+              {t('startSelectedDay')}
             </Button>
           </div>
         )}

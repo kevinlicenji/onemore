@@ -27,6 +27,15 @@ export function createProgramsRouter(programsService: ProgramsService): Router {
     }),
   );
 
+  router.get(
+    '/templates/:slug',
+    asyncHandler(async (req, res) => {
+      const slug = requireRouteParam(req.params.slug, 'slug');
+      const template = await programsService.getTemplateBySlug(slug);
+      res.json(template);
+    }),
+  );
+
   router.post(
     '/templates/:slug/apply',
     asyncHandler(async (req, res) => {
@@ -72,6 +81,37 @@ export function createProgramsRouter(programsService: ProgramsService): Router {
       const authReq = req as AuthenticatedRequest;
       const programId = requireRouteParam(req.params.programId, 'programId');
       const program = await programsService.publish(authReq.userId ?? '', programId);
+      res.json(program);
+    }),
+  );
+
+  router.put(
+    '/:programId',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const programId = requireRouteParam(req.params.programId, 'programId');
+      const body = createProgramSchema.parse(req.body);
+      const program = await programsService.update(authReq.userId ?? '', programId, body);
+      res.json(program);
+    }),
+  );
+
+  router.delete(
+    '/:programId',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const programId = requireRouteParam(req.params.programId, 'programId');
+      await programsService.delete(authReq.userId ?? '', programId);
+      res.status(204).send();
+    }),
+  );
+
+  router.post(
+    '/:programId/activate',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const programId = requireRouteParam(req.params.programId, 'programId');
+      const program = await programsService.activate(authReq.userId ?? '', programId);
       res.json(program);
     }),
   );

@@ -166,17 +166,30 @@ export async function fetchProgramTemplates(accessToken: string): Promise<Templa
   return data.templates;
 }
 
-export async function applyProgramTemplate(
+export async function fetchProgramTemplateDetail(
   accessToken: string,
   slug: string,
 ): Promise<ProgramDetail> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/programs/templates/${slug}/apply`, {
-    method: 'POST',
-    headers: authHeaders(accessToken),
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs/templates/${slug}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
     credentials: 'include',
   });
   if (!response.ok) {
-    throw await parseApiError(response, 'Failed to apply template');
+    throw await parseApiError(response, 'Failed to load template');
+  }
+  return response.json() as Promise<ProgramDetail>;
+}
+
+export async function fetchProgramDetail(
+  accessToken: string,
+  programId: string,
+): Promise<ProgramDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs/${programId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load program');
   }
   return response.json() as Promise<ProgramDetail>;
 }
@@ -222,6 +235,49 @@ export async function fetchPrograms(accessToken: string): Promise<ProgramSummary
   }
   const data = (await response.json()) as { programs: ProgramSummary[] };
   return data.programs;
+}
+
+export async function updateProgram(
+  accessToken: string,
+  programId: string,
+  payload: CreateProgramInput,
+): Promise<ProgramDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs/${programId}`, {
+    method: 'PUT',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to update program');
+  }
+  return response.json() as Promise<ProgramDetail>;
+}
+
+export async function deleteProgram(accessToken: string, programId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs/${programId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to delete program');
+  }
+}
+
+export async function activateProgram(
+  accessToken: string,
+  programId: string,
+): Promise<ProgramDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/programs/${programId}/activate`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to activate program');
+  }
+  return response.json() as Promise<ProgramDetail>;
 }
 
 export async function fetchNextWorkoutPreview(accessToken: string): Promise<NextWorkoutPreview> {
