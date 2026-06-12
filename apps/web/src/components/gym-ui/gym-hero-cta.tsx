@@ -13,7 +13,12 @@ interface GymHeroCtaProps {
 /**
  * Prominent gradient card for the primary mobile action on a screen.
  */
-export function GymHeroCta({ title, description, action, className }: GymHeroCtaProps): ReactElement {
+export function GymHeroCta({
+  title,
+  description,
+  action,
+  className,
+}: GymHeroCtaProps): ReactElement {
   return (
     <div
       className={cn(

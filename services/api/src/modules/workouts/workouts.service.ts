@@ -614,10 +614,7 @@ export class WorkoutsService {
       throw new HttpError(409, 'Exercise is skipped', 'EXECUTION_SKIPPED');
     }
 
-    const maxSetNumber = execution.setLogs.reduce(
-      (max, set) => Math.max(max, set.setNumber),
-      0,
-    );
+    const maxSetNumber = execution.setLogs.reduce((max, set) => Math.max(max, set.setNumber), 0);
     if (maxSetNumber >= 30) {
       throw new HttpError(400, 'Maximum sets reached', 'MAX_SETS_REACHED');
     }

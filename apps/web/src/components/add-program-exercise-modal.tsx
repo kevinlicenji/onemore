@@ -81,21 +81,24 @@ export function AddProgramExerciseModal({
 
     const trimmed = search.trim();
     setIsSearching(true);
-    const handle = window.setTimeout(() => {
-      void fetchExercises(accessToken, {
-        ...(trimmed.length > 0 ? { q: trimmed } : {}),
-        limit: 50,
-      })
-        .then((items) => {
-          setResults(items);
+    const handle = window.setTimeout(
+      () => {
+        void fetchExercises(accessToken, {
+          ...(trimmed.length > 0 ? { q: trimmed } : {}),
+          limit: 50,
         })
-        .catch(() => {
-          setResults([]);
-        })
-        .finally(() => {
-          setIsSearching(false);
-        });
-    }, trimmed.length > 0 ? 250 : 0);
+          .then((items) => {
+            setResults(items);
+          })
+          .catch(() => {
+            setResults([]);
+          })
+          .finally(() => {
+            setIsSearching(false);
+          });
+      },
+      trimmed.length > 0 ? 250 : 0,
+    );
 
     return () => {
       window.clearTimeout(handle);
@@ -151,7 +154,6 @@ export function AddProgramExerciseModal({
       onClose={onClose}
     >
       <div className={isDesktop ? undefined : 'flex min-h-0 flex-1 flex-col gap-3'}>
-
         {searchInput}
 
         <ul

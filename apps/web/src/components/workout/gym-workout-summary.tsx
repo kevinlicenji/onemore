@@ -44,7 +44,8 @@ export function GymWorkoutSummary({
   const reducedMotion = useReducedMotion();
   const stats = computeWorkoutSessionStats(session);
   const durationSeconds =
-    session.durationSeconds ?? Math.max(0, Math.floor((Date.now() - Date.parse(session.startedAt)) / 1000));
+    session.durationSeconds ??
+    Math.max(0, Math.floor((Date.now() - Date.parse(session.startedAt)) / 1000));
 
   return (
     <div className="flex min-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col px-4 py-6">
@@ -64,10 +65,7 @@ export function GymWorkoutSummary({
 
       <div className="mt-8">
         <GymStatGrid>
-          <GymStatTile
-            label={labels.duration}
-            value={formatWorkoutDuration(durationSeconds)}
-          />
+          <GymStatTile label={labels.duration} value={formatWorkoutDuration(durationSeconds)} />
           <GymStatTile label={labels.sets} value={stats.completedSets} />
           <GymStatTile label={labels.volume} unit="kg" value={stats.totalVolumeKg} />
           <GymStatTile label={labels.prs} value={records.length} />
@@ -76,7 +74,9 @@ export function GymWorkoutSummary({
 
       {records.length > 0 ? (
         <div className="mt-6 flex flex-col gap-2">
-          <p className="text-sm font-semibold text-green-600 dark:text-green-400">{labels.prTitle}</p>
+          <p className="text-sm font-semibold text-green-600 dark:text-green-400">
+            {labels.prTitle}
+          </p>
           {records.map((record) => (
             <div
               key={record.id}

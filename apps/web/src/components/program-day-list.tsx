@@ -23,7 +23,11 @@ function exerciseName(names: { en: string; it?: string }, locale: string): strin
 /**
  * Read-only day-by-day program breakdown (exercises, sets, reps, rest).
  */
-export function ProgramDayList({ days, locale, className }: ProgramDayListProps): React.ReactElement {
+export function ProgramDayList({
+  days,
+  locale,
+  className,
+}: ProgramDayListProps): React.ReactElement {
   const t = useTranslations('Programs');
   const tMuscle = useTranslations('MuscleGroups');
 

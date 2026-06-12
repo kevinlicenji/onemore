@@ -14,7 +14,9 @@ interface GymActiveWorkoutBarProps {
 /**
  * Persistent thin bar above the tab bar when a workout is in progress.
  */
-export function GymActiveWorkoutBar({ route }: GymActiveWorkoutBarProps): React.ReactElement | null {
+export function GymActiveWorkoutBar({
+  route,
+}: GymActiveWorkoutBarProps): React.ReactElement | null {
   const t = useTranslations('Workouts');
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';

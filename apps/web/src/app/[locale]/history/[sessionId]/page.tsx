@@ -91,7 +91,6 @@ export default function HistoryDetailPage(): React.ReactElement {
         actions={isDesktop ? headerActions : undefined}
         variant="wide"
       >
-
         <StatGrid>
           <Card>
             <CardContent className="p-5">

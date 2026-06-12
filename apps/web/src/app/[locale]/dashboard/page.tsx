@@ -33,13 +33,21 @@ interface DashboardStatsProps {
   mobile?: boolean;
 }
 
-function DashboardStats({ dashboard, locale, mobile = false }: DashboardStatsProps): React.ReactElement {
+function DashboardStats({
+  dashboard,
+  locale,
+  mobile = false,
+}: DashboardStatsProps): React.ReactElement {
   const t = useTranslations('Dashboard');
 
   if (mobile) {
     return (
       <GymStatGrid>
-        <GymStatTile label={t('streakLabel')} unit={t('streakUnit')} value={dashboard.streakWeeks} />
+        <GymStatTile
+          label={t('streakLabel')}
+          unit={t('streakUnit')}
+          value={dashboard.streakWeeks}
+        />
         <GymStatTile label={t('weeklyVolumeLabel')} unit="kg" value={dashboard.weeklyVolumeKg} />
         <GymStatTile label={t('workoutsThisWeekLabel')} value={dashboard.workoutsThisWeek} />
         <GymStatTile
@@ -130,8 +138,7 @@ export default function DashboardPage(): React.ReactElement {
   }, [accessToken, profile?.onboardingCompletedAt, loadDashboard]);
 
   const hasActivity =
-    dashboard !== null &&
-    (dashboard.lastWorkout !== null || dashboard.streakWeeks > 0);
+    dashboard !== null && (dashboard.lastWorkout !== null || dashboard.streakWeeks > 0);
 
   const subtitle = hasActivity ? t('subtitle') : t('emptySubtitle');
 

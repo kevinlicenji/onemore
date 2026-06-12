@@ -25,11 +25,7 @@ export const REST_WHEEL_VALUES = buildNumericWheelValues(
   METRIC_REST_STEP,
 );
 
-export const SETS_WHEEL_VALUES = buildNumericWheelValues(
-  METRIC_SETS_MIN,
-  METRIC_SETS_MAX,
-  1,
-);
+export const SETS_WHEEL_VALUES = buildNumericWheelValues(METRIC_SETS_MIN, METRIC_SETS_MAX, 1);
 
 export const REPS_PRESCRIPTION_WHEEL_VALUES: number[] = [
   ...buildNumericWheelValues(METRIC_REPS_MIN, METRIC_REPS_MAX, 1),

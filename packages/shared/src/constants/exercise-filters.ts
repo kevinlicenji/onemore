@@ -1,7 +1,12 @@
 import type { EquipmentType } from './equipment-types.js';
 import type { ExerciseCategory } from './exercise-categories.js';
 
-export type ExerciseEquipmentGroup = 'machines' | 'bodyweight' | 'free_weights' | 'cables' | 'cardio';
+export type ExerciseEquipmentGroup =
+  | 'machines'
+  | 'bodyweight'
+  | 'free_weights'
+  | 'cables'
+  | 'cardio';
 
 /** Equipment slugs shown in the exercise library filter dropdown. */
 export const FILTER_EQUIPMENT_TYPES: EquipmentType[] = [

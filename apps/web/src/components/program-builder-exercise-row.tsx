@@ -86,11 +86,7 @@ export function ProgramBuilderExerciseRow({
     <li className="rounded-xl border p-3">
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-semibold">{exercise.name}</p>
-        <button
-          className="text-xs text-destructive"
-          type="button"
-          onClick={onRemove}
-        >
+        <button className="text-xs text-destructive" type="button" onClick={onRemove}>
           {labels.removeExercise}
         </button>
       </div>

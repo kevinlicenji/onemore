@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { generateClientUuid } from './generate-client-uuid';
 
-const UUID_V4_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 describe('generateClientUuid', () => {
   it('returns a valid v4 UUID string', () => {

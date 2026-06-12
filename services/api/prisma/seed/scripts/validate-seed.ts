@@ -39,12 +39,16 @@ function main(): void {
   const errors: string[] = [];
 
   if (exercises.length !== TARGET_EXERCISES) {
-    errors.push(`Expected ${String(TARGET_EXERCISES)} exercises, found ${String(exercises.length)}`);
+    errors.push(
+      `Expected ${String(TARGET_EXERCISES)} exercises, found ${String(exercises.length)}`,
+    );
   }
 
   const machineCount = exercises.filter((row) => isMachineEquipment(row.equipment)).length;
   if (machineCount < MIN_MACHINE) {
-    errors.push(`Expected at least ${String(MIN_MACHINE)} machine exercises, found ${String(machineCount)}`);
+    errors.push(
+      `Expected at least ${String(MIN_MACHINE)} machine exercises, found ${String(machineCount)}`,
+    );
   }
 
   const bodyweightCount = exercises.filter((row) => row.isBodyweight).length;

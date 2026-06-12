@@ -1,12 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import {
-  Dumbbell,
-  History,
-  Home,
-  LayoutList,
-  Play,
-  Settings,
-} from 'lucide-react';
+import { Dumbbell, History, Home, LayoutList, Play, Settings } from 'lucide-react';
 
 export interface NavItem {
   href: string;

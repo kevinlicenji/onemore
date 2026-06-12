@@ -19,10 +19,7 @@ export function FontPicker(): React.ReactElement {
       {FONT_OPTIONS.map((option, index) => {
         const selected = fontId === option.id;
         return (
-          <li
-            key={option.id}
-            className={cn(index > 0 && 'border-t border-gym-separator')}
-          >
+          <li key={option.id} className={cn(index > 0 && 'border-t border-gym-separator')}>
             <button
               aria-pressed={selected}
               className={cn(

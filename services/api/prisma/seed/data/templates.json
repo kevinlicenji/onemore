@@ -139,7 +139,13 @@
           { "slug": "burpee", "sets": 3, "reps": 8, "rest": 90 },
           { "slug": "jump-squat", "sets": 3, "reps": 12, "rest": 60 },
           { "slug": "mountain-climber", "sets": 3, "reps": 20, "rest": 60 },
-          { "slug": "side-plank", "sets": 3, "reps": 30, "rest": 60, "note": "30 seconds each side" }
+          {
+            "slug": "side-plank",
+            "sets": 3,
+            "reps": 30,
+            "rest": 60,
+            "note": "30 seconds each side"
+          }
         ]
       }
     ]
@@ -579,7 +585,13 @@
           { "slug": "romanian-deadlift", "sets": 4, "reps": 8, "rest": 90 },
           { "slug": "leg-curl", "sets": 3, "reps": 12, "rest": 60 },
           { "slug": "push-up", "sets": 3, "reps": 15, "rest": 60 },
-          { "slug": "stationary-bike", "sets": 1, "reps": 10, "rest": 60, "note": "10 min moderate" }
+          {
+            "slug": "stationary-bike",
+            "sets": 1,
+            "reps": 10,
+            "rest": 60,
+            "note": "10 min moderate"
+          }
         ]
       }
     ]

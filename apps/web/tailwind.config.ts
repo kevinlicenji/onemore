@@ -10,10 +10,19 @@ const config: Config = {
         sans: ['var(--font-sans-active, var(--font-plus-jakarta))', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        display: ['2.25rem', { lineHeight: '2.5rem', fontWeight: '700', letterSpacing: '-0.025em' }],
-        title: ['1.875rem', { lineHeight: '2.25rem', fontWeight: '700', letterSpacing: '-0.025em' }],
+        display: [
+          '2.25rem',
+          { lineHeight: '2.5rem', fontWeight: '700', letterSpacing: '-0.025em' },
+        ],
+        title: [
+          '1.875rem',
+          { lineHeight: '2.25rem', fontWeight: '700', letterSpacing: '-0.025em' },
+        ],
         heading: ['1.25rem', { lineHeight: '1.75rem', fontWeight: '600' }],
-        'mobile-large-title': ['var(--mobile-large-title)', { lineHeight: '2rem', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'mobile-large-title': [
+          'var(--mobile-large-title)',
+          { lineHeight: '2rem', fontWeight: '700', letterSpacing: '-0.02em' },
+        ],
         'mobile-footnote': ['0.8125rem', { lineHeight: '1.125rem' }],
       },
       colors: {

@@ -29,7 +29,11 @@ function scoreTemplate(
     score += 50;
   }
 
-  if (environment === 'gym' && levelToken === 'beginner' && template.equipmentProfile === 'machines') {
+  if (
+    environment === 'gym' &&
+    levelToken === 'beginner' &&
+    template.equipmentProfile === 'machines'
+  ) {
     score += 30;
   }
 

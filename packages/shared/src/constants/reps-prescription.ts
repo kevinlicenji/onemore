@@ -11,10 +11,7 @@ export function isFailureReps(targetReps: number): boolean {
 /**
  * Formats prescribed reps for UI labels.
  */
-export function formatTargetRepsLabel(
-  targetReps: number,
-  failureLabel: string,
-): string {
+export function formatTargetRepsLabel(targetReps: number, failureLabel: string): string {
   if (isFailureReps(targetReps)) {
     return failureLabel;
   }

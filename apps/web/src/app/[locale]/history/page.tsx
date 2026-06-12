@@ -255,10 +255,7 @@ export default function HistoryPage(): React.ReactElement {
           isDesktop ? (
             <p className="text-sm text-muted-foreground">{t('empty')}</p>
           ) : (
-            <GymEmptyState
-              icon={<History aria-hidden className="h-7 w-7" />}
-              title={t('empty')}
-            />
+            <GymEmptyState icon={<History aria-hidden className="h-7 w-7" />} title={t('empty')} />
           )
         ) : isDesktop ? (
           sessionListDesktop
@@ -284,7 +281,9 @@ export default function HistoryPage(): React.ReactElement {
 
         {cursor && !isDesktop ? (
           <div ref={infiniteScrollRef} aria-hidden className="h-1 w-full">
-            {loading ? <p className="py-4 text-center text-sm text-muted-foreground">{t('loading')}</p> : null}
+            {loading ? (
+              <p className="py-4 text-center text-sm text-muted-foreground">{t('loading')}</p>
+            ) : null}
           </div>
         ) : null}
       </AdaptivePageShell>

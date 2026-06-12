@@ -76,7 +76,11 @@ export function GymListRow({
         )}
       >
         <Link
-          className={cn(rowClassName, 'min-w-0 flex-1 active:bg-muted/50', active && 'bg-primary/6')}
+          className={cn(
+            rowClassName,
+            'min-w-0 flex-1 active:bg-muted/50',
+            active && 'bg-primary/6',
+          )}
           href={href}
         >
           {icon ? <span className="shrink-0 text-primary">{icon}</span> : null}
@@ -94,7 +98,12 @@ export function GymListRow({
     return (
       <li className={cn('border-b border-gym-separator last:border-b-0', className)}>
         <button
-          className={cn(rowClassName, 'active:bg-muted/50', active && 'bg-primary/6', disabled && 'opacity-60')}
+          className={cn(
+            rowClassName,
+            'active:bg-muted/50',
+            active && 'bg-primary/6',
+            disabled && 'opacity-60',
+          )}
           disabled={disabled}
           type="button"
           onClick={onClick}

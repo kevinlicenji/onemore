@@ -39,9 +39,7 @@ export function AppearanceModePicker(): React.ReactElement {
           aria-pressed={active === mode}
           className={cn(
             'min-h-10 rounded-lg text-sm font-medium transition-all active:scale-[0.98]',
-            active === mode
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground',
+            active === mode ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
           )}
           type="button"
           onClick={() => {

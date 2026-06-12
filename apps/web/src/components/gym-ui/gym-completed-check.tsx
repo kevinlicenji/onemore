@@ -27,9 +27,7 @@ export function GymCompletedCheck({ className }: GymCompletedCheckProps): ReactE
       )}
       initial={reducedMotion ? false : { scale: 0.4, opacity: 0 }}
       transition={
-        reducedMotion
-          ? undefined
-          : { type: 'spring', stiffness: 520, damping: 26, mass: 0.6 }
+        reducedMotion ? undefined : { type: 'spring', stiffness: 520, damping: 26, mass: 0.6 }
       }
     >
       <Check className="h-3.5 w-3.5" strokeWidth={3} />

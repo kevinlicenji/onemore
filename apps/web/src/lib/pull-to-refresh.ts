@@ -11,10 +11,7 @@ export const PULL_REFRESH_MAX = 96;
  * @param max - Cap for the resisted distance.
  * @returns Resisted pull distance shown in the UI.
  */
-export function calculatePullDistance(
-  rawDelta: number,
-  max: number = PULL_REFRESH_MAX,
-): number {
+export function calculatePullDistance(rawDelta: number, max: number = PULL_REFRESH_MAX): number {
   if (rawDelta <= 0) {
     return 0;
   }

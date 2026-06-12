@@ -7,7 +7,9 @@ type MuscleGroupTranslator = (key: MuscleGroup) => string;
  *
  * @param translate - next-intl translator for the MuscleGroups namespace.
  */
-export function buildMuscleGroupLabelMap(translate: MuscleGroupTranslator): Record<MuscleGroup, string> {
+export function buildMuscleGroupLabelMap(
+  translate: MuscleGroupTranslator,
+): Record<MuscleGroup, string> {
   return Object.fromEntries(MUSCLE_GROUPS.map((group) => [group, translate(group)])) as Record<
     MuscleGroup,
     string

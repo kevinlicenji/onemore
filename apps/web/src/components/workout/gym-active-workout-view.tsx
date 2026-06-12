@@ -11,10 +11,7 @@ import { RestTimer } from '@/components/rest-timer';
 import { useHorizontalSwipe } from '@/hooks/use-horizontal-swipe';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { getExerciseDisplayName } from '@/lib/exercise-display-name';
-import {
-  formatWorkoutDuration,
-  getWorkoutElapsedSeconds,
-} from '@/lib/format-workout-duration';
+import { formatWorkoutDuration, getWorkoutElapsedSeconds } from '@/lib/format-workout-duration';
 import { triggerHaptic } from '@/lib/haptic';
 import type { RestTimerContext, WorkoutExerciseDetail } from '@/lib/workout-exercise-set-state';
 
@@ -287,10 +284,7 @@ export function GymActiveWorkoutView({
                   <h1 className="mt-2 text-2xl font-bold leading-tight">
                     {getExerciseDisplayName(currentExercise.exercise, locale)}
                   </h1>
-                  <div
-                    aria-hidden
-                    className="mt-3 flex items-center justify-center gap-1.5"
-                  >
+                  <div aria-hidden className="mt-3 flex items-center justify-center gap-1.5">
                     {session.exercises.map((exercise, index) => (
                       <span
                         key={exercise.id}

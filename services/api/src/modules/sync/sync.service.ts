@@ -4,6 +4,7 @@ import type {
   SyncDeltaResponse,
   SyncMutation,
 } from '@onemore/shared';
+import { normalizeMuscleTags } from '@onemore/shared';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
@@ -147,7 +148,7 @@ export class SyncService {
         slug: exercise.slug,
         names: exercise.names as { en: string; it?: string },
         category: exercise.category,
-        primaryMuscles: exercise.primaryMuscles as string[],
+        primaryMuscles: normalizeMuscleTags(exercise.primaryMuscles as string[]),
         secondaryMuscles: exercise.secondaryMuscles as string[],
         equipment: exercise.equipment,
         isBodyweight: exercise.isBodyweight,

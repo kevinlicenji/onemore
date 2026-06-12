@@ -29,10 +29,7 @@ export type TemplateMeta = z.infer<typeof templateMetaSchema>;
  * @param text - Bilingual string object.
  * @param locale - Preferred locale code.
  */
-export function pickLocalizedText(
-  text: LocalizedText | undefined,
-  locale: string,
-): string | null {
+export function pickLocalizedText(text: LocalizedText | undefined, locale: string): string | null {
   if (!text) {
     return null;
   }

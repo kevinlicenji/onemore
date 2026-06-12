@@ -9,10 +9,6 @@ interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {}
  */
 export function Skeleton({ className, ...props }: SkeletonProps): ReactElement {
   return (
-    <div
-      className={cn('animate-pulse rounded-md bg-muted', className)}
-      aria-hidden
-      {...props}
-    />
+    <div className={cn('animate-pulse rounded-md bg-muted', className)} aria-hidden {...props} />
   );
 }

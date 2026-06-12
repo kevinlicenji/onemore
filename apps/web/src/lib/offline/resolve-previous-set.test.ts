@@ -196,7 +196,9 @@ describe('findPreviousSetInSessions', () => {
       }),
     ];
 
-    expect(findPreviousSetInSessions(sessions, exerciseId, { excludeSessionId: sessionId })).toBeNull();
+    expect(
+      findPreviousSetInSessions(sessions, exerciseId, { excludeSessionId: sessionId }),
+    ).toBeNull();
   });
 
   it('returns null when no completed sessions match', () => {

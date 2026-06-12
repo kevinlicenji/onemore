@@ -17,7 +17,9 @@ export interface AppearanceAttributes {
  * @param preferences - Selected color theme and font.
  * @returns Attribute map for `<html>`.
  */
-export function buildAppearanceAttributes(preferences: AppearanceAttributes): Record<string, string> {
+export function buildAppearanceAttributes(
+  preferences: AppearanceAttributes,
+): Record<string, string> {
   return {
     [APPEARANCE_COLOR_ATTR]: preferences.colorThemeId,
     [APPEARANCE_FONT_ATTR]: preferences.fontId,

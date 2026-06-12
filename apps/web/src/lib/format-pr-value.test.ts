@@ -3,9 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { formatPrValue } from './format-pr-value';
 
-function makeRecord(
-  overrides: Partial<PersonalRecordSummary> = {},
-): PersonalRecordSummary {
+function makeRecord(overrides: Partial<PersonalRecordSummary> = {}): PersonalRecordSummary {
   return {
     id: '00000000-0000-4000-8000-000000000001',
     exerciseLibraryId: '00000000-0000-4000-8000-000000000002',

@@ -6,11 +6,7 @@ import { writeFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  type EquipmentType,
-  type ExerciseCategory,
-  isMachineEquipment,
-} from '@onemore/shared';
+import { type EquipmentType, type ExerciseCategory, isMachineEquipment } from '@onemore/shared';
 
 const WGER_BASE = 'https://wger.de/api/v2';
 const TARGET_TOTAL = 160;
@@ -126,9 +122,11 @@ function mapWgerEquipment(
   if (joined.includes('barbell')) return { equipment: 'barbell', isBodyweight: false };
   if (joined.includes('dumbbell')) return { equipment: 'dumbbell', isBodyweight: false };
   if (joined.includes('kettlebell')) return { equipment: 'kettlebell', isBodyweight: false };
-  if (joined.includes('sz-bar') || joined.includes('ez')) return { equipment: 'ez_bar', isBodyweight: false };
+  if (joined.includes('sz-bar') || joined.includes('ez'))
+    return { equipment: 'ez_bar', isBodyweight: false };
   if (joined.includes('pull-up bar')) return { equipment: 'pull_up_bar', isBodyweight: true };
-  if (joined.includes('resistance band')) return { equipment: 'resistance_band', isBodyweight: false };
+  if (joined.includes('resistance band'))
+    return { equipment: 'resistance_band', isBodyweight: false };
   if (joined.includes('swiss ball')) return { equipment: 'medicine_ball', isBodyweight: false };
   if (joined.includes('bodyweight') || joined.includes('none')) {
     return { equipment: 'bodyweight', isBodyweight: true };
@@ -187,7 +185,8 @@ function toSeedRow(info: WgerExerciseInfo): ExerciseSeedRow | null {
     wgerId: info.id,
     names: { en, ...(it ? { it } : {}) },
     category,
-    primaryMuscles: primaryMuscles.length > 0 ? primaryMuscles : [category === 'cardio' ? 'full_body' : category],
+    primaryMuscles:
+      primaryMuscles.length > 0 ? primaryMuscles : [category === 'cardio' ? 'full_body' : category],
     secondaryMuscles,
     equipment,
     isBodyweight,
@@ -254,9 +253,7 @@ async function main(): Promise<void> {
 
   console.log('Fetching wger exercise catalog…');
   const wgerInfo = await fetchAllExerciseInfo();
-  const wgerRows = wgerInfo
-    .map(toSeedRow)
-    .filter((row): row is ExerciseSeedRow => row !== null);
+  const wgerRows = wgerInfo.map(toSeedRow).filter((row): row is ExerciseSeedRow => row !== null);
 
   const catalog = buildCatalog(manual, pinned, wgerRows);
   writeFileSync(join(dataDir, 'exercises.json'), `${JSON.stringify(catalog, null, 2)}\n`, 'utf8');

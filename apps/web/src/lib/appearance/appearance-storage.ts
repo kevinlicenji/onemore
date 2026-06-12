@@ -1,8 +1,4 @@
-import {
-  DEFAULT_COLOR_THEME_ID,
-  normalizeColorThemeId,
-  type ColorThemeId,
-} from './color-themes';
+import { DEFAULT_COLOR_THEME_ID, normalizeColorThemeId, type ColorThemeId } from './color-themes';
 import { DEFAULT_FONT_ID, normalizeFontId, type FontId } from './font-options';
 
 export const APPEARANCE_COLOR_THEME_KEY = 'onemore-appearance-color-theme';

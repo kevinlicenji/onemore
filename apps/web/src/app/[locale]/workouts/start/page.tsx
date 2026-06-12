@@ -173,9 +173,8 @@ export default function StartWorkoutPage(): React.ReactElement {
     ) : (
       <GymHeroCta
         description={t('resumeProgress', {
-          completed: activeSession.exercises.filter(
-            (exercise) => exercise.status === 'completed',
-          ).length,
+          completed: activeSession.exercises.filter((exercise) => exercise.status === 'completed')
+            .length,
           total: activeSession.exercises.length,
         })}
         title={`${t('resumeTitle')} · ${activeSession.workoutDayLabel ?? t('freeWorkoutTitle')}`}

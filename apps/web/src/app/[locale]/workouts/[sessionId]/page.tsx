@@ -18,14 +18,8 @@ import { RequireAuth } from '@/components/require-auth';
 import { useSync } from '@/components/sync-provider';
 import { GymActiveWorkoutView } from '@/components/workout/gym-active-workout-view';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
-import {
-  buildExerciseSetViewState,
-  isExtraSet,
-} from '@/lib/workout-exercise-set-state';
-import {
-  formatLoggedSetLine,
-  formatSetPrescriptionLine,
-} from '@/lib/workout-set-display';
+import { buildExerciseSetViewState, isExtraSet } from '@/lib/workout-exercise-set-state';
+import { formatLoggedSetLine, formatSetPrescriptionLine } from '@/lib/workout-set-display';
 import {
   abandonWorkoutSessionClient,
   addWorkoutExerciseClient,

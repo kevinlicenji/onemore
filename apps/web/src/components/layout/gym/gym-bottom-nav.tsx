@@ -55,9 +55,7 @@ export function GymBottomNav({ locale, route }: GymBottomNavProps): React.ReactE
                 href={item.href}
                 className={cn(
                   'flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-medium transition-all active:scale-95',
-                  active
-                    ? 'text-primary'
-                    : 'text-muted-foreground',
+                  active ? 'text-primary' : 'text-muted-foreground',
                 )}
                 onClick={handleNavTap}
               >

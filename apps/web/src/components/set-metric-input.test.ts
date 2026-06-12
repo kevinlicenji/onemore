@@ -3,11 +3,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * Parsing helper mirrored from SetMetricInput onChange behavior.
  */
-function parseMetricInput(
-  raw: string,
-  min: number,
-  max: number,
-): number | null {
+function parseMetricInput(raw: string, min: number, max: number): number | null {
   if (raw === '') {
     return null;
   }

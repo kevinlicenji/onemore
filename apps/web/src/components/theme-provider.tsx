@@ -12,7 +12,12 @@ interface ThemeProviderProps {
  */
 export function ThemeProvider({ children }: ThemeProviderProps): ReactElement {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
       {children}
     </NextThemesProvider>
   );

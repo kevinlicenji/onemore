@@ -39,7 +39,9 @@ export function LandingPageContent({
         <div className="flex flex-col gap-6 text-center lg:text-left">
           <div>
             <h1 className="text-4xl font-bold tracking-tight lg:text-display">{labels.title}</h1>
-            <p className="mt-3 text-lg text-muted-foreground lg:mt-4 lg:text-xl">{labels.tagline}</p>
+            <p className="mt-3 text-lg text-muted-foreground lg:mt-4 lg:text-xl">
+              {labels.tagline}
+            </p>
           </div>
 
           <ul className="space-y-3 text-left text-sm text-muted-foreground lg:text-base">
@@ -56,7 +58,9 @@ export function LandingPageContent({
           <Button asChild className="min-h-11 w-full lg:min-h-12" size="lg" variant="outline">
             <Link href={`/${locale}/login`}>{labels.login}</Link>
           </Button>
-          <p className="text-center text-xs text-muted-foreground lg:text-sm">{labels.freeForAthletes}</p>
+          <p className="text-center text-xs text-muted-foreground lg:text-sm">
+            {labels.freeForAthletes}
+          </p>
         </div>
       </div>
     </main>

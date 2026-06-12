@@ -60,8 +60,7 @@ export function formatPreviousSetLine(
   if (reps === null && weightKg === null) {
     return null;
   }
-  const repsPart =
-    reps !== null ? formatTargetRepsLabel(reps, failureLabel) : failureLabel;
+  const repsPart = reps !== null ? formatTargetRepsLabel(reps, failureLabel) : failureLabel;
   const weightPart = weightKg !== null ? `${weightKg} kg` : '—';
   return `${weightPart} × ${repsPart}`;
 }

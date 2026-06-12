@@ -45,11 +45,7 @@ export default function LoginPage(): React.ReactElement {
   }
 
   return (
-    <AdaptivePageShell
-      description={t('loginSubtitle')}
-      title={t('loginTitle')}
-      variant="centered"
-    >
+    <AdaptivePageShell description={t('loginSubtitle')} title={t('loginTitle')} variant="centered">
       <AuthPageContent
         footer={
           <GymMobileActions>

@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  buildGymMoreNavItems,
-  buildGymPrimaryNavItems,
-  isGymMoreRouteActive,
-} from './nav-items';
+import { buildGymMoreNavItems, buildGymPrimaryNavItems, isGymMoreRouteActive } from './nav-items';
 
 describe('gym navigation', () => {
   it('builds four primary tabs plus prominent workout', () => {

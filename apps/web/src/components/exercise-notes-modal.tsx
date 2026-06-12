@@ -51,7 +51,13 @@ export function ExerciseNotesModal({
         }}
       />
       <div className="flex gap-2">
-        <Button className="min-h-12 flex-1" disabled={saving} type="button" variant="outline" onClick={onClose}>
+        <Button
+          className="min-h-12 flex-1"
+          disabled={saving}
+          type="button"
+          variant="outline"
+          onClick={onClose}
+        >
           {cancelLabel}
         </Button>
         <Button

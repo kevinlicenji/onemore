@@ -1,10 +1,7 @@
 'use client';
 
 import type { CreateCustomExercise, ExerciseListItem } from '@onemore/shared';
-import {
-  FILTER_EQUIPMENT_TYPES,
-  FILTER_EXERCISE_CATEGORIES,
-} from '@onemore/shared';
+import { FILTER_EQUIPMENT_TYPES, FILTER_EXERCISE_CATEGORIES } from '@onemore/shared';
 import { Button, Card, CardContent, Input } from '@onemore/ui';
 import { Search } from 'lucide-react';
 import { useParams } from 'next/navigation';
@@ -223,11 +220,7 @@ export default function ExercisesPage(): React.ReactElement {
       }}
     />
   ) : (
-    <GymSearchField
-      placeholder={t('searchPlaceholder')}
-      value={search}
-      onChange={setSearch}
-    />
+    <GymSearchField placeholder={t('searchPlaceholder')} value={search} onChange={setSearch} />
   );
 
   const exerciseListMobile = (
@@ -363,7 +356,12 @@ export default function ExercisesPage(): React.ReactElement {
             <GymEmptyState
               action={
                 hasActiveFilters ? (
-                  <Button className="min-h-11 w-full" type="button" variant="outline" onClick={clearFilters}>
+                  <Button
+                    className="min-h-11 w-full"
+                    type="button"
+                    variant="outline"
+                    onClick={clearFilters}
+                  >
                     {t('clearFilters')}
                   </Button>
                 ) : (

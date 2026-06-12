@@ -162,9 +162,7 @@ export default function ProgramsPage(): React.ReactElement {
                 <Link href={`/${locale}/programs/${program.id}`} className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold">{program.name}</p>
-                    {program.isActive ? (
-                      <Badge variant="accent">{t('activeBadge')}</Badge>
-                    ) : null}
+                    {program.isActive ? <Badge variant="accent">{t('activeBadge')}</Badge> : null}
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {t('programListMeta', {
@@ -182,9 +180,7 @@ export default function ProgramsPage(): React.ReactElement {
                     setActive: t('setActive'),
                     delete: t('deleteProgram'),
                   }}
-                  showSetActive={
-                    !program.isActive && program.latestVersionStatus === 'published'
-                  }
+                  showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
                   onDelete={() => {
                     requestDelete(program.id);
                   }}

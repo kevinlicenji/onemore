@@ -30,11 +30,7 @@ export function GymPullToRefresh({
     enabled: !reducedMotion,
   });
 
-  const indicatorLabel = isRefreshing
-    ? refreshingLabel
-    : progress >= 1
-      ? releaseLabel
-      : '';
+  const indicatorLabel = isRefreshing ? refreshingLabel : progress >= 1 ? releaseLabel : '';
 
   return (
     <div className="relative">

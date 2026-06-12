@@ -9,9 +9,7 @@ import {
 
 describe('buildAppearanceAttributes', () => {
   it('maps preferences to html data attributes', () => {
-    expect(
-      buildAppearanceAttributes({ colorThemeId: 'arctic', fontId: 'outfit' }),
-    ).toEqual({
+    expect(buildAppearanceAttributes({ colorThemeId: 'arctic', fontId: 'outfit' })).toEqual({
       'data-color-theme': 'arctic',
       'data-font': 'outfit',
     });

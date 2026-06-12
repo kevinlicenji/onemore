@@ -120,7 +120,11 @@ export function ProgramBuilder({
 
   function removeExercise(exerciseIndex: number): void {
     setEditingExerciseIndex((current) =>
-      current === exerciseIndex ? null : current !== null && current > exerciseIndex ? current - 1 : current,
+      current === exerciseIndex
+        ? null
+        : current !== null && current > exerciseIndex
+          ? current - 1
+          : current,
     );
     setDays((prev) =>
       prev.map((day, index) =>
@@ -219,7 +223,9 @@ export function ProgramBuilder({
           }}
         />
         {currentDay && dayMuscleLabel(currentDay, tMuscle) && (
-          <span className="text-xs text-muted-foreground">{dayMuscleLabel(currentDay, tMuscle)}</span>
+          <span className="text-xs text-muted-foreground">
+            {dayMuscleLabel(currentDay, tMuscle)}
+          </span>
         )}
       </label>
 

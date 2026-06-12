@@ -3,11 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
-import {
-  clampWheelIndex,
-  scrollTopForIndex,
-  snapIndexFromScroll,
-} from '@/lib/scroll-wheel-snap';
+import { clampWheelIndex, scrollTopForIndex, snapIndexFromScroll } from '@/lib/scroll-wheel-snap';
 import { getWheelItemStyle } from '@/lib/wheel-picker-style';
 
 export const WHEEL_ITEM_HEIGHT = 44;
@@ -72,9 +68,12 @@ export function ScrollWheelPicker<T extends string | number>({
       if (next && next.value !== value) {
         onChange(next.value);
       }
-      window.setTimeout(() => {
-        isSnappingRef.current = false;
-      }, behavior === 'smooth' ? 320 : 0);
+      window.setTimeout(
+        () => {
+          isSnappingRef.current = false;
+        },
+        behavior === 'smooth' ? 320 : 0,
+      );
     },
     [onChange, options, value],
   );

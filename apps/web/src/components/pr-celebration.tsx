@@ -56,11 +56,7 @@ export function PrCelebration({
 
         <div className="relative flex flex-1 flex-col justify-center px-6 py-8">
           <motion.div
-            animate={
-              reducedMotion
-                ? { scale: 1, opacity: 1 }
-                : { scale: [1, 1.08, 1], opacity: 1 }
-            }
+            animate={reducedMotion ? { scale: 1, opacity: 1 } : { scale: [1, 1.08, 1], opacity: 1 }}
             className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/15 text-green-600 ring-2 ring-green-500/25 dark:text-green-400"
             initial={reducedMotion ? undefined : { scale: 0.6, opacity: 0 }}
             transition={
@@ -99,7 +95,15 @@ export function PrCelebration({
               <StaggerItem key={record.id}>
                 <motion.div
                   animate={
-                    reducedMotion ? undefined : { boxShadow: ['0 0 0 0 hsl(142 60% 45% / 0)', '0 0 0 6px hsl(142 60% 45% / 0.12)', '0 0 0 0 hsl(142 60% 45% / 0)'] }
+                    reducedMotion
+                      ? undefined
+                      : {
+                          boxShadow: [
+                            '0 0 0 0 hsl(142 60% 45% / 0)',
+                            '0 0 0 6px hsl(142 60% 45% / 0.12)',
+                            '0 0 0 0 hsl(142 60% 45% / 0)',
+                          ],
+                        }
                   }
                   className="rounded-2xl border-2 border-green-500/30 bg-card p-4 shadow-sm"
                   transition={

@@ -5,9 +5,7 @@ import { formatProgramExerciseSummary } from './program-exercise-display';
 
 describe('formatProgramExerciseSummary', () => {
   it('formats sets, reps, weight and rest', () => {
-    expect(formatProgramExerciseSummary(3, 8, 25, 90, 'Cedimento')).toBe(
-      "3 x 8 x 25 kg (90')",
-    );
+    expect(formatProgramExerciseSummary(3, 8, 25, 90, 'Cedimento')).toBe("3 x 8 x 25 kg (90')");
   });
 
   it('formats failure reps', () => {

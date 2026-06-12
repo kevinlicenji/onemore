@@ -84,9 +84,7 @@ export function RestTimer({
   }, [remaining]);
 
   function handleNextSet(): void {
-    onNextSetRef.current(
-      getElapsedRestSeconds(startedAtRef.current, plannedSecondsRef.current),
-    );
+    onNextSetRef.current(getElapsedRestSeconds(startedAtRef.current, plannedSecondsRef.current));
   }
 
   if (variant === 'gym') {
