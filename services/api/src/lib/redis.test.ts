@@ -1,11 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const { redisCtor } = vi.hoisted(() => ({
-  redisCtor: vi.fn(function RedisMock(
-    this: { status: string },
-    _url: string,
-    _options: unknown,
-  ) {
+  redisCtor: vi.fn(function RedisMock(this: { status: string }, _url: string, _options: unknown) {
     this.status = 'wait';
   }),
 }));

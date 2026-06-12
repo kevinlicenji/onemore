@@ -8,10 +8,7 @@ interface ProgramDayListProps {
   locale: string;
 }
 
-function exerciseName(
-  names: { en: string; it?: string },
-  locale: string,
-): string {
+function exerciseName(names: { en: string; it?: string }, locale: string): string {
   if (locale === 'it' && names.it) {
     return names.it;
   }
@@ -38,8 +35,7 @@ export function ProgramDayList({ days, locale }: ProgramDayListProps): React.Rea
                     sets: row.targetSets,
                     reps: row.targetReps,
                     rest: row.restSeconds,
-                    weight:
-                      row.targetWeightKg !== null ? `${String(row.targetWeightKg)} kg` : '—',
+                    weight: row.targetWeightKg !== null ? `${String(row.targetWeightKg)} kg` : '—',
                   })}
                 </p>
                 {row.coachNote && (

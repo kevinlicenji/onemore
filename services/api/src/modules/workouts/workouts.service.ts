@@ -81,8 +81,7 @@ export class WorkoutsService {
     });
 
     const suggestedDay = this.resolveWorkoutDay(assignment);
-    const suggested =
-      days.find((day) => day.workoutDayId === suggestedDay?.id) ?? days[0] ?? null;
+    const suggested = days.find((day) => day.workoutDayId === suggestedDay?.id) ?? days[0] ?? null;
 
     return {
       hasActiveAssignment: true,

@@ -49,9 +49,7 @@ export class ProgramsService {
 
     const activeProgramId = activeAssignment?.programVersion.programId ?? null;
 
-    return programs.map((program) =>
-      this.toSummary(program, program.id === activeProgramId),
-    );
+    return programs.map((program) => this.toSummary(program, program.id === activeProgramId));
   }
 
   /**
@@ -181,7 +179,11 @@ export class ProgramsService {
    * @param programId - Program id.
    * @param input - Updated program structure.
    */
-  async update(userId: string, programId: string, input: CreateProgramInput): Promise<ProgramDetail> {
+  async update(
+    userId: string,
+    programId: string,
+    input: CreateProgramInput,
+  ): Promise<ProgramDetail> {
     await this.validateExerciseIds(
       userId,
       input.days.flatMap((day) => day.exercises.map((e) => e.exerciseLibraryId)),

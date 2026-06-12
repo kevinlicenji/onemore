@@ -41,9 +41,7 @@ function buildLocalProgrammedSession(
   const startedAt = new Date().toISOString();
   const selectedDayId = input.workoutDayId ?? preview.workoutDayId;
   const selectedDay =
-    preview.days.find((day) => day.workoutDayId === selectedDayId) ??
-    preview.days[0] ??
-    null;
+    preview.days.find((day) => day.workoutDayId === selectedDayId) ?? preview.days[0] ?? null;
   const dayExercises = selectedDay?.exercises ?? preview.exercises;
 
   return {

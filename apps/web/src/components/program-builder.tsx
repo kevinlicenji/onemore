@@ -248,7 +248,10 @@ export function ProgramBuilder({
       {(currentDay?.exercises.length ?? 0) > 0 && (
         <ul className="flex flex-col gap-3">
           {currentDay?.exercises.map((row, exerciseIndex) => (
-            <li key={`${row.exerciseLibraryId}-${String(exerciseIndex)}`} className="rounded border p-3">
+            <li
+              key={`${row.exerciseLibraryId}-${String(exerciseIndex)}`}
+              className="rounded border p-3"
+            >
               <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-medium">{row.name}</p>
                 <button

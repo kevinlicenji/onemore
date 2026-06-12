@@ -341,122 +341,126 @@ export default function ActiveWorkoutPage(): React.ReactElement {
               const previousReps = currentExercise.previousSet?.reps;
 
               return (
-              <div
-                key={set.id}
-                className={`rounded-lg border p-3 ${set.isCompleted ? 'bg-muted/50' : ''}`}
-              >
-                <p className="text-sm font-medium">{t('setLabel', { number: set.setNumber })}</p>
-                {session.sessionType === 'programmed' ? (
-                  <div className="mt-3 grid grid-cols-2 gap-3">
-                    <div className="rounded-md bg-muted/30 p-2">
-                      <p className="text-xs font-medium text-muted-foreground">{t('prescribedLabel')}</p>
-                      <p className="mt-1 text-sm font-medium">
-                        {currentExercise.prescription.targetReps} {t('reps')}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{prescribedWeight}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">{t('actualLabel')}</p>
-                      <div className="mt-1 flex flex-col gap-2">
-                        <label className="flex flex-col gap-1 text-xs">
-                          {t('weightKg')}
-                          <input
-                            className="rounded border px-2 py-1"
-                            disabled={set.isCompleted || set.isSkipped}
-                            inputMode="decimal"
-                            placeholder={
-                              previousWeight !== null && previousWeight !== undefined
-                                ? String(previousWeight)
-                                : prescribedWeight
-                            }
-                            type="number"
-                            value={set.weightKg ?? ''}
-                            onChange={(e) => {
-                              const value = e.target.value === '' ? null : Number(e.target.value);
-                              updateSetValue(set.id, 'weightKg', value);
-                            }}
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1 text-xs">
-                          {t('reps')}
-                          <input
-                            className="rounded border px-2 py-1"
-                            disabled={set.isCompleted || set.isSkipped}
-                            inputMode="numeric"
-                            placeholder={
-                              previousReps !== null && previousReps !== undefined
-                                ? String(previousReps)
-                                : String(currentExercise.prescription.targetReps)
-                            }
-                            type="number"
-                            value={set.reps ?? ''}
-                            onChange={(e) => {
-                              const value = e.target.value === '' ? null : Number(e.target.value);
-                              updateSetValue(set.id, 'reps', value);
-                            }}
-                          />
-                        </label>
+                <div
+                  key={set.id}
+                  className={`rounded-lg border p-3 ${set.isCompleted ? 'bg-muted/50' : ''}`}
+                >
+                  <p className="text-sm font-medium">{t('setLabel', { number: set.setNumber })}</p>
+                  {session.sessionType === 'programmed' ? (
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <div className="rounded-md bg-muted/30 p-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          {t('prescribedLabel')}
+                        </p>
+                        <p className="mt-1 text-sm font-medium">
+                          {currentExercise.prescription.targetReps} {t('reps')}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{prescribedWeight}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">
+                          {t('actualLabel')}
+                        </p>
+                        <div className="mt-1 flex flex-col gap-2">
+                          <label className="flex flex-col gap-1 text-xs">
+                            {t('weightKg')}
+                            <input
+                              className="rounded border px-2 py-1"
+                              disabled={set.isCompleted || set.isSkipped}
+                              inputMode="decimal"
+                              placeholder={
+                                previousWeight !== null && previousWeight !== undefined
+                                  ? String(previousWeight)
+                                  : prescribedWeight
+                              }
+                              type="number"
+                              value={set.weightKg ?? ''}
+                              onChange={(e) => {
+                                const value = e.target.value === '' ? null : Number(e.target.value);
+                                updateSetValue(set.id, 'weightKg', value);
+                              }}
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1 text-xs">
+                            {t('reps')}
+                            <input
+                              className="rounded border px-2 py-1"
+                              disabled={set.isCompleted || set.isSkipped}
+                              inputMode="numeric"
+                              placeholder={
+                                previousReps !== null && previousReps !== undefined
+                                  ? String(previousReps)
+                                  : String(currentExercise.prescription.targetReps)
+                              }
+                              type="number"
+                              value={set.reps ?? ''}
+                              onChange={(e) => {
+                                const value = e.target.value === '' ? null : Number(e.target.value);
+                                updateSetValue(set.id, 'reps', value);
+                              }}
+                            />
+                          </label>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                <div className="mt-2 flex gap-2">
-                  <label className="flex flex-1 flex-col gap-1 text-xs">
-                    {t('weightKg')}
-                    <input
-                      className="rounded border px-2 py-1"
-                      disabled={set.isCompleted || set.isSkipped}
-                      inputMode="decimal"
-                      type="number"
-                      value={set.weightKg ?? ''}
-                      onChange={(e) => {
-                        const value = e.target.value === '' ? null : Number(e.target.value);
-                        updateSetValue(set.id, 'weightKg', value);
-                      }}
-                    />
-                  </label>
-                  <label className="flex flex-1 flex-col gap-1 text-xs">
-                    {t('reps')}
-                    <input
-                      className="rounded border px-2 py-1"
-                      disabled={set.isCompleted || set.isSkipped}
-                      inputMode="numeric"
-                      type="number"
-                      value={set.reps ?? ''}
-                      onChange={(e) => {
-                        const value = e.target.value === '' ? null : Number(e.target.value);
-                        updateSetValue(set.id, 'reps', value);
-                      }}
-                    />
-                  </label>
+                  ) : (
+                    <div className="mt-2 flex gap-2">
+                      <label className="flex flex-1 flex-col gap-1 text-xs">
+                        {t('weightKg')}
+                        <input
+                          className="rounded border px-2 py-1"
+                          disabled={set.isCompleted || set.isSkipped}
+                          inputMode="decimal"
+                          type="number"
+                          value={set.weightKg ?? ''}
+                          onChange={(e) => {
+                            const value = e.target.value === '' ? null : Number(e.target.value);
+                            updateSetValue(set.id, 'weightKg', value);
+                          }}
+                        />
+                      </label>
+                      <label className="flex flex-1 flex-col gap-1 text-xs">
+                        {t('reps')}
+                        <input
+                          className="rounded border px-2 py-1"
+                          disabled={set.isCompleted || set.isSkipped}
+                          inputMode="numeric"
+                          type="number"
+                          value={set.reps ?? ''}
+                          onChange={(e) => {
+                            const value = e.target.value === '' ? null : Number(e.target.value);
+                            updateSetValue(set.id, 'reps', value);
+                          }}
+                        />
+                      </label>
+                    </div>
+                  )}
+                  {!set.isCompleted && !set.isSkipped && (
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        className="min-h-11 flex-1"
+                        disabled={loading}
+                        type="button"
+                        onClick={() => {
+                          void handleCompleteSet(set.id, set.setNumber);
+                        }}
+                      >
+                        {t('completeSet')}
+                      </Button>
+                      <Button
+                        disabled={loading}
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          void handleSkipSet(set.id, set.setNumber);
+                        }}
+                      >
+                        {t('skipSet')}
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                )}
-                {!set.isCompleted && !set.isSkipped && (
-                  <div className="mt-2 flex gap-2">
-                    <Button
-                      className="min-h-11 flex-1"
-                      disabled={loading}
-                      type="button"
-                      onClick={() => {
-                        void handleCompleteSet(set.id, set.setNumber);
-                      }}
-                    >
-                      {t('completeSet')}
-                    </Button>
-                    <Button
-                      disabled={loading}
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        void handleSkipSet(set.id, set.setNumber);
-                      }}
-                    >
-                      {t('skipSet')}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            );
+              );
             })}
 
             <div className="flex gap-2">
