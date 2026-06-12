@@ -6,6 +6,7 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { AppearanceInitScript } from '@/components/appearance/appearance-init-script';
 import { AppearanceProvider } from '@/components/appearance/appearance-provider';
 import { AppShellRouter } from '@/components/layout/app-shell-router';
+import { ViewportProvider } from '@/components/layout/viewport-provider';
 import { AuthProvider } from '@/components/auth-provider';
 import { PostHogProvider } from '@/components/posthog-provider';
 import { SyncProvider } from '@/components/sync-provider';
@@ -74,7 +75,9 @@ export default async function LocaleLayout({
               <PostHogProvider>
                 <AuthProvider>
                   <SyncProvider>
-                    <AppShellRouter locale={locale}>{children}</AppShellRouter>
+                    <ViewportProvider>
+                      <AppShellRouter locale={locale}>{children}</AppShellRouter>
+                    </ViewportProvider>
                   </SyncProvider>
                 </AuthProvider>
               </PostHogProvider>

@@ -17,7 +17,7 @@ export function PageEnter({ children }: PageEnterProps): ReactElement {
   const isDesktop = useIsDesktop();
   const reducedMotion = useReducedMotion();
 
-  if (reducedMotion) {
+  if (reducedMotion || isDesktop === null) {
     return <>{children}</>;
   }
 

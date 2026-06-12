@@ -1,14 +1,14 @@
 'use client';
 
 import { Skeleton } from '@onemore/ui';
-import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
+
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 
 interface ViewportGateProps {
   desktop: ReactNode;
   mobile: ReactNode;
 }
-
-const DESKTOP_MEDIA = '(min-width: 1024px)';
 
 /**
  * Mobile shell skeleton shown while viewport mode resolves.
@@ -36,15 +36,7 @@ function MobileShellSkeleton(): ReactElement {
  * Renders desktop or mobile shell based on viewport width (lg breakpoint).
  */
 export function ViewportGate({ desktop, mobile }: ViewportGateProps): ReactElement {
-  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const media = window.matchMedia(DESKTOP_MEDIA);
-    const update = (): void => setIsDesktop(media.matches);
-    update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
-  }, []);
+  const isDesktop = useIsDesktop();
 
   if (isDesktop === null) {
     return <MobileShellSkeleton />;
