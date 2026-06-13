@@ -18,10 +18,13 @@ import { GymToggleRow } from '@/components/gym-ui/gym-toggle-row';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { PageSection } from '@/components/layout/desktop/page-section';
 import { RequireAuth } from '@/components/require-auth';
+import { SettingsPersonalSection } from '@/components/settings-personal-section';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import {
+  changeUserPassword,
   deleteAccount,
   fetchLatestExportJob,
+  logoutSession,
   patchUserProfile,
   requestDataExport,
 } from '@/lib/api-auth';
@@ -71,6 +74,62 @@ export default function SettingsPage(): React.ReactElement {
       setMessage(t('saved'));
     } catch (err) {
       setError(err instanceof Error ? err.message : t('saveError'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSaveProfile(payload: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  }): Promise<void> {
+    if (!accessToken || !profile) {
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const updated = await patchUserProfile(accessToken, payload);
+      setProfile(updated);
+      trackEvent(POSTHOG_EVENTS.SETTINGS_UPDATED, { section: 'personal' });
+      setMessage(t('saved'));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('saveError'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleChangePassword(payload: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<void> {
+    if (!accessToken) {
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      await changeUserPassword(accessToken, payload);
+      trackEvent(POSTHOG_EVENTS.SETTINGS_UPDATED, { section: 'password' });
+      setMessage(t('passwordChanged'));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('passwordChangeError'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleLogout(): Promise<void> {
+    setLoading(true);
+    setError(null);
+    try {
+      await logoutSession();
+      clearSession();
+      router.push(`/${locale}/login`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('logoutError'));
     } finally {
       setLoading(false);
     }
@@ -179,6 +238,15 @@ export default function SettingsPage(): React.ReactElement {
     </div>
   );
 
+  const personalSection = (
+    <SettingsPersonalSection
+      loading={loading}
+      profile={profile}
+      onChangePassword={handleChangePassword}
+      onSaveProfile={handleSaveProfile}
+    />
+  );
+
   return (
     <RequireAuth>
       <AdaptivePageShell
@@ -189,6 +257,22 @@ export default function SettingsPage(): React.ReactElement {
       >
         {message ? <p className="text-sm text-accent">{message}</p> : null}
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+        {!isDesktop ? (
+          <GymListGroup title={t('personalTitle')}>
+            <li className="p-4">{personalSection}</li>
+          </GymListGroup>
+        ) : (
+          <PageSection
+            title={t('personalTitle')}
+            description={t('personalSubtitle')}
+            className="lg:col-span-2"
+          >
+            <Card>
+              <CardContent className="p-6">{personalSection}</CardContent>
+            </Card>
+          </PageSection>
+        )}
 
         {!isDesktop ? (
           <GymListGroup title={t('appearanceTitle')}>
@@ -275,7 +359,7 @@ export default function SettingsPage(): React.ReactElement {
               </li>
             </GymListGroup>
 
-            <GymListGroup title={t('privacyTitle')}>
+            <GymListGroup title={t('accountTitle')}>
               {exportJob ? (
                 <li className="border-b border-gym-separator px-4 py-3 text-sm text-muted-foreground">
                   {t('exportStatus', { status: exportJob.status })}
@@ -286,6 +370,14 @@ export default function SettingsPage(): React.ReactElement {
                 title={t('requestExport')}
                 onClick={() => {
                   void handleExport();
+                }}
+              />
+              <GymListRow
+                disabled={loading}
+                showChevron={false}
+                title={t('logout')}
+                onClick={() => {
+                  void handleLogout();
                 }}
               />
               <GymListRow
@@ -370,7 +462,7 @@ export default function SettingsPage(): React.ReactElement {
             </PageSection>
 
             <PageSection
-              title={t('privacyTitle')}
+              title={t('accountTitle')}
               description={t('exportHelp')}
               className="lg:col-span-2"
             >
@@ -391,6 +483,16 @@ export default function SettingsPage(): React.ReactElement {
                       }}
                     >
                       {t('requestExport')}
+                    </Button>
+                    <Button
+                      disabled={loading}
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        void handleLogout();
+                      }}
+                    >
+                      {t('logout')}
                     </Button>
                     <Button
                       disabled={loading}

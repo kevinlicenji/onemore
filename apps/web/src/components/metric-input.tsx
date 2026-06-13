@@ -22,6 +22,8 @@ import { buildNumericWheelValues } from '@/lib/scroll-wheel-snap';
 
 import { ScrollWheelPicker, type ScrollWheelPickerOption } from './scroll-wheel-picker';
 
+import type { ScrollWheelPickerSize } from './scroll-wheel-picker';
+
 export type MetricInputKind = 'sets' | 'reps' | 'repsPrescription' | 'weight' | 'rest';
 
 type MetricInputSize = 'default' | 'gym';
@@ -34,6 +36,7 @@ interface MetricInputProps {
   placeholder?: string;
   disabled?: boolean;
   size?: MetricInputSize;
+  wheelSize?: ScrollWheelPickerSize;
   showLabel?: boolean;
   onChange: (value: number | null) => void;
 }
@@ -116,6 +119,7 @@ export function MetricInput({
   placeholder,
   disabled = false,
   size = 'default',
+  wheelSize = 'default',
   showLabel = true,
   onChange,
 }: MetricInputProps): React.ReactElement {
@@ -141,6 +145,7 @@ export function MetricInput({
         label={label}
         options={buildWheelOptions(kind, failureLabel)}
         showLabel={showLabel}
+        size={wheelSize}
         value={wheelValue}
         onChange={(nextValue) => {
           onChange(nextValue);

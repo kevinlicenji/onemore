@@ -1,12 +1,13 @@
 import { z } from 'zod';
 
 import { trainingEnvironmentSchema, trainingGoalSchema, trainingLevelSchema } from './user.js';
-import { personNameSchema, usernameSchema } from './auth.js';
+import { emailSchema, passwordSchema, personNameSchema, usernameSchema } from './auth.js';
 import { updateUserSettingsSchema } from './settings.js';
 
 export const updateUserProfileSchema = z.object({
   firstName: personNameSchema.optional(),
   lastName: personNameSchema.optional(),
+  email: emailSchema.optional(),
   displayName: z.string().min(1).max(100).optional(),
   username: usernameSchema.optional(),
   locale: z.enum(['it', 'en']).optional(),
@@ -26,4 +27,10 @@ export const updateUserProfileSchema = z.object({
   settings: updateUserSettingsSchema.optional(),
 });
 
+export const changePasswordBodySchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: passwordSchema,
+});
+
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
+export type ChangePasswordBody = z.infer<typeof changePasswordBodySchema>;

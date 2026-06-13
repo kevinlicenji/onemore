@@ -86,6 +86,7 @@ export function AdaptivePageShell({
         backHref={backHref}
         backLabel={backLabel}
         description={description}
+        showBrandMark={variant !== 'centered'}
         title={title}
       />
       {onRefresh ? (

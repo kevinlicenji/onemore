@@ -73,6 +73,7 @@ export const programDetailSchema = programSummarySchema.omit({ isActive: true })
   versionStatus: z.enum(['draft', 'published', 'archived']).nullable(),
   publishedAt: z.string().datetime().nullable(),
   guide: localizedTextSchema.nullable().optional(),
+  tagline: localizedTextSchema.nullable().optional(),
   days: z.array(workoutDaySchema),
 });
 
@@ -83,6 +84,8 @@ export const templateSummarySchema = z.object({
   description: z.string().nullable(),
   /** Why the template is built this way — training intent and target. */
   guide: localizedTextSchema.nullable(),
+  /** Short motivational hook shown on template cards. */
+  tagline: localizedTextSchema.nullable(),
   objective: trainingGoalSchema.nullable(),
   daysPerWeek: z.number().int(),
   audience: z.string(),

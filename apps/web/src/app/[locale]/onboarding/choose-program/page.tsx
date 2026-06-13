@@ -14,6 +14,7 @@ import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useMotivationalLine } from '@/hooks/use-motivational-line';
 import { fetchProgramTemplates } from '@/lib/api-auth';
+import { templateCardTagline, templateCardTitle } from '@/lib/template-card-copy';
 
 export default function ChooseProgramPage(): React.ReactElement {
   const t = useTranslations('Onboarding');
@@ -71,18 +72,13 @@ export default function ChooseProgramPage(): React.ReactElement {
                 <p className="mt-1 text-sm text-muted-foreground">
                   {t('chooseProgram.recommendedHint')}
                 </p>
-                <p className="mt-3 font-semibold">
-                  {locale === 'it' && topTemplate.description
-                    ? topTemplate.description
-                    : topTemplate.name}
+                <p className="mt-3 text-base font-semibold">{templateCardTitle(topTemplate, locale)}</p>
+                <p className="mt-1 text-sm font-medium text-foreground/90">
+                  {templateCardTagline(topTemplate, locale)}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {programsT('templateMeta', {
+                  {programsT('templateMetaShort', {
                     days: topTemplate.daysPerWeek,
-                    audience: topTemplate.audience,
-                  })}
-                  {' · '}
-                  {t('chooseProgram.sessionEstimate', {
                     minutes: topTemplate.estimatedSessionMinutes,
                   })}
                 </p>
@@ -104,18 +100,13 @@ export default function ChooseProgramPage(): React.ReactElement {
                   variant="outline"
                 >
                   <Link href={`/${locale}/programs/templates/${template.slug}`}>
-                    <span className="block font-medium">
-                      {locale === 'it' && template.description
-                        ? template.description
-                        : template.name}
+                    <span className="block font-medium">{templateCardTitle(template, locale)}</span>
+                    <span className="block text-sm font-normal opacity-90">
+                      {templateCardTagline(template, locale)}
                     </span>
                     <span className="block text-sm font-normal opacity-80">
-                      {programsT('templateMeta', {
+                      {programsT('templateMetaShort', {
                         days: template.daysPerWeek,
-                        audience: template.audience,
-                      })}
-                      {' · '}
-                      {t('chooseProgram.sessionEstimate', {
                         minutes: template.estimatedSessionMinutes,
                       })}
                     </span>

@@ -1,4 +1,4 @@
-import { updateUserProfileSchema } from '@onemore/shared';
+import { changePasswordBodySchema, updateUserProfileSchema } from '@onemore/shared';
 import { Router } from 'express';
 import { z } from 'zod';
 
@@ -7,7 +7,9 @@ import { asyncHandler } from '../middleware/async-handler.js';
 import type { AuthenticatedRequest } from '../middleware/authenticate.js';
 import type { GdprExportService } from '../modules/gdpr/gdpr-export.service.js';
 import type { PrivacyService } from '../modules/gdpr/privacy.service.js';
+import type { AuthService } from '../modules/auth/auth.service.js';
 import type { UsersService } from '../modules/users/users.service.js';
+import { hashIp } from '../modules/auth/oauth.service.js';
 import { enqueueGdprExport } from '../jobs/register-workers.js';
 import type { Queue } from 'bullmq';
 
@@ -20,6 +22,7 @@ function requireRouteParam(value: string | string[] | undefined, name: string): 
 
 export interface UsersRouterDeps {
   usersService: UsersService;
+  authService: AuthService;
   gdprExportService: GdprExportService;
   privacyService: PrivacyService;
   jobQueue: Queue | null;
@@ -47,6 +50,21 @@ export function createUsersRouter(deps: UsersRouterDeps): Router {
       const body = updateUserProfileSchema.parse(req.body);
       const profile = await deps.usersService.updateMe(authReq.userId ?? '', body);
       res.json(profile);
+    }),
+  );
+
+  router.post(
+    '/me/password',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const body = changePasswordBodySchema.parse(req.body);
+      await deps.authService.changePassword(
+        authReq.userId ?? '',
+        body.currentPassword,
+        body.newPassword,
+        hashIp(req.ip ?? 'unknown'),
+      );
+      res.status(204).send();
     }),
   );
 

@@ -16,7 +16,7 @@ import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
 import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { fetchProgramTemplates } from '@/lib/api-auth';
-import { pickLocalizedText } from '@/lib/pick-localized-text';
+import { templateCardTagline, templateCardTitle } from '@/lib/template-card-copy';
 
 export default function ProgramTemplatesPage(): React.ReactElement {
   const t = useTranslations('Programs');
@@ -92,25 +92,18 @@ export default function ProgramTemplatesPage(): React.ReactElement {
               <StaggerItem key={template.slug}>
                 <Link href={`/${locale}/programs/templates/${template.slug}`}>
                   <Card className="h-full transition-colors hover:bg-muted/30">
-                    <CardContent className="p-6">
-                      <span className="font-semibold">
-                        {locale === 'it' && template.description
-                          ? template.description
-                          : template.name}
+                    <CardContent className="p-5">
+                      <span className="text-base font-semibold leading-snug">
+                        {templateCardTitle(template, locale)}
                       </span>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {t('templateMeta', {
-                          days: template.daysPerWeek,
-                          audience: template.audience,
-                        })}
+                      <p className="mt-1.5 text-sm font-medium leading-snug text-foreground/90">
+                        {templateCardTagline(template, locale)}
                       </p>
-                      {template.guide ? (
-                        <p className="mt-3 text-sm leading-relaxed text-foreground/80">
-                          {pickLocalizedText(template.guide, locale)}
-                        </p>
-                      ) : null}
-                      <p className="mt-3 text-xs font-medium text-primary">
-                        {t('viewTemplateDetail')}
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {t('templateMetaShort', {
+                          days: template.daysPerWeek,
+                          minutes: template.estimatedSessionMinutes,
+                        })}
                       </p>
                     </CardContent>
                   </Card>

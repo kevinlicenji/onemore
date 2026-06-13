@@ -24,6 +24,7 @@ interface TemplateSeedRow {
     split?: string;
     tags?: string[];
     guide: { en: string; it?: string };
+    tagline?: { en: string; it?: string };
   };
   days: Array<{
     label: string;

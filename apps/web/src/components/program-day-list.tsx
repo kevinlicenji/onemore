@@ -1,6 +1,7 @@
 'use client';
 
 import type { ProgramDetail } from '@onemore/shared';
+import { localizeWorkoutDayLabel } from '@onemore/shared';
 import { cn } from '@onemore/ui';
 import { useTranslations } from 'next-intl';
 
@@ -36,7 +37,7 @@ export function ProgramDayList({
       {days.map((day) => (
         <section key={day.id} className="rounded-lg border p-4">
           <h2 className="font-semibold">
-            {day.label}
+            {localizeWorkoutDayLabel(day.label, locale)}
             {day.muscleGroups.length > 0 && (
               <span className="font-normal text-muted-foreground">
                 {' '}

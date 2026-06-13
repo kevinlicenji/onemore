@@ -1,7 +1,7 @@
 'use client';
 
 import type { CreateProgramInput, MuscleGroup } from '@onemore/shared';
-import { aggregateMuscleGroups } from '@onemore/shared';
+import { aggregateMuscleGroups, defaultWorkoutDayLabel, localizeWorkoutDayLabel } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -12,6 +12,7 @@ import {
 } from '@/components/add-program-exercise-modal';
 import { ProgramBuilderExerciseRow } from '@/components/program-builder-exercise-row';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
+import { moveArrayItem } from '@/lib/move-array-item';
 
 export interface BuilderExercise {
   exerciseLibraryId: string;
@@ -37,8 +38,8 @@ interface ProgramBuilderProps {
   onSubmit: (input: CreateProgramInput) => Promise<void>;
 }
 
-function emptyDay(index: number): BuilderDay {
-  return { label: `Day ${String.fromCharCode(65 + index)}`, exercises: [] };
+function emptyDay(index: number, locale: string): BuilderDay {
+  return { label: defaultWorkoutDayLabel(index, locale), exercises: [] };
 }
 
 function dayMuscleLabel(day: BuilderDay, translate: (key: MuscleGroup) => string): string {
@@ -63,11 +64,12 @@ export function ProgramBuilder({
   const tMuscle = useTranslations('MuscleGroups');
   const [name, setName] = useState(initialName);
   const [days, setDays] = useState<BuilderDay[]>(
-    initialDays && initialDays.length > 0 ? initialDays : [emptyDay(0)],
+    initialDays && initialDays.length > 0 ? initialDays : [emptyDay(0, locale)],
   );
   const [dayIndex, setDayIndex] = useState(0);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
+  const [dragExerciseIndex, setDragExerciseIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -136,8 +138,47 @@ export function ProgramBuilder({
   }
 
   function addDay(): void {
-    setDays((prev) => [...prev, emptyDay(prev.length)]);
+    setDays((prev) => [...prev, emptyDay(prev.length, locale)]);
     setDayIndex(days.length);
+  }
+
+  function reorderExercise(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) {
+      return;
+    }
+
+    setDays((prev) =>
+      prev.map((day, index) => {
+        if (index !== dayIndex) {
+          return day;
+        }
+        return { ...day, exercises: moveArrayItem(day.exercises, fromIndex, toIndex) };
+      }),
+    );
+
+    setEditingExerciseIndex((current) => {
+      if (current === null) {
+        return null;
+      }
+      if (current === fromIndex) {
+        return toIndex;
+      }
+      if (fromIndex < current && toIndex >= current) {
+        return current - 1;
+      }
+      if (fromIndex > current && toIndex <= current) {
+        return current + 1;
+      }
+      return current;
+    });
+    setDragExerciseIndex(toIndex);
+  }
+
+  function handleDragEnter(exerciseIndex: number): void {
+    if (dragExerciseIndex === null || dragExerciseIndex === exerciseIndex) {
+      return;
+    }
+    reorderExercise(dragExerciseIndex, exerciseIndex);
   }
 
   async function handleSave(): Promise<void> {
@@ -200,7 +241,7 @@ export function ProgramBuilder({
                 setEditingExerciseIndex(null);
               }}
             >
-              {day.label}
+              {localizeWorkoutDayLabel(day.label, locale)}
               {muscles ? ` — ${muscles}` : ''}
             </Button>
           );
@@ -245,16 +286,26 @@ export function ProgramBuilder({
             <ProgramBuilderExerciseRow
               key={`${row.exerciseLibraryId}-${String(exerciseIndex)}`}
               exercise={row}
+              exerciseIndex={exerciseIndex}
+              isDragging={dragExerciseIndex === exerciseIndex}
               isEditing={editingExerciseIndex === exerciseIndex}
               labels={{
                 failureReps: t('failureReps'),
                 editExercise: t('editExercise'),
                 removeExercise: t('removeExercise'),
                 doneEditing: t('doneEditing'),
+                reorderExercise: t('reorderExercise'),
                 targetSets: t('targetSets'),
                 targetReps: t('targetReps'),
                 targetWeight: t('targetWeight'),
                 restSeconds: t('restSeconds'),
+              }}
+              onDragEnd={() => {
+                setDragExerciseIndex(null);
+              }}
+              onDragEnter={handleDragEnter}
+              onDragStart={(index) => {
+                setDragExerciseIndex(index);
               }}
               onDone={() => {
                 setEditingExerciseIndex(null);

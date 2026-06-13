@@ -11,6 +11,7 @@ function buildTemplate(
     name: slug,
     description: null,
     guide: null,
+    tagline: null,
     objective: 'fitness',
     equipmentProfile: 'mixed',
     split: 'full_body',

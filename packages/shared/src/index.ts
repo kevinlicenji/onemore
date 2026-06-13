@@ -8,6 +8,7 @@ export * from './constants/onboarding-muscle-focus.js';
 export * from './lib/estimate-session-minutes.js';
 export * from './lib/person-name.js';
 export * from './lib/recommend-template.js';
+export * from './lib/workout-day-label.js';
 export * from './lib/aggregate-muscle-groups.js';
 export * from './constants/template-meta.js';
 export * from './schemas/auth.js';

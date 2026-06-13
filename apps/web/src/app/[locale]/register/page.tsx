@@ -17,6 +17,9 @@ import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { fetchUserProfile, resolveAuthenticatedHomePath } from '@/lib/api-auth';
 import { identifyUser } from '@/lib/analytics';
 
+/** Hidden default — API requires birthYear; collected later in profile if needed. */
+const DEFAULT_REGISTRATION_BIRTH_YEAR = 1995;
+
 export default function RegisterPage(): React.ReactElement {
   const t = useTranslations('Auth');
   const router = useRouter();
@@ -29,7 +32,6 @@ export default function RegisterPage(): React.ReactElement {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [birthYear, setBirthYear] = useState(1995);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -50,7 +52,7 @@ export default function RegisterPage(): React.ReactElement {
         email,
         password,
         locale,
-        birthYear,
+        birthYear: DEFAULT_REGISTRATION_BIRTH_YEAR,
         timezone: 'Europe/Rome',
         consents: { tos: true, privacy: true, fitnessData: true },
       });
@@ -159,18 +161,6 @@ export default function RegisterPage(): React.ReactElement {
             value={passwordConfirm}
             onChange={(e) => {
               setPasswordConfirm(e.target.value);
-            }}
-            required
-          />
-          <GymAuthField
-            inputMode="numeric"
-            label={t('birthYear')}
-            max={new Date().getFullYear()}
-            min={1920}
-            type="number"
-            value={birthYear}
-            onChange={(e) => {
-              setBirthYear(Number(e.target.value));
             }}
             required
           />

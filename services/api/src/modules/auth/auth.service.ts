@@ -276,6 +276,45 @@ export class AuthService {
   }
 
   /**
+   * Change password for an authenticated user after verifying the current password.
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+    ipHash?: string,
+  ): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { credential: true },
+    });
+
+    if (!user || user.deletedAt || !user.credential) {
+      throw new HttpError(404, 'User not found', 'USER_NOT_FOUND');
+    }
+
+    const valid = await this.passwordService.verify(
+      currentPassword,
+      user.credential.passwordHash,
+    );
+    if (!valid) {
+      throw new HttpError(401, 'Current password is incorrect', 'INVALID_CURRENT_PASSWORD');
+    }
+
+    if (await this.passwordService.isBreached(newPassword)) {
+      throw new HttpError(400, 'Password found in known data breaches', 'PASSWORD_BREACHED');
+    }
+
+    const passwordHash = await this.passwordService.hash(newPassword);
+    await this.prisma.userCredential.update({
+      where: { userId },
+      data: { passwordHash, passwordChangedAt: new Date() },
+    });
+
+    await this.writeAudit(userId, 'auth.password_changed', 'user', userId, ipHash);
+  }
+
+  /**
    * Issue tokens for an existing user (OAuth completion, account linking).
    */
   async issueSessionForUser(

@@ -81,6 +81,7 @@ export function createV1Router(deps: V1RouterDeps): Router {
     authenticate,
     createUsersRouter({
       usersService: deps.usersService,
+      authService: deps.authService,
       gdprExportService,
       privacyService,
       jobQueue: deps.jobQueue,

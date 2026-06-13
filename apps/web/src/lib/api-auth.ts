@@ -3,6 +3,7 @@ import type {
   AddWorkoutExerciseInput,
   AddWorkoutSetInput,
   AnalyticsDashboard,
+  ChangePasswordBody,
   CreateCustomExercise,
   CreateProgramInput,
   DataExportJob,
@@ -459,6 +460,28 @@ export async function patchUserProfile(
     throw await parseApiError(response, 'Failed to update profile');
   }
   return response.json() as Promise<UserProfile>;
+}
+
+export async function changeUserPassword(
+  accessToken: string,
+  payload: ChangePasswordBody,
+): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/users/me/password`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to change password');
+  }
+}
+
+export async function logoutSession(): Promise<void> {
+  await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+    method: 'POST',
+    credentials: 'include',
+  });
 }
 
 export async function requestDataExport(accessToken: string): Promise<RequestDataExportResponse> {

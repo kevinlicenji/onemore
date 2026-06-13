@@ -1,6 +1,7 @@
 'use client';
 
 import type { NextWorkoutPreview, WorkoutSessionDetail } from '@onemore/shared';
+import { localizeWorkoutDayLabel } from '@onemore/shared';
 import { Button, Card, CardContent } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -146,7 +147,10 @@ export default function StartWorkoutPage(): React.ReactElement {
         <CardContent className="p-6">
           <p className="font-semibold">{t('resumeTitle')}</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {activeSession.workoutDayLabel ?? t('freeWorkoutTitle')}
+            {localizeWorkoutDayLabel(
+              activeSession.workoutDayLabel ?? t('freeWorkoutTitle'),
+              locale,
+            )}
             {' · '}
             {t('resumeProgress', {
               completed: activeSession.exercises.filter(
@@ -179,7 +183,7 @@ export default function StartWorkoutPage(): React.ReactElement {
             .length,
           total: activeSession.exercises.length,
         })}
-        title={`${t('resumeTitle')} · ${activeSession.workoutDayLabel ?? t('freeWorkoutTitle')}`}
+        title={`${t('resumeTitle')} · ${localizeWorkoutDayLabel(activeSession.workoutDayLabel ?? t('freeWorkoutTitle'), locale)}`}
         action={
           <div className="flex flex-col gap-2">
             <Button asChild className="min-h-11 w-full">
@@ -227,7 +231,9 @@ export default function StartWorkoutPage(): React.ReactElement {
                     }}
                   >
                     <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                      <span className="font-semibold text-foreground">{day.label}</span>
+                      <span className="font-semibold text-foreground">
+                        {localizeWorkoutDayLabel(day.label, locale)}
+                      </span>
                       <span aria-hidden className="text-xs text-muted-foreground">
                         ·
                       </span>
@@ -256,7 +262,7 @@ export default function StartWorkoutPage(): React.ReactElement {
                 subtitle={[muscles, t('nextDayMeta', { count: day.exerciseCount })]
                   .filter(Boolean)
                   .join(' · ')}
-                title={day.label}
+                title={localizeWorkoutDayLabel(day.label, locale)}
                 onClick={() => {
                   void handleStartProgrammedDay(day.workoutDayId);
                 }}

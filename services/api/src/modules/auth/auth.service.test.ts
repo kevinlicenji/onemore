@@ -94,3 +94,54 @@ describe('AuthService.login', () => {
     });
   });
 });
+
+describe('AuthService.changePassword', () => {
+  it('rejects an incorrect current password', async () => {
+    const prisma = {
+      user: {
+        findUnique: vi.fn(() => Promise.resolve(userRecord)),
+      },
+      userCredential: { update: vi.fn() },
+      auditLog: { create: vi.fn(() => Promise.resolve({})) },
+    };
+    const service = new AuthService(prisma as never, createEnv(), {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as never);
+
+    vi.spyOn(service['passwordService'], 'verify').mockResolvedValue(false);
+
+    await expect(
+      service.changePassword('user-1', 'wrong-password', 'new-password-1'),
+    ).rejects.toMatchObject({ statusCode: 401 });
+  });
+
+  it('updates the password hash when the current password is valid', async () => {
+    const prisma = {
+      user: {
+        findUnique: vi.fn(() => Promise.resolve(userRecord)),
+      },
+      userCredential: {
+        update: vi.fn(() => Promise.resolve({})),
+      },
+      auditLog: { create: vi.fn(() => Promise.resolve({})) },
+    };
+    const service = new AuthService(prisma as never, createEnv(), {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as never);
+
+    vi.spyOn(service['passwordService'], 'verify').mockResolvedValue(true);
+    vi.spyOn(service['passwordService'], 'isBreached').mockResolvedValue(false);
+    vi.spyOn(service['passwordService'], 'hash').mockResolvedValue('new-hash');
+
+    await service.changePassword('user-1', 'current-password', 'new-password-1');
+
+    expect(prisma.userCredential.update).toHaveBeenCalledWith({
+      where: { userId: 'user-1' },
+      data: expect.objectContaining({ passwordHash: 'new-hash' }),
+    });
+  });
+});

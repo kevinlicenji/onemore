@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactElement, ReactNode } from 'react';
 
+import { AppLogo } from '@/components/app-logo';
 import {
   gymMobileHorizontalPadding,
   gymMobileStackedActionsClassName,
@@ -20,6 +21,8 @@ interface GymPageHeaderProps {
   actionsLayout?: GymPageHeaderActionsLayout;
   backHref?: string;
   backLabel?: string;
+  /** Compact kettlebell mark above the page title (skipped on auth-style centered pages). */
+  showBrandMark?: boolean;
   className?: string;
 }
 
@@ -33,6 +36,7 @@ export function GymPageHeader({
   actionsLayout = 'stacked',
   backHref,
   backLabel = 'Back',
+  showBrandMark = false,
   className,
 }: GymPageHeaderProps): ReactElement {
   const showInlineActions = Boolean(actions) && actionsLayout === 'inline';
@@ -46,6 +50,8 @@ export function GymPageHeader({
         className,
       )}
     >
+      {showBrandMark ? <AppLogo className="mb-2" size={28} /> : null}
+
       {backHref ? (
         <Link
           className="mb-2 inline-flex min-h-10 items-center gap-0.5 text-sm font-medium text-primary"

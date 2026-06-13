@@ -363,6 +363,7 @@ export class ProgramsService {
       name: meta.displayName?.en ?? template.name,
       description: null,
       guide: meta.guide ?? null,
+      tagline: meta.tagline ?? null,
       isActive: false,
     };
   }
@@ -429,6 +430,7 @@ export class ProgramsService {
         name: meta.displayName?.en ?? template.name,
         description: meta.displayName?.it ?? null,
         guide: meta.guide ?? null,
+        tagline: meta.tagline ?? null,
         objective: template.objective,
         daysPerWeek: meta.daysPerWeek ?? published?.workoutDays.length ?? 0,
         audience: meta.audience ?? 'general',

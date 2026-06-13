@@ -6,10 +6,37 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { clampWheelIndex, scrollTopForIndex, snapIndexFromScroll } from '@/lib/scroll-wheel-snap';
 import { getWheelItemStyle } from '@/lib/wheel-picker-style';
 
-export const WHEEL_ITEM_HEIGHT = 44;
-const WHEEL_VISIBLE_HEIGHT = 220;
-const WHEEL_PADDING_ROWS = 2;
+export type ScrollWheelPickerSize = 'default' | 'compact';
+
+interface WheelLayoutPreset {
+  itemHeight: number;
+  visibleHeight: number;
+  paddingRows: number;
+  highlightHeightClass: string;
+  gradientHeightClass: string;
+}
+
+const WHEEL_LAYOUT: Record<ScrollWheelPickerSize, WheelLayoutPreset> = {
+  default: {
+    itemHeight: 44,
+    visibleHeight: 220,
+    paddingRows: 2,
+    highlightHeightClass: 'h-11',
+    gradientHeightClass: 'h-20',
+  },
+  compact: {
+    itemHeight: 30,
+    visibleHeight: 118,
+    paddingRows: 1,
+    highlightHeightClass: 'h-8',
+    gradientHeightClass: 'h-10',
+  },
+};
+
 const SCROLL_END_MS = 160;
+
+/** Default wheel row height — kept for scroll-snap tests and legacy callers. */
+export const WHEEL_ITEM_HEIGHT = WHEEL_LAYOUT.default.itemHeight;
 
 export interface ScrollWheelPickerOption<T extends string | number> {
   value: T;
@@ -22,6 +49,7 @@ interface ScrollWheelPickerProps<T extends string | number> {
   value: T;
   disabled?: boolean;
   showLabel?: boolean;
+  size?: ScrollWheelPickerSize;
   onChange: (value: T) => void;
 }
 
@@ -34,6 +62,7 @@ export function ScrollWheelPicker<T extends string | number>({
   value,
   disabled = false,
   showLabel = true,
+  size = 'default',
   onChange,
 }: ScrollWheelPickerProps<T>): React.ReactElement {
   const reducedMotion = useReducedMotion();
@@ -43,14 +72,16 @@ export function ScrollWheelPicker<T extends string | number>({
   const isSnappingRef = useRef(false);
   const isDraggingRef = useRef(false);
   const [scrollTop, setScrollTop] = useState(0);
+  const layout = WHEEL_LAYOUT[size];
+  const itemHeight = layout.itemHeight;
 
   const selectedIndex = Math.max(
     0,
     options.findIndex((option) => option.value === value),
   );
 
-  const padding = WHEEL_PADDING_ROWS * WHEEL_ITEM_HEIGHT;
-  const centerIndexFloat = scrollTop / WHEEL_ITEM_HEIGHT;
+  const padding = layout.paddingRows * itemHeight;
+  const centerIndexFloat = scrollTop / itemHeight;
 
   const snapToIndex = useCallback(
     (index: number, behavior: ScrollBehavior = 'smooth'): void => {
@@ -61,7 +92,7 @@ export function ScrollWheelPicker<T extends string | number>({
       const clamped = clampWheelIndex(index, options.length);
       isSnappingRef.current = true;
       node.scrollTo({
-        top: scrollTopForIndex(clamped, WHEEL_ITEM_HEIGHT),
+        top: scrollTopForIndex(clamped, itemHeight),
         behavior,
       });
       const next = options[clamped];
@@ -75,7 +106,7 @@ export function ScrollWheelPicker<T extends string | number>({
         behavior === 'smooth' ? 320 : 0,
       );
     },
-    [onChange, options, value],
+    [itemHeight, onChange, options, value],
   );
 
   useEffect(() => {
@@ -83,7 +114,7 @@ export function ScrollWheelPicker<T extends string | number>({
     if (!node || reducedMotion) {
       return;
     }
-    const top = scrollTopForIndex(selectedIndex, WHEEL_ITEM_HEIGHT);
+    const top = scrollTopForIndex(selectedIndex, itemHeight);
     if (Math.abs(node.scrollTop - top) > 1) {
       isSnappingRef.current = true;
       node.scrollTop = top;
@@ -92,7 +123,7 @@ export function ScrollWheelPicker<T extends string | number>({
         isSnappingRef.current = false;
       }, 0);
     }
-  }, [selectedIndex, reducedMotion]);
+  }, [itemHeight, selectedIndex, reducedMotion]);
 
   function scheduleScrollTopUpdate(nextTop: number): void {
     if (rafRef.current !== null) {
@@ -118,7 +149,7 @@ export function ScrollWheelPicker<T extends string | number>({
 
     scrollEndTimerRef.current = window.setTimeout(() => {
       isDraggingRef.current = false;
-      const index = snapIndexFromScroll(node.scrollTop, WHEEL_ITEM_HEIGHT);
+      const index = snapIndexFromScroll(node.scrollTop, itemHeight);
       snapToIndex(index, reducedMotion ? 'auto' : 'smooth');
     }, SCROLL_END_MS);
   }
@@ -135,23 +166,23 @@ export function ScrollWheelPicker<T extends string | number>({
   }, []);
 
   return (
-    <div className="flex flex-col gap-2" data-no-swipe>
+    <div className="flex flex-col gap-1" data-no-swipe>
       {showLabel ? <span className="text-sm font-medium">{label}</span> : null}
       <div
         className="relative overflow-hidden rounded-xl border bg-muted/15"
-        style={{ height: WHEEL_VISIBLE_HEIGHT, perspective: '1000px' }}
+        style={{ height: layout.visibleHeight, perspective: '1000px' }}
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-3 top-1/2 z-10 h-11 -translate-y-1/2 rounded-lg border border-primary/30 bg-primary/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+          className={`pointer-events-none absolute inset-x-3 top-1/2 z-10 ${layout.highlightHeightClass} -translate-y-1/2 rounded-lg border border-primary/30 bg-primary/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]`}
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-background via-background/80 to-transparent"
+          className={`pointer-events-none absolute inset-x-0 top-0 z-10 ${layout.gradientHeightClass} bg-gradient-to-b from-background via-background/80 to-transparent`}
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-gradient-to-t from-background via-background/80 to-transparent"
+          className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 ${layout.gradientHeightClass} bg-gradient-to-t from-background via-background/80 to-transparent`}
         />
 
         <div
@@ -171,7 +202,7 @@ export function ScrollWheelPicker<T extends string | number>({
         >
           {options.map((option, index) => {
             const distance = index - centerIndexFloat;
-            const style = getWheelItemStyle(distance);
+            const style = getWheelItemStyle(distance, size);
             const isSelected = option.value === value;
             return (
               <button
@@ -179,7 +210,7 @@ export function ScrollWheelPicker<T extends string | number>({
                 className="flex w-full shrink-0 items-center justify-center tabular-nums disabled:opacity-50 [scroll-snap-align:center]"
                 disabled={disabled}
                 style={{
-                  height: WHEEL_ITEM_HEIGHT,
+                  height: itemHeight,
                   opacity: style.opacity,
                   transform: `scale(${String(style.scale)}) rotateX(${String(distance * -14)}deg) translateZ(${String(Math.max(0, 24 - Math.abs(distance) * 12))}px)`,
                   fontSize: `${String(style.fontSizeRem)}rem`,

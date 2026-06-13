@@ -18,6 +18,8 @@ export const templateMetaSchema = z.object({
   tags: z.array(z.string()).optional(),
   /** Why the program is structured this way — target audience and training intent. */
   guide: localizedTextSchema,
+  /** Short motivational hook for template cards. */
+  tagline: localizedTextSchema.optional(),
 });
 
 export type LocalizedText = z.infer<typeof localizedTextSchema>;

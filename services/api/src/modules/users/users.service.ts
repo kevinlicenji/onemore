@@ -54,6 +54,20 @@ export class UsersService {
       username = input.username.toLowerCase();
     }
 
+    let email = user.email;
+    if (input.email && input.email !== user.email) {
+      const taken = await this.prisma.user.findFirst({
+        where: {
+          email: input.email,
+          NOT: { id: userId },
+        },
+      });
+      if (taken) {
+        throw new HttpError(409, 'Email already in use', 'EMAIL_EXISTS');
+      }
+      email = input.email;
+    }
+
     const nextSettings = input.settings
       ? mergeUserSettings(parseUserSettings(user.settings), input.settings)
       : undefined;
@@ -70,6 +84,8 @@ export class UsersService {
         firstName: input.firstName,
         lastName: input.lastName,
         displayName: nextDisplayName,
+        email,
+        emailVerifiedAt: email !== user.email ? null : undefined,
         username,
         usernameChangedAt:
           input.username && input.username.toLowerCase() !== user.username?.toLowerCase()
