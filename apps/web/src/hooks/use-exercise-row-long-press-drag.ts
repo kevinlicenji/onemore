@@ -108,15 +108,7 @@ export function useExerciseRowLongPressDrag({
       window.addEventListener('pointerup', finish);
       window.addEventListener('pointercancel', finish);
     },
-    [
-      clearLongPressTimer,
-      enabled,
-      exerciseIndex,
-      onDragEnd,
-      onDragEnter,
-      onDragStart,
-      onTap,
-    ],
+    [clearLongPressTimer, enabled, exerciseIndex, onDragEnd, onDragEnter, onDragStart, onTap],
   );
 
   return { handlePointerDown };
