@@ -23,11 +23,12 @@ export default function RegisterPage(): React.ReactElement {
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const { setSession, setProfile } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [birthYear, setBirthYear] = useState(1995);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,12 +38,17 @@ export default function RegisterPage(): React.ReactElement {
     setLoading(true);
     setError(null);
     try {
+      if (password !== passwordConfirm) {
+        setError(t('passwordMismatch'));
+        return;
+      }
+
       const payload = registerBodySchema.parse({
-        email,
-        password,
-        username,
         firstName,
         lastName,
+        username,
+        email,
+        password,
         locale,
         birthYear,
         timezone: 'Europe/Rome',
@@ -88,16 +94,6 @@ export default function RegisterPage(): React.ReactElement {
             void handleSubmit(e);
           }}
         >
-          <GymAuthField
-            autoComplete="email"
-            label={t('email')}
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-            }}
-            required
-          />
           <div className="grid gap-4 sm:grid-cols-2">
             <GymAuthField
               autoComplete="given-name"
@@ -135,6 +131,16 @@ export default function RegisterPage(): React.ReactElement {
             required
           />
           <GymAuthField
+            autoComplete="email"
+            label={t('email')}
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+            }}
+            required
+          />
+          <GymAuthField
             autoComplete="new-password"
             label={t('password')}
             minLength={8}
@@ -142,6 +148,17 @@ export default function RegisterPage(): React.ReactElement {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
+            }}
+            required
+          />
+          <GymAuthField
+            autoComplete="new-password"
+            label={t('passwordConfirm')}
+            minLength={8}
+            type="password"
+            value={passwordConfirm}
+            onChange={(e) => {
+              setPasswordConfirm(e.target.value);
             }}
             required
           />

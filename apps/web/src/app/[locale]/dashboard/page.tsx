@@ -10,12 +10,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
 import { ActiveWorkoutBanner } from '@/components/active-workout-banner';
-import { GymHeroCta } from '@/components/gym-ui/gym-hero-cta';
 import { GymStatGrid } from '@/components/gym-ui/gym-stat-grid';
 import { GymStatTile } from '@/components/gym-ui/gym-stat-tile';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { StatGrid } from '@/components/layout/desktop/stat-grid';
-import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { SyncStatusBadge } from '@/components/sync-status-badge';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { fetchAnalyticsDashboard } from '@/lib/api-auth';
@@ -163,17 +161,7 @@ export default function DashboardPage(): React.ReactElement {
           </Button>
         </CardContent>
       </Card>
-    ) : (
-      <GymHeroCta
-        description={t('emptyBody')}
-        title={t('pickProgramCta')}
-        action={
-          <Button asChild className="min-h-11 w-full" variant="outline">
-            <Link href={`/${locale}/programs`}>{t('myProgramsLink')}</Link>
-          </Button>
-        }
-      />
-    )
+    ) : null
   ) : null;
 
   return (
@@ -187,7 +175,14 @@ export default function DashboardPage(): React.ReactElement {
         <ActiveWorkoutBanner />
 
         {!isDesktop && dashboard ? (
-          <GymHeroCta description={subtitle} title={motivationalLine} action={startWorkoutButton} />
+          <div className="flex flex-col gap-3">
+            {startWorkoutButton}
+            {!hasActivity ? (
+              <Button asChild className="min-h-11 w-full" variant="outline">
+                <Link href={`/${locale}/programs`}>{t('pickProgramCta')}</Link>
+              </Button>
+            ) : null}
+          </div>
         ) : null}
 
         {loading && !dashboard ? (
@@ -213,7 +208,6 @@ export default function DashboardPage(): React.ReactElement {
         ) : null}
 
         {emptyState}
-        <PwaInstallPrompt />
         <SyncStatusBadge />
       </AdaptivePageShell>
     </RequireAuth>

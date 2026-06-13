@@ -2,6 +2,8 @@
 
 import type { ReactElement, ReactNode } from 'react';
 
+import { AppLogo } from '@/components/app-logo';
+
 interface AuthPageContentProps {
   children: ReactNode;
   footer?: ReactNode;
@@ -14,13 +16,7 @@ export function AuthPageContent({ children, footer }: AuthPageContentProps): Rea
   return (
     <div className="flex w-full flex-col gap-6">
       <div className="flex justify-center pt-2">
-        <img
-          alt="OneMore"
-          className="h-20 w-20 rounded-[1.35rem] border border-gym-separator bg-white object-cover shadow-sm"
-          height={80}
-          src="/apple-touch-icon.png"
-          width={80}
-        />
+        <AppLogo size={80} />
       </div>
 
       <div className="w-full overflow-hidden rounded-2xl border border-gym-separator bg-gym-surface shadow-sm">

@@ -10,7 +10,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
-import { GymEmptyState } from '@/components/gym-ui/gym-empty-state';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
 import { GymListRow } from '@/components/gym-ui/gym-list-row';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
@@ -92,7 +91,9 @@ export default function ProgramsPage(): React.ReactElement {
     }
   }
 
-  const headerActions = isDesktop ? (
+  const showHeaderActions = isDesktop || programs.length > 0;
+
+  const headerActions = showHeaderActions ? (
     <>
       <Button asChild variant="outline">
         <Link href={`/${locale}/programs/templates`}>{t('browseTemplates')}</Link>
@@ -101,15 +102,39 @@ export default function ProgramsPage(): React.ReactElement {
         <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
       </Button>
     </>
-  ) : (
-    <>
-      <Button asChild className="min-h-11">
-        <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
-      </Button>
-      <Button asChild className="min-h-11" variant="outline">
-        <Link href={`/${locale}/programs/templates`}>{t('browseTemplates')}</Link>
-      </Button>
-    </>
+  ) : null;
+
+  const emptyProgramsContent = (
+    <div className="flex flex-col gap-4">
+      <Card className="border-dashed bg-gym-tint/30">
+        <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
+          <ClipboardList aria-hidden className="h-8 w-8 text-muted-foreground" />
+          <p className="font-medium">{t('emptyHeadline')}</p>
+          <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
+        </CardContent>
+      </Card>
+
+      <GymListGroup title={t('getStartedTitle')}>
+        <GymListRow
+          href={`/${locale}/programs/templates`}
+          showChevron
+          subtitle={t('browseTemplatesHint')}
+          title={t('browseTemplates')}
+        />
+        <GymListRow
+          href={`/${locale}/programs/new`}
+          showChevron
+          subtitle={t('buildManualHint')}
+          title={t('buildManual')}
+        />
+      </GymListGroup>
+
+      <GymListGroup title={t('howItWorksTitle')}>
+        <GymListRow subtitle={t('howItWorksStep1Hint')} title={t('howItWorksStep1')} />
+        <GymListRow subtitle={t('howItWorksStep2Hint')} title={t('howItWorksStep2')} />
+        <GymListRow subtitle={t('howItWorksStep3Hint')} title={t('howItWorksStep3')} />
+      </GymListGroup>
+    </div>
   );
 
   const mobileProgramList = (
@@ -214,22 +239,9 @@ export default function ProgramsPage(): React.ReactElement {
           <CardGridSkeleton count={isDesktop ? 6 : 3} columns="3" />
         ) : programs.length === 0 && !error ? (
           isDesktop ? (
-            <p className="text-sm text-muted-foreground">{t('noPrograms')}</p>
+            emptyProgramsContent
           ) : (
-            <GymEmptyState
-              action={
-                <div className="flex flex-col gap-2">
-                  <Button asChild className="min-h-11 w-full">
-                    <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
-                  </Button>
-                  <Button asChild className="min-h-11 w-full" variant="outline">
-                    <Link href={`/${locale}/programs/templates`}>{t('browseTemplates')}</Link>
-                  </Button>
-                </div>
-              }
-              icon={<ClipboardList aria-hidden className="h-7 w-7" />}
-              title={t('noPrograms')}
-            />
+            emptyProgramsContent
           )
         ) : isDesktop ? (
           desktopProgramList

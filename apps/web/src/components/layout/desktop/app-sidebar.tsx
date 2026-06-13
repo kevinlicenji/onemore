@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { AppLogo } from '@/components/app-logo';
 import { buildNavItems } from '@/lib/nav-items';
 
 interface AppSidebarProps {
@@ -24,11 +25,8 @@ export function AppSidebar({ locale }: AppSidebarProps): React.ReactElement {
   return (
     <aside className="flex h-full w-sidebar shrink-0 flex-col border-r bg-card">
       <div className="flex h-14 items-center border-b px-6">
-        <Link
-          href={`/${locale}/dashboard`}
-          className="text-lg font-bold tracking-tight text-foreground"
-        >
-          OneMore
+        <Link href={`/${locale}/dashboard`} className="text-foreground">
+          <AppLogo showWordmark size={36} />
         </Link>
       </div>
       <nav aria-label={t('ariaLabel')} className="flex flex-1 flex-col gap-1 p-3">

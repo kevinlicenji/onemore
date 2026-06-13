@@ -1,6 +1,8 @@
 import { Button } from '@onemore/ui';
 import Link from 'next/link';
 
+import { AppLogo } from '@/components/app-logo';
+
 interface LandingPageContentProps {
   locale: string;
   alternateLocale: string;
@@ -37,11 +39,14 @@ export function LandingPageContent({
 
       <div className="flex flex-1 flex-col gap-10 lg:grid lg:grid-cols-2 lg:items-center lg:gap-16">
         <div className="flex flex-col gap-6 text-center lg:text-left">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight lg:text-display">{labels.title}</h1>
-            <p className="mt-3 text-lg text-muted-foreground lg:mt-4 lg:text-xl">
-              {labels.tagline}
-            </p>
+          <div className="flex flex-col items-center gap-4 lg:items-start">
+            <AppLogo size={72} />
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight lg:text-display">{labels.title}</h1>
+              <p className="mt-3 text-lg text-muted-foreground lg:mt-4 lg:text-xl">
+                {labels.tagline}
+              </p>
+            </div>
           </div>
 
           <ul className="space-y-3 text-left text-sm text-muted-foreground lg:text-base">
