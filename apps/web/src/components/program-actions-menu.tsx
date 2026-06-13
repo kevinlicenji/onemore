@@ -41,12 +41,21 @@ export function ProgramActionsMenu({
   const actions = [
     { label: labels.edit, href: editHref },
     ...(showSetActive
-      ? [{ label: labels.setActive, onClick: () => handleAction(onSetActive) }]
+      ? [
+          {
+            label: labels.setActive,
+            onClick: () => {
+              handleAction(onSetActive);
+            },
+          },
+        ]
       : []),
     {
       label: labels.delete,
       destructive: true as const,
-      onClick: () => handleAction(onDelete),
+      onClick: () => {
+        handleAction(onDelete);
+      },
     },
   ];
 

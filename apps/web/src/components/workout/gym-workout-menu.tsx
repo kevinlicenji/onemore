@@ -11,19 +11,16 @@ interface GymWorkoutMenuProps {
     notes: string;
     substitute: string;
     skipExercise: string;
-    skipSet: string;
     finishWorkout: string;
     abandon: string;
     addSet: string;
   };
   showSubstitute: boolean;
-  showSkipSet: boolean;
   showAddSet: boolean;
   disabled?: boolean;
   onNotes: () => void;
   onSubstitute: () => void;
   onSkipExercise: () => void;
-  onSkipSet: () => void;
   onAddSet: () => void;
   onFinishWorkout: () => void;
   onAbandon: () => void;
@@ -35,13 +32,11 @@ interface GymWorkoutMenuProps {
 export function GymWorkoutMenu({
   labels,
   showSubstitute,
-  showSkipSet,
   showAddSet,
   disabled = false,
   onNotes,
   onSubstitute,
   onSkipExercise,
-  onSkipSet,
   onAddSet,
   onFinishWorkout,
   onAbandon,
@@ -56,7 +51,6 @@ export function GymWorkoutMenu({
   const actions = [
     { label: labels.notes, onClick: onNotes },
     ...(showSubstitute ? [{ label: labels.substitute, onClick: onSubstitute }] : []),
-    ...(showSkipSet ? [{ label: labels.skipSet, onClick: onSkipSet }] : []),
     ...(showAddSet ? [{ label: labels.addSet, onClick: onAddSet }] : []),
     { label: labels.skipExercise, onClick: onSkipExercise },
     { label: labels.finishWorkout, onClick: onFinishWorkout, emphasis: true as const },

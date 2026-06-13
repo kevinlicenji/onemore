@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 
 import { GymCompletedCheck } from '@/components/gym-ui/gym-completed-check';
-import { cn } from '@onemore/ui';
+import { Button, cn } from '@onemore/ui';
 import { NumberStepper } from '@/components/number-stepper';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import {
@@ -25,6 +25,7 @@ interface GymExerciseSetsProps {
   loading: boolean;
   labels: {
     setSkippedLabel: string;
+    skipSet: string;
     reps: string;
     weightKg: string;
     placeholderReps: string;
@@ -34,6 +35,7 @@ interface GymExerciseSetsProps {
   };
   formatSetLabel: (setNumber: number) => string;
   formatSetProgress: (current: number, total: number) => string;
+  onSkipSet: (setId: string, setNumber: number) => void;
   onUpdateSetValue: (setId: string, field: 'weightKg' | 'reps', value: number | null) => void;
 }
 
@@ -54,6 +56,7 @@ export function GymExerciseSets({
   labels,
   formatSetLabel,
   formatSetProgress,
+  onSkipSet,
   onUpdateSetValue,
 }: GymExerciseSetsProps): React.ReactElement {
   const reducedMotion = useReducedMotion();
@@ -191,6 +194,24 @@ export function GymExerciseSets({
                   }}
                 />
               ) : null}
+            </div>
+
+            <div className="mt-3 flex justify-end">
+              <Button
+                className="min-h-9 px-3 text-sm"
+                disabled={loading}
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  const activeSet = setState.activeSet;
+                  if (!activeSet) {
+                    return;
+                  }
+                  onSkipSet(activeSet.id, activeSet.setNumber);
+                }}
+              >
+                {labels.skipSet}
+              </Button>
             </div>
           </motion.div>
         )}

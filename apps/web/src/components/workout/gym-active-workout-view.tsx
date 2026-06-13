@@ -249,7 +249,6 @@ export function GymActiveWorkoutView({
                       notes: labels.menuNotes,
                       substitute: labels.substituteExercise,
                       skipExercise: labels.skipExercise,
-                      skipSet: labels.skipSet,
                       finishWorkout: labels.finishWorkout,
                       abandon: labels.abandon,
                       addSet: labels.addSet,
@@ -257,23 +256,12 @@ export function GymActiveWorkoutView({
                     showAddSet={
                       !currentExercise.sets.some((set) => !set.isCompleted && !set.isSkipped)
                     }
-                    showSkipSet={Boolean(
-                      currentExercise.sets.find((set) => !set.isCompleted && !set.isSkipped),
-                    )}
                     showSubstitute={session.sessionType === 'programmed'}
                     onAbandon={onAbandon}
                     onAddSet={onAddSet}
                     onFinishWorkout={onFinishWorkout}
                     onNotes={onOpenNotes}
                     onSkipExercise={onSkipExercise}
-                    onSkipSet={() => {
-                      const activeSet = currentExercise.sets.find(
-                        (set) => !set.isCompleted && !set.isSkipped,
-                      );
-                      if (activeSet) {
-                        onSkipSet(activeSet.id, activeSet.setNumber);
-                      }
-                    }}
                     onSubstitute={onOpenSubstitute}
                   />
                 )}
@@ -376,6 +364,7 @@ export function GymActiveWorkoutView({
                           formatSetProgress={formatSetProgress}
                           labels={{
                             setSkippedLabel: labels.setSkippedLabel,
+                            skipSet: labels.skipSet,
                             reps: labels.reps,
                             weightKg: labels.weightKg,
                             placeholderReps: labels.placeholderReps,
@@ -385,6 +374,7 @@ export function GymActiveWorkoutView({
                           }}
                           loading={loading}
                           restTimerContext={restTimerContext}
+                          onSkipSet={onSkipSet}
                           onUpdateSetValue={onUpdateSetValue}
                         />
                       </motion.div>

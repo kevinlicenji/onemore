@@ -132,12 +132,9 @@ export function RestTimer({
         </p>
 
         <div className="relative mt-6 flex h-56 w-56 items-center justify-center">
-          <motion.svg
-            animate={reducedMotion ? undefined : { scale: [1, 1.04, 1] }}
+          <svg
             aria-hidden
             className="absolute inset-0 h-full w-full -rotate-90"
-            key={displayRemaining}
-            transition={pulseTransition}
             viewBox="0 0 200 200"
           >
             <circle
@@ -161,9 +158,13 @@ export function RestTimer({
               strokeLinecap="round"
               strokeWidth="6"
             />
-          </motion.svg>
+          </svg>
 
-          <div className="relative h-[7.5rem] w-full max-w-[10rem] overflow-hidden">
+          <motion.div
+            animate={reducedMotion ? undefined : { scale: [1, 1.04, 1] }}
+            className="relative h-[7.5rem] w-full max-w-[10rem] overflow-hidden"
+            transition={pulseTransition}
+          >
             <AnimatePresence mode="popLayout">
               <motion.p
                 key={displayRemaining}
@@ -176,7 +177,7 @@ export function RestTimer({
                 {displayRemaining}
               </motion.p>
             </AnimatePresence>
-          </div>
+          </motion.div>
         </div>
 
         <p className="mt-1 text-lg text-muted-foreground">sec</p>

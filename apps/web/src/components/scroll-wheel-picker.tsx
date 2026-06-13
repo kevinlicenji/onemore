@@ -177,7 +177,7 @@ export function ScrollWheelPicker<T extends string | number>({
       {showLabel ? <span className="text-sm font-medium">{label}</span> : null}
       <div
         className="relative isolate overflow-hidden rounded-xl border bg-muted/15"
-        style={{ height: layout.visibleHeight, perspective: '1000px' }}
+        style={{ height: layout.visibleHeight }}
       >
         <div
           aria-hidden
@@ -201,7 +201,6 @@ export function ScrollWheelPicker<T extends string | number>({
             WebkitOverflowScrolling: 'touch',
             paddingTop: padding,
             paddingBottom: padding,
-            transformStyle: 'preserve-3d',
           }}
           onPointerDown={() => {
             isDraggingRef.current = true;
@@ -220,7 +219,8 @@ export function ScrollWheelPicker<T extends string | number>({
                 style={{
                   height: itemHeight,
                   opacity: style.opacity,
-                  transform: `scale(${String(style.scale)}) rotateX(${String(distance * -14)}deg) translateZ(${String(Math.max(0, 24 - Math.abs(distance) * 12))}px)`,
+                  transform: `scale(${String(style.scale)})`,
+                  transformOrigin: 'center center',
                   fontSize: `${String(style.fontSizeRem)}rem`,
                   fontWeight: style.fontWeight,
                   color: isSelected ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',

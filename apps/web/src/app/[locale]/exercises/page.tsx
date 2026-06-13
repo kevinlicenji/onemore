@@ -128,20 +128,26 @@ export default function ExercisesPage(): React.ReactElement {
     setEquipment('');
   }
 
-  function labelCategory(value: string): string {
-    if ((FILTER_EXERCISE_CATEGORIES as readonly string[]).includes(value)) {
-      return t(`categories.${value}` as 'categories.chest');
-    }
-    return value;
-  }
+  const labelCategory = useCallback(
+    (value: string): string => {
+      if ((FILTER_EXERCISE_CATEGORIES as readonly string[]).includes(value)) {
+        return t(`categories.${value}` as 'categories.chest');
+      }
+      return value;
+    },
+    [t],
+  );
 
-  function labelEquipment(value: string): string {
-    const knownLabels = [...FILTER_EQUIPMENT_TYPES, 'other'] as string[];
-    if (knownLabels.includes(value)) {
-      return t(`equipmentLabels.${value}` as 'equipmentLabels.barbell');
-    }
-    return value.replace(/_/g, ' ');
-  }
+  const labelEquipment = useCallback(
+    (value: string): string => {
+      const knownLabels = [...FILTER_EQUIPMENT_TYPES, 'other'] as string[];
+      if (knownLabels.includes(value)) {
+        return t(`equipmentLabels.${value}` as 'equipmentLabels.barbell');
+      }
+      return value.replace(/_/g, ' ');
+    },
+    [t],
+  );
 
   const categoryOptions = useMemo(
     () => [
@@ -151,7 +157,7 @@ export default function ExercisesPage(): React.ReactElement {
         label: labelCategory(value),
       })),
     ],
-    [t],
+    [labelCategory, t],
   );
 
   const equipmentOptions = useMemo(
@@ -162,7 +168,7 @@ export default function ExercisesPage(): React.ReactElement {
         label: labelEquipment(value),
       })),
     ],
-    [t],
+    [labelEquipment, t],
   );
 
   function closeForm(): void {
