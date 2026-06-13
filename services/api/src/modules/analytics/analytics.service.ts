@@ -3,9 +3,7 @@ import type { PrismaClient } from '@prisma/client';
 
 import { getCurrentIsoWeekKey, getIsoWeekKey } from '../progress/iso-week.js';
 import type { PrDetectionService } from '../progress/pr-detection.service.js';
-import {
-  computeSessionVolumeKg,
-} from '../progress/session-metrics.js';
+import { computeSessionVolumeKg } from '../progress/session-metrics.js';
 import type { WorkoutsService } from '../workouts/workouts.service.js';
 
 /**

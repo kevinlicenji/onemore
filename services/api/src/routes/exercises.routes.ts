@@ -1,4 +1,8 @@
-import { createCustomExerciseSchema, exerciseSearchQuerySchema, updateCustomExerciseSchema } from '@onemore/shared';
+import {
+  createCustomExerciseSchema,
+  exerciseSearchQuerySchema,
+  updateCustomExerciseSchema,
+} from '@onemore/shared';
 import { Router } from 'express';
 
 import { asyncHandler } from '../middleware/async-handler.js';

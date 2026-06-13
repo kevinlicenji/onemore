@@ -83,11 +83,7 @@ export function GymBottomNav({ locale, route }: GymBottomNavProps): React.ReactE
                 aria-label={t(workoutItem.labelKey)}
                 onClick={handleNavTap}
               >
-                <WorkoutIcon
-                  aria-hidden
-                  className="h-8 w-8 rotate-[-12deg]"
-                  strokeWidth={2.5}
-                />
+                <WorkoutIcon aria-hidden className="h-8 w-8 rotate-[-12deg]" strokeWidth={2.5} />
               </Link>
             </div>
           ) : null}

@@ -21,7 +21,12 @@ import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
 import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
 import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
-import { createCustomExercise, fetchExercises, updateCustomExercise, type ExerciseQueryFilters } from '@/lib/api-auth';
+import {
+  createCustomExercise,
+  fetchExercises,
+  updateCustomExercise,
+  type ExerciseQueryFilters,
+} from '@/lib/api-auth';
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -414,11 +419,18 @@ export default function ExercisesPage(): React.ReactElement {
                 />
                 <span>
                   <span className="font-medium">{t('bodyweight')}</span>
-                  <span className="mt-0.5 block text-muted-foreground">{t('editBodyweightHint')}</span>
+                  <span className="mt-0.5 block text-muted-foreground">
+                    {t('editBodyweightHint')}
+                  </span>
                 </span>
               </label>
               <div className="flex gap-2">
-                <Button className="min-h-12 flex-1" type="button" variant="outline" onClick={closeEditExercise}>
+                <Button
+                  className="min-h-12 flex-1"
+                  type="button"
+                  variant="outline"
+                  onClick={closeEditExercise}
+                >
                   {t('cancelCustom')}
                 </Button>
                 <Button
@@ -476,7 +488,10 @@ export default function ExercisesPage(): React.ReactElement {
             {items.map((exercise) => (
               <StaggerItem key={exercise.id}>
                 <Card
-                  className={cn('h-full', exercise.isCustom && 'cursor-pointer transition-colors hover:bg-muted/30')}
+                  className={cn(
+                    'h-full',
+                    exercise.isCustom && 'cursor-pointer transition-colors hover:bg-muted/30',
+                  )}
                   onClick={
                     exercise.isCustom
                       ? () => {
