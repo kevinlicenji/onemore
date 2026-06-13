@@ -119,7 +119,7 @@ export function MetricInput({
   placeholder,
   disabled = false,
   size = 'default',
-  wheelSize = 'default',
+  wheelSize,
   showLabel = true,
   onChange,
 }: MetricInputProps): React.ReactElement {
