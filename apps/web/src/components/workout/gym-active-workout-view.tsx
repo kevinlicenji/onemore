@@ -50,6 +50,7 @@ export interface GymActiveWorkoutViewProps {
     weightKg: string;
     completeSetGym: string;
     addSet: string;
+    addSetPrompt: string;
     exerciseActionsMenu: string;
     menuNotes: string;
     substituteExercise: string;
@@ -456,20 +457,46 @@ export function GymActiveWorkoutView({
                 const activeSet = currentExercise.sets.find(
                   (set) => !set.isCompleted && !set.isSkipped,
                 );
-                if (!activeSet) {
+                if (activeSet) {
+                  return (
+                    <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                      <Button
+                        className="min-h-14 w-full text-lg font-semibold"
+                        disabled={loading}
+                        type="button"
+                        onClick={() => {
+                          handleCompleteSet(activeSet.id, activeSet.setNumber);
+                        }}
+                      >
+                        {labels.completeSetGym}
+                      </Button>
+                    </div>
+                  );
+                }
+
+                const allSetsDone = currentExercise.sets.every(
+                  (set) => set.isCompleted || set.isSkipped,
+                );
+                if (!allSetsDone) {
                   return null;
                 }
+
                 return (
                   <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                    <p className="mb-3 text-center text-sm font-medium text-muted-foreground">
+                      {labels.addSetPrompt}
+                    </p>
                     <Button
                       className="min-h-14 w-full text-lg font-semibold"
                       disabled={loading}
                       type="button"
+                      variant="outline"
                       onClick={() => {
-                        handleCompleteSet(activeSet.id, activeSet.setNumber);
+                        triggerHaptic('light');
+                        onAddSet();
                       }}
                     >
-                      {labels.completeSetGym}
+                      {labels.addSet}
                     </Button>
                   </div>
                 );

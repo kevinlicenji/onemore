@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 
 import { GymCompletedCheck } from '@/components/gym-ui/gym-completed-check';
+import { cn } from '@onemore/ui';
 import { NumberStepper } from '@/components/number-stepper';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import {
@@ -146,7 +147,12 @@ export function GymExerciseSets({
               </p>
             )}
 
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div
+              className={cn(
+                'mt-4 grid gap-3',
+                exercise.exercise.isBodyweight ? 'grid-cols-1' : 'grid-cols-2',
+              )}
+            >
               <NumberStepper
                 disabled={loading}
                 kind="reps"
@@ -165,24 +171,26 @@ export function GymExerciseSets({
                   onUpdateSetValue(activeSet.id, 'reps', value);
                 }}
               />
-              <NumberStepper
-                disabled={loading}
-                kind="weight"
-                label={labels.weightKg}
-                placeholder={setState.getWeightPlaceholder(
-                  isExtraSet(setState.activeSet.setNumber, prescription.targetSets),
-                )}
-                size="gym"
-                step={0.5}
-                value={setState.activeSet.weightKg}
-                onChange={(value) => {
-                  const activeSet = setState.activeSet;
-                  if (!activeSet) {
-                    return;
-                  }
-                  onUpdateSetValue(activeSet.id, 'weightKg', value);
-                }}
-              />
+              {!exercise.exercise.isBodyweight ? (
+                <NumberStepper
+                  disabled={loading}
+                  kind="weight"
+                  label={labels.weightKg}
+                  placeholder={setState.getWeightPlaceholder(
+                    isExtraSet(setState.activeSet.setNumber, prescription.targetSets),
+                  )}
+                  size="gym"
+                  step={0.5}
+                  value={setState.activeSet.weightKg}
+                  onChange={(value) => {
+                    const activeSet = setState.activeSet;
+                    if (!activeSet) {
+                      return;
+                    }
+                    onUpdateSetValue(activeSet.id, 'weightKg', value);
+                  }}
+                />
+              ) : null}
             </div>
           </motion.div>
         )}

@@ -117,6 +117,37 @@ export class ExercisesService {
     return this.toListItem(created, userId);
   }
 
+  /**
+   * Update a user-owned custom exercise.
+   *
+   * @param userId - Owner user id.
+   * @param exerciseId - Exercise library id.
+   * @param input - Fields to update.
+   */
+  async updateCustom(
+    userId: string,
+    exerciseId: string,
+    input: { isBodyweight: boolean },
+  ): Promise<ExerciseListItem> {
+    const exercise = await this.prisma.exerciseLibrary.findFirst({
+      where: { id: exerciseId, ownerUserId: userId, deletedAt: null },
+    });
+
+    if (!exercise) {
+      throw new HttpError(404, 'Custom exercise not found', 'EXERCISE_NOT_FOUND');
+    }
+
+    const updated = await this.prisma.exerciseLibrary.update({
+      where: { id: exerciseId },
+      data: {
+        isBodyweight: input.isBodyweight,
+        equipment: input.isBodyweight ? 'bodyweight' : exercise.equipment,
+      },
+    });
+
+    return this.toListItem(updated, userId);
+  }
+
   private buildWhere(userId: string, query: ExerciseSearchQuery): Prisma.ExerciseLibraryWhereInput {
     const where: Prisma.ExerciseLibraryWhereInput = {
       deletedAt: null,

@@ -460,6 +460,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     weightKg: t('weightKg'),
     completeSetGym: t('completeSetGym'),
     addSet: t('addSet'),
+    addSetPrompt: t('addSetPrompt'),
     exerciseActionsMenu: t('exerciseActionsMenu'),
     menuNotes: t('menuNotes'),
     substituteExercise: t('substituteExercise'),

@@ -14,6 +14,7 @@ interface CreateCustomExerciseFormProps {
     nameIt: string;
     primaryMuscle: string;
     equipmentField: string;
+    bodyweight: string;
     saveCustom: string;
     cancelCustom: string;
   };
@@ -130,6 +131,17 @@ export function CreateCustomExerciseForm({
         />
       </label>
       {muscleField}
+      <label className="flex items-center gap-3 rounded-lg border px-3 py-3 text-sm">
+        <input
+          checked={form.isBodyweight}
+          className="h-5 w-5 rounded border"
+          type="checkbox"
+          onChange={(e) => {
+            onChange({ ...form, isBodyweight: e.target.checked });
+          }}
+        />
+        <span>{labels.bodyweight}</span>
+      </label>
       {equipmentField}
       <div className="mt-1 flex gap-2">
         <Button className="min-h-12 flex-1" type="button" variant="outline" onClick={onCancel}>

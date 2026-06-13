@@ -5,7 +5,6 @@ import { getCurrentIsoWeekKey, getIsoWeekKey } from '../progress/iso-week.js';
 import type { PrDetectionService } from '../progress/pr-detection.service.js';
 import {
   computeSessionVolumeKg,
-  isConsistentCompletedSession,
 } from '../progress/session-metrics.js';
 import type { WorkoutsService } from '../workouts/workouts.service.js';
 
@@ -47,28 +46,38 @@ export class AnalyticsService {
       },
     });
 
-    const consistentSessions = sessions.filter((session) => isConsistentCompletedSession(session));
+    const completedSessions = sessions.filter(
+      (session) => session.status === 'completed' && session.completedAt,
+    );
 
     const currentWeekKey = getCurrentIsoWeekKey(timezone);
-    const workoutsThisWeek = consistentSessions.filter(
+    const sessionsThisWeek = completedSessions.filter(
       (session) =>
         session.completedAt && getIsoWeekKey(session.completedAt, timezone) === currentWeekKey,
-    ).length;
+    );
 
-    const weeklyVolumeKg = consistentSessions
-      .filter(
-        (session) =>
-          session.completedAt && getIsoWeekKey(session.completedAt, timezone) === currentWeekKey,
-      )
-      .reduce((sum, session) => sum + computeSessionVolumeKg(session), 0);
+    const workoutsThisWeek = sessionsThisWeek.length;
 
-    const last = consistentSessions[0];
+    const weeklySetsCompleted = sessionsThisWeek.reduce((sum, session) => {
+      const sets = session.exerciseExecutions.flatMap((execution) =>
+        execution.setLogs.filter((set) => set.isCompleted && !set.isWarmup),
+      );
+      return sum + sets.length;
+    }, 0);
+
+    const weeklyVolumeKg = sessionsThisWeek.reduce(
+      (sum, session) => sum + computeSessionVolumeKg(session),
+      0,
+    );
+
+    const last = completedSessions[0];
     const nextWorkout = await this.workoutsService.getNextWorkoutPreview(userId);
     const recentPersonalRecords = await this.prDetection.listRecent(this.prisma, userId, 5);
 
     return {
-      streakWeeks: this.computeStreakWeeks(consistentSessions, timezone),
+      streakWeeks: this.computeStreakWeeks(completedSessions, timezone),
       workoutsThisWeek,
+      weeklySetsCompleted,
       weeklyVolumeKg: Math.round(weeklyVolumeKg * 100) / 100,
       lastWorkout: last?.completedAt
         ? {

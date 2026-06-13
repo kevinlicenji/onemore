@@ -2,7 +2,7 @@
 
 import type { CreateCustomExercise, ExerciseListItem } from '@onemore/shared';
 import { FILTER_EQUIPMENT_TYPES, FILTER_EXERCISE_CATEGORIES } from '@onemore/shared';
-import { Button, Card, CardContent, Input } from '@onemore/ui';
+import { Button, Card, CardContent, Input, cn } from '@onemore/ui';
 import { Search } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -21,7 +21,7 @@ import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
 import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
 import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
-import { createCustomExercise, fetchExercises, type ExerciseQueryFilters } from '@/lib/api-auth';
+import { createCustomExercise, fetchExercises, updateCustomExercise, type ExerciseQueryFilters } from '@/lib/api-auth';
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -48,6 +48,8 @@ export default function ExercisesPage(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editingExercise, setEditingExercise] = useState<ExerciseListItem | null>(null);
+  const [editBodyweight, setEditBodyweight] = useState(false);
   const [form, setForm] = useState<CreateCustomExercise>({
     names: { en: '', it: '' },
     category: 'custom',
@@ -183,13 +185,44 @@ export default function ExercisesPage(): React.ReactElement {
           en: form.names.en.trim(),
           ...(form.names.it?.trim() ? { it: form.names.it.trim() } : {}),
         },
-        isBodyweight: form.equipment === 'bodyweight',
+        isBodyweight: form.isBodyweight,
       };
       await createCustomExercise(accessToken, payload);
       closeForm();
       await loadExercises();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('createError'));
+      setLoading(false);
+    }
+  }
+
+  function openEditExercise(exercise: ExerciseListItem): void {
+    if (!exercise.isCustom) {
+      return;
+    }
+    setEditingExercise(exercise);
+    setEditBodyweight(exercise.isBodyweight);
+  }
+
+  function closeEditExercise(): void {
+    setEditingExercise(null);
+    setEditBodyweight(false);
+  }
+
+  async function handleUpdateBodyweight(): Promise<void> {
+    if (!accessToken || !editingExercise) {
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      await updateCustomExercise(accessToken, editingExercise.id, {
+        isBodyweight: editBodyweight,
+      });
+      closeEditExercise();
+      await loadExercises();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('updateError'));
       setLoading(false);
     }
   }
@@ -228,9 +261,22 @@ export default function ExercisesPage(): React.ReactElement {
       {items.map((exercise) => (
         <GymListRow
           key={exercise.id}
-          meta={exercise.isCustom ? t('customBadge') : undefined}
+          meta={
+            exercise.isCustom
+              ? `${t('customBadge')}${exercise.isBodyweight ? ` · ${t('bodyweight')}` : ''}`
+              : exercise.isBodyweight
+                ? t('bodyweight')
+                : undefined
+          }
           subtitle={`${labelCategory(exercise.category)} · ${labelEquipment(exercise.equipment)}`}
           title={exerciseDisplayName(exercise, locale)}
+          onClick={
+            exercise.isCustom
+              ? () => {
+                  openEditExercise(exercise);
+                }
+              : undefined
+          }
         />
       ))}
     </GymListGroup>
@@ -333,6 +379,7 @@ export default function ExercisesPage(): React.ReactElement {
               nameEn: t('nameEn'),
               nameIt: t('nameIt'),
               primaryMuscle: t('primaryMuscle'),
+              bodyweight: t('bodyweight'),
               saveCustom: t('saveCustom'),
             }}
             loading={loading}
@@ -343,6 +390,50 @@ export default function ExercisesPage(): React.ReactElement {
               void handleCreate();
             }}
           />
+        </GymAdaptiveOverlay>
+
+        <GymAdaptiveOverlay
+          ariaLabel={t('editCustom')}
+          open={editingExercise !== null}
+          title={t('editCustom')}
+          onClose={closeEditExercise}
+        >
+          {editingExercise ? (
+            <div className="flex flex-col gap-4">
+              <p className="text-base font-semibold">
+                {exerciseDisplayName(editingExercise, locale)}
+              </p>
+              <label className="flex items-start gap-3 rounded-lg border px-3 py-3 text-sm">
+                <input
+                  checked={editBodyweight}
+                  className="mt-0.5 h-5 w-5 rounded border"
+                  type="checkbox"
+                  onChange={(e) => {
+                    setEditBodyweight(e.target.checked);
+                  }}
+                />
+                <span>
+                  <span className="font-medium">{t('bodyweight')}</span>
+                  <span className="mt-0.5 block text-muted-foreground">{t('editBodyweightHint')}</span>
+                </span>
+              </label>
+              <div className="flex gap-2">
+                <Button className="min-h-12 flex-1" type="button" variant="outline" onClick={closeEditExercise}>
+                  {t('cancelCustom')}
+                </Button>
+                <Button
+                  className="min-h-12 flex-1"
+                  disabled={loading}
+                  type="button"
+                  onClick={() => {
+                    void handleUpdateBodyweight();
+                  }}
+                >
+                  {t('saveCustom')}
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </GymAdaptiveOverlay>
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -384,12 +475,22 @@ export default function ExercisesPage(): React.ReactElement {
           <StaggerGroup className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {items.map((exercise) => (
               <StaggerItem key={exercise.id}>
-                <Card className="h-full">
+                <Card
+                  className={cn('h-full', exercise.isCustom && 'cursor-pointer transition-colors hover:bg-muted/30')}
+                  onClick={
+                    exercise.isCustom
+                      ? () => {
+                          openEditExercise(exercise);
+                        }
+                      : undefined
+                  }
+                >
                   <CardContent className="p-4">
                     <p className="font-medium">{exerciseDisplayName(exercise, locale)}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {labelCategory(exercise.category)}
                       {exercise.isCustom ? ` · ${t('customBadge')}` : ''}
+                      {exercise.isBodyweight ? ` · ${t('bodyweight')}` : ''}
                       {' · '}
                       {labelEquipment(exercise.equipment)}
                     </p>

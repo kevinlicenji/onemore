@@ -129,7 +129,10 @@
   --gym-tint: 24 30% 10%;
 }
 
-/* Font stacks — data-font on <html> */
+:root {
+  --font-sans-active: var(--font-plus-jakarta);
+}
+
 [data-font='plus-jakarta'] {
   --font-sans-active: var(--font-plus-jakarta);
 }
@@ -144,6 +147,28 @@
 
 [data-font='outfit'] {
   --font-sans-active: var(--font-outfit);
+}
+
+[data-font='bebas-neue'] {
+  --font-sans-active: var(--font-bebas-neue);
+  letter-spacing: 0.04em;
+}
+
+[data-font='oswald'] {
+  --font-sans-active: var(--font-oswald);
+  letter-spacing: 0.02em;
+}
+
+[data-font='rubik'] {
+  --font-sans-active: var(--font-rubik);
+}
+
+[data-font='barlow'] {
+  --font-sans-active: var(--font-barlow);
+}
+
+[data-font='space-grotesk'] {
+  --font-sans-active: var(--font-space-grotesk);
 }
 
 [data-font='system'] {

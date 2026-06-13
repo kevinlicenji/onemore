@@ -22,6 +22,7 @@ import type {
   UpdateWorkoutExerciseNotesInput,
   UpdateWorkoutSessionNotesInput,
   UpdateUserProfile,
+  UpdateCustomExercise,
   UpsertSetLogInput,
   UpsertSetResponse,
   UserProfile,
@@ -199,6 +200,23 @@ export async function createCustomExercise(
   });
   if (!response.ok) {
     throw await parseApiError(response, 'Failed to create exercise');
+  }
+  return response.json() as Promise<ExerciseListItem>;
+}
+
+export async function updateCustomExercise(
+  accessToken: string,
+  exerciseId: string,
+  payload: UpdateCustomExercise,
+): Promise<ExerciseListItem> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/exercises/${exerciseId}`, {
+    method: 'PATCH',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to update exercise');
   }
   return response.json() as Promise<ExerciseListItem>;
 }

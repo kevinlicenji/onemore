@@ -1,4 +1,4 @@
-import { createCustomExerciseSchema, exerciseSearchQuerySchema } from '@onemore/shared';
+import { createCustomExerciseSchema, exerciseSearchQuerySchema, updateCustomExerciseSchema } from '@onemore/shared';
 import { Router } from 'express';
 
 import { asyncHandler } from '../middleware/async-handler.js';
@@ -28,6 +28,20 @@ export function createExercisesRouter(exercisesService: ExercisesService): Route
       const body = createCustomExerciseSchema.parse(req.body);
       const exercise = await exercisesService.createCustom(authReq.userId ?? '', body);
       res.status(201).json(exercise);
+    }),
+  );
+
+  router.patch(
+    '/:id',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const body = updateCustomExerciseSchema.parse(req.body);
+      const exercise = await exercisesService.updateCustom(
+        authReq.userId ?? '',
+        req.params.id,
+        body,
+      );
+      res.json(exercise);
     }),
   );
 

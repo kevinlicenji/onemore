@@ -53,6 +53,11 @@ export const createCustomExerciseSchema = z.object({
   isBodyweight: z.boolean().default(false),
 });
 
+export const updateCustomExerciseSchema = z.object({
+  isBodyweight: z.boolean(),
+});
+
 export type ExerciseListItem = z.infer<typeof exerciseListItemSchema>;
 export type ExerciseSearchQuery = z.infer<typeof exerciseSearchQuerySchema>;
 export type CreateCustomExercise = z.infer<typeof createCustomExerciseSchema>;
+export type UpdateCustomExercise = z.infer<typeof updateCustomExerciseSchema>;

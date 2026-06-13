@@ -41,6 +41,7 @@ describe('AnalyticsService', () => {
 
     expect(dashboard.streakWeeks).toBe(0);
     expect(dashboard.workoutsThisWeek).toBe(0);
+    expect(dashboard.weeklySetsCompleted).toBe(0);
     expect(dashboard.lastWorkout).toBeNull();
   });
 });

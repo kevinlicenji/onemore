@@ -1,7 +1,8 @@
 'use client';
 
 import type { AnalyticsDashboard } from '@onemore/shared';
-import { Button, Card, CardContent, Skeleton } from '@onemore/ui';
+import { Button, Card, CardContent, Skeleton, cn } from '@onemore/ui';
+import { CalendarDays, Dumbbell, Flame, Layers, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -26,6 +27,13 @@ function formatDate(iso: string, locale: string): string {
   });
 }
 
+function formatVolume(kg: number): string {
+  if (kg >= 1000) {
+    return `${(kg / 1000).toFixed(1)}k`;
+  }
+  return String(Math.round(kg));
+}
+
 interface DashboardStatsProps {
   dashboard: AnalyticsDashboard;
   locale: string;
@@ -38,62 +46,110 @@ function DashboardStats({
   mobile = false,
 }: DashboardStatsProps): React.ReactElement {
   const t = useTranslations('Dashboard');
+  const lastWorkoutLabel = dashboard.lastWorkout
+    ? formatDate(dashboard.lastWorkout.completedAt, locale)
+    : t('noLastWorkout');
 
   if (mobile) {
     return (
-      <GymStatGrid>
-        <GymStatTile
-          label={t('streakLabel')}
-          unit={t('streakUnit')}
-          value={dashboard.streakWeeks}
-        />
-        <GymStatTile label={t('weeklyVolumeLabel')} unit="kg" value={dashboard.weeklyVolumeKg} />
-        <GymStatTile label={t('workoutsThisWeekLabel')} value={dashboard.workoutsThisWeek} />
-        <GymStatTile
-          label={t('lastWorkoutLabel')}
-          value={
-            dashboard.lastWorkout
-              ? formatDate(dashboard.lastWorkout.completedAt, locale)
-              : t('noLastWorkout')
-          }
-        />
-      </GymStatGrid>
+      <div className="flex flex-col gap-3">
+        <div className="relative overflow-hidden rounded-2xl border border-gym-separator bg-gradient-to-br from-primary/12 via-gym-surface to-gym-tint p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">{t('streakHero')}</p>
+              <p className="mt-1 text-5xl font-bold tabular-nums tracking-tight">
+                {dashboard.streakWeeks}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{t('streakUnit')}</p>
+            </div>
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <Flame aria-hidden className="h-6 w-6" />
+            </span>
+          </div>
+        </div>
+
+        <GymStatGrid>
+          <GymStatTile
+            className="border-primary/15 bg-primary/[0.04]"
+            label={t('workoutsThisWeekLabel')}
+            unit={t('workoutsThisWeekUnit')}
+            value={dashboard.workoutsThisWeek}
+          />
+          <GymStatTile
+            label={t('weeklySetsLabel')}
+            unit={t('weeklySetsUnit')}
+            value={dashboard.weeklySetsCompleted}
+          />
+          <GymStatTile
+            label={t('weeklyVolumeLabel')}
+            unit={t('volumeUnit')}
+            value={formatVolume(dashboard.weeklyVolumeKg)}
+          />
+          <GymStatTile label={t('lastWorkoutLabel')} value={lastWorkoutLabel} />
+        </GymStatGrid>
+      </div>
     );
   }
 
   return (
-    <StatGrid>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-sm text-muted-foreground">{t('streakLabel')}</p>
-          <p className="mt-2 text-3xl font-bold">{dashboard.streakWeeks}</p>
-          <p className="text-sm text-muted-foreground">{t('streakUnit')}</p>
+    <div className="flex flex-col gap-4">
+      <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/8 via-card to-gym-tint">
+        <CardContent className="flex items-center justify-between gap-6 p-6">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">{t('streakHero')}</p>
+            <p className="mt-2 text-5xl font-bold tabular-nums">{dashboard.streakWeeks}</p>
+            <p className="text-sm text-muted-foreground">{t('streakUnit')}</p>
+          </div>
+          <Flame aria-hidden className="h-14 w-14 text-primary opacity-80" />
         </CardContent>
       </Card>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-sm text-muted-foreground">{t('weeklyVolumeLabel')}</p>
-          <p className="mt-2 text-3xl font-bold">{dashboard.weeklyVolumeKg}</p>
-          <p className="text-sm text-muted-foreground">kg</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-sm text-muted-foreground">{t('workoutsThisWeekLabel')}</p>
-          <p className="mt-2 text-3xl font-bold">{dashboard.workoutsThisWeek}</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-sm text-muted-foreground">{t('lastWorkoutLabel')}</p>
-          <p className="mt-2 text-lg font-semibold">
-            {dashboard.lastWorkout
-              ? formatDate(dashboard.lastWorkout.completedAt, locale)
-              : t('noLastWorkout')}
-          </p>
-        </CardContent>
-      </Card>
-    </StatGrid>
+
+      <StatGrid>
+        <Card>
+          <CardContent className="flex items-start gap-4 p-6">
+            <Dumbbell aria-hidden className="mt-1 h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm text-muted-foreground">{t('workoutsThisWeekLabel')}</p>
+              <p className="mt-2 text-3xl font-bold tabular-nums">{dashboard.workoutsThisWeek}</p>
+              <p className="text-sm text-muted-foreground">{t('workoutsThisWeekUnit')}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-start gap-4 p-6">
+            <Layers aria-hidden className="mt-1 h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm text-muted-foreground">{t('weeklySetsLabel')}</p>
+              <p className="mt-2 text-3xl font-bold tabular-nums">
+                {dashboard.weeklySetsCompleted}
+              </p>
+              <p className="text-sm text-muted-foreground">{t('weeklySetsUnit')}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-start gap-4 p-6">
+            <TrendingUp aria-hidden className="mt-1 h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm text-muted-foreground">{t('weeklyVolumeLabel')}</p>
+              <p className="mt-2 text-3xl font-bold tabular-nums">
+                {formatVolume(dashboard.weeklyVolumeKg)}
+              </p>
+              <p className="text-sm text-muted-foreground">{t('volumeUnit')}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-start gap-4 p-6">
+            <CalendarDays aria-hidden className="mt-1 h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm text-muted-foreground">{t('lastWorkoutLabel')}</p>
+              <p className="mt-2 text-lg font-semibold">{lastWorkoutLabel}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </StatGrid>
+    </div>
   );
 }
 
@@ -137,7 +193,11 @@ export default function DashboardPage(): React.ReactElement {
   }, [accessToken, profile?.onboardingCompletedAt, loadDashboard]);
 
   const hasActivity =
-    dashboard !== null && (dashboard.lastWorkout !== null || dashboard.streakWeeks > 0);
+    dashboard !== null &&
+    (dashboard.lastWorkout !== null ||
+      dashboard.streakWeeks > 0 ||
+      dashboard.workoutsThisWeek > 0 ||
+      dashboard.weeklySetsCompleted > 0);
 
   const motivationalLine = useMotivationalLine(
     hasActivity ? 'dashboardActive' : 'dashboardEmpty',
@@ -146,7 +206,10 @@ export default function DashboardPage(): React.ReactElement {
   const subtitle = hasActivity ? t('subtitle') : t('emptySubtitle');
 
   const startWorkoutButton = (
-    <Button asChild className={isDesktop ? undefined : 'min-h-12 w-full text-base'}>
+    <Button
+      asChild
+      className={cn(isDesktop ? undefined : 'min-h-12 w-full text-base font-semibold')}
+    >
       <Link href={`/${locale}/workouts/start`}>{t('startWorkoutCta')}</Link>
     </Button>
   );
@@ -187,19 +250,25 @@ export default function DashboardPage(): React.ReactElement {
 
         {loading && !dashboard ? (
           isDesktop ? (
-            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-              <Skeleton className="h-28 rounded-lg" />
-              <Skeleton className="h-28 rounded-lg" />
-              <Skeleton className="h-28 rounded-lg" />
-              <Skeleton className="h-28 rounded-lg" />
+            <div className="flex flex-col gap-4">
+              <Skeleton className="h-32 rounded-lg" />
+              <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+                <Skeleton className="h-28 rounded-lg" />
+                <Skeleton className="h-28 rounded-lg" />
+                <Skeleton className="h-28 rounded-lg" />
+                <Skeleton className="h-28 rounded-lg" />
+              </div>
             </div>
           ) : (
-            <GymStatGrid>
-              <Skeleton className="h-24 rounded-2xl" />
-              <Skeleton className="h-24 rounded-2xl" />
-              <Skeleton className="h-24 rounded-2xl" />
-              <Skeleton className="h-24 rounded-2xl" />
-            </GymStatGrid>
+            <div className="flex flex-col gap-3">
+              <Skeleton className="h-32 rounded-2xl" />
+              <GymStatGrid>
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
+              </GymStatGrid>
+            </div>
           )
         ) : null}
 

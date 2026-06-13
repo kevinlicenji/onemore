@@ -13,6 +13,7 @@ export const analyticsLastWorkoutSchema = z.object({
 export const analyticsDashboardSchema = z.object({
   streakWeeks: z.number().int(),
   workoutsThisWeek: z.number().int(),
+  weeklySetsCompleted: z.number().int(),
   weeklyVolumeKg: z.number(),
   lastWorkout: analyticsLastWorkoutSchema.nullable(),
   nextWorkout: nextWorkoutPreviewSchema,

@@ -89,6 +89,7 @@ export const workoutExerciseSchema = z.object({
     id: z.string().uuid(),
     slug: z.string(),
     names: z.object({ en: z.string(), it: z.string().optional() }),
+    isBodyweight: z.boolean(),
   }),
   sets: z.array(setLogSchema),
   previousSet: z
@@ -127,6 +128,7 @@ export const nextWorkoutDayExerciseSchema = z.object({
     id: z.string().uuid(),
     slug: z.string(),
     names: z.object({ en: z.string(), it: z.string().optional() }),
+    isBodyweight: z.boolean(),
   }),
 });
 

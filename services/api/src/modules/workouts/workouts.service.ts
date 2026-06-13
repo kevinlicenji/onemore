@@ -763,7 +763,7 @@ export class WorkoutsService {
     targetWeightKg: { toString(): string } | null;
     restSeconds: number;
     coachNote: string | null;
-    exerciseLibrary: { id: string; slug: string; names: unknown };
+    exerciseLibrary: { id: string; slug: string; names: unknown; isBodyweight: boolean };
   }) {
     return {
       programExerciseId: item.id,
@@ -778,6 +778,7 @@ export class WorkoutsService {
         id: item.exerciseLibrary.id,
         slug: item.exerciseLibrary.slug,
         names: item.exerciseLibrary.names as { en: string; it?: string },
+        isBodyweight: item.exerciseLibrary.isBodyweight,
       },
     };
   }
@@ -972,6 +973,7 @@ export class WorkoutsService {
           id: string;
           slug: string;
           names: unknown;
+          isBodyweight: boolean;
         };
         setLogs: Array<{
           id: string;
@@ -1019,6 +1021,7 @@ export class WorkoutsService {
             id: execution.exerciseLibrary.id,
             slug: execution.exerciseLibrary.slug,
             names,
+            isBodyweight: execution.exerciseLibrary.isBodyweight,
           },
           sets: execution.setLogs.map((set) => ({
             id: set.id,

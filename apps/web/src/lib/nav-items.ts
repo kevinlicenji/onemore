@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Dumbbell, History, Home, LayoutList, Play, Settings } from 'lucide-react';
+import { Dumbbell, History, Home, LayoutList, Settings } from 'lucide-react';
 
 export interface NavItem {
   href: string;
@@ -34,7 +34,7 @@ export function buildNavItems(locale: string): NavItem[] {
     {
       href: `/${locale}/workouts/start`,
       labelKey: 'navWorkout',
-      icon: Play,
+      icon: Dumbbell,
       match: (route) => route === 'workouts/start',
     },
     {
@@ -101,7 +101,7 @@ export function buildGymPrimaryNavItems(locale: string): GymPrimaryNavItem[] {
     {
       href: `/${locale}/workouts/start`,
       labelKey: 'navWorkout',
-      icon: Play,
+      icon: Dumbbell,
       match: (route) => route === 'workouts/start',
       prominent: true,
     },

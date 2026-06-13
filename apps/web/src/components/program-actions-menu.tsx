@@ -1,8 +1,10 @@
 'use client';
 
-import { Button } from '@onemore/ui';
+import { Button, cn } from '@onemore/ui';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+
+import { GymSheet } from '@/components/gym-ui/gym-sheet';
 
 interface ProgramActionsMenuProps {
   labels: {
@@ -19,7 +21,7 @@ interface ProgramActionsMenuProps {
 }
 
 /**
- * Overflow menu for program card actions on mobile and desktop.
+ * Program card overflow actions as a full-screen bottom sheet (mobile-safe).
  */
 export function ProgramActionsMenu({
   labels,
@@ -30,31 +32,29 @@ export function ProgramActionsMenu({
   onDelete,
 }: ProgramActionsMenuProps): React.ReactElement {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handlePointerDown(event: PointerEvent): void {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
-  }, []);
-
-  function closeAndRun(action: () => void): void {
+  function handleAction(action: () => void): void {
     setOpen(false);
     action();
   }
 
+  const actions = [
+    { label: labels.edit, href: editHref },
+    ...(showSetActive
+      ? [{ label: labels.setActive, onClick: () => handleAction(onSetActive) }]
+      : []),
+    {
+      label: labels.delete,
+      destructive: true as const,
+      onClick: () => handleAction(onDelete),
+    },
+  ];
+
   return (
-    <div ref={containerRef} className="relative shrink-0">
+    <>
       <Button
         aria-expanded={open}
-        aria-haspopup="menu"
+        aria-haspopup="dialog"
         aria-label={labels.menu}
         className="min-h-9 min-w-9 px-0"
         disabled={disabled}
@@ -62,51 +62,55 @@ export function ProgramActionsMenu({
         type="button"
         variant="outline"
         onClick={() => {
-          setOpen((value) => !value);
+          setOpen(true);
         }}
       >
         ···
       </Button>
 
-      {open && (
-        <div
-          className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border bg-background shadow-lg"
-          role="menu"
-        >
-          <Link
-            className="block w-full px-4 py-3 text-left text-sm hover:bg-muted/60"
-            href={editHref}
-            role="menuitem"
-            onClick={() => {
-              setOpen(false);
-            }}
-          >
-            {labels.edit}
-          </Link>
-          {showSetActive && (
-            <button
-              className="block w-full px-4 py-3 text-left text-sm hover:bg-muted/60"
-              role="menuitem"
-              type="button"
-              onClick={() => {
-                closeAndRun(onSetActive);
-              }}
-            >
-              {labels.setActive}
-            </button>
-          )}
-          <button
-            className="block w-full px-4 py-3 text-left text-sm text-destructive hover:bg-muted/60"
-            role="menuitem"
-            type="button"
-            onClick={() => {
-              closeAndRun(onDelete);
-            }}
-          >
-            {labels.delete}
-          </button>
-        </div>
-      )}
-    </div>
+      <GymSheet
+        ariaLabel={labels.menu}
+        open={open}
+        title={labels.menu}
+        onClose={() => {
+          setOpen(false);
+        }}
+      >
+        <ul className="overflow-hidden rounded-2xl border border-gym-separator bg-gym-surface">
+          {actions.map((action, index) => {
+            if ('href' in action) {
+              return (
+                <li key={action.label} className={cn(index > 0 && 'border-t border-gym-separator')}>
+                  <Link
+                    className="flex min-h-12 w-full items-center px-4 py-3 text-left text-base transition-colors active:bg-muted/50"
+                    href={action.href}
+                    onClick={() => {
+                      setOpen(false);
+                    }}
+                  >
+                    {action.label}
+                  </Link>
+                </li>
+              );
+            }
+
+            return (
+              <li key={action.label} className={cn(index > 0 && 'border-t border-gym-separator')}>
+                <button
+                  className={cn(
+                    'flex min-h-12 w-full items-center px-4 py-3 text-left text-base transition-colors active:bg-muted/50',
+                    action.destructive && 'font-medium text-destructive',
+                  )}
+                  type="button"
+                  onClick={action.onClick}
+                >
+                  {action.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </GymSheet>
+    </>
   );
 }
