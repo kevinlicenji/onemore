@@ -1,6 +1,6 @@
 import { defaultCache } from '@serwist/next/worker';
 import type { PrecacheEntry, SerwistGlobalConfig } from 'serwist';
-import { Serwist } from 'serwist';
+import { NetworkOnly, Serwist } from 'serwist';
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -10,12 +10,22 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+/**
+ * Never cache same-origin API traffic — auth headers are not part of the cache key,
+ * so cached 401 responses break login until the service worker is cleared.
+ */
+const apiNetworkOnly = {
+  matcher: ({ sameOrigin, url: { pathname } }: { sameOrigin: boolean; url: URL }) =>
+    sameOrigin && pathname.startsWith('/api/'),
+  handler: new NetworkOnly(),
+};
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  runtimeCaching: [apiNetworkOnly, ...defaultCache],
   fallbacks: {
     entries: [
       {
