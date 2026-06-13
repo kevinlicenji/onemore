@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { changePasswordBodySchema, updateUserProfileSchema } from './user-update';
+import { changePasswordBodySchema, updateUserProfileSchema } from './user-update.js';
 
 describe('updateUserProfileSchema', () => {
   it('accepts personal info fields', () => {

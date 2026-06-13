@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { defaultWorkoutDayLabel, localizeWorkoutDayLabel } from './workout-day-label';
+import { defaultWorkoutDayLabel, localizeWorkoutDayLabel } from './workout-day-label.js';
 
 describe('workout-day-label', () => {
   it('builds default labels per locale', () => {
