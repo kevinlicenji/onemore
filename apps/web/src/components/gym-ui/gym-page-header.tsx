@@ -21,13 +21,12 @@ interface GymPageHeaderProps {
   actionsLayout?: GymPageHeaderActionsLayout;
   backHref?: string;
   backLabel?: string;
-  /** Compact kettlebell mark above the page title (skipped on auth-style centered pages). */
   showBrandMark?: boolean;
   className?: string;
 }
 
 /**
- * Mobile large-title header with optional back navigation and action slot.
+ * Mobile large-title header. Only the title row stays sticky; description and CTAs scroll away.
  */
 export function GymPageHeader({
   title,
@@ -43,36 +42,36 @@ export function GymPageHeader({
   const showStackedActions = Boolean(actions) && actionsLayout === 'stacked';
 
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-30 w-full border-b border-gym-separator/80 bg-background/90 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-md supports-[backdrop-filter]:bg-background/75 dark:bg-gym-surface/88 dark:supports-[backdrop-filter]:bg-gym-surface/72',
-        gymMobileHorizontalPadding,
-        className,
-      )}
-    >
-      {showBrandMark ? <AppLogo className="mb-2" size={28} /> : null}
+    <header className={cn('w-full', gymMobileHorizontalPadding, className)}>
+      <div
+        className={cn(
+          'sticky top-0 z-30 -mx-[max(1rem,env(safe-area-inset-left))] border-b border-gym-separator/80 bg-background/90 px-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-md supports-[backdrop-filter]:bg-background/75 dark:bg-gym-surface/88 dark:supports-[backdrop-filter]:bg-gym-surface/72',
+        )}
+      >
+        {showBrandMark ? <AppLogo className="mb-2" size={28} /> : null}
 
-      {backHref ? (
-        <Link
-          className="mb-2 inline-flex min-h-10 items-center gap-0.5 text-sm font-medium text-primary"
-          href={backHref}
-        >
-          <ChevronLeft aria-hidden className="h-5 w-5" />
-          {backLabel}
-        </Link>
-      ) : null}
-
-      <div className="flex items-start justify-between gap-3">
-        <h1 className="min-w-0 flex-1 text-balance text-mobile-large-title tracking-tight">
-          {title}
-        </h1>
-        {showInlineActions ? (
-          <div className="flex shrink-0 items-center gap-2">{actions}</div>
+        {backHref ? (
+          <Link
+            className="mb-2 inline-flex min-h-10 items-center gap-0.5 text-sm font-medium text-primary"
+            href={backHref}
+          >
+            <ChevronLeft aria-hidden className="h-5 w-5" />
+            {backLabel}
+          </Link>
         ) : null}
+
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="min-w-0 flex-1 text-balance text-mobile-large-title tracking-tight">
+            {title}
+          </h1>
+          {showInlineActions ? (
+            <div className="flex shrink-0 items-center gap-2">{actions}</div>
+          ) : null}
+        </div>
       </div>
 
       {description ? (
-        <p className="mt-1 w-full text-pretty text-mobile-footnote leading-relaxed text-muted-foreground">
+        <p className="mt-3 w-full text-pretty text-mobile-footnote leading-relaxed text-muted-foreground">
           {description}
         </p>
       ) : null}

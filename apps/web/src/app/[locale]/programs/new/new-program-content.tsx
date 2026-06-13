@@ -42,6 +42,8 @@ export function NewProgramPageContent(): React.ReactElement {
         setInitialDays(
           detail.days.map((day) => ({
             label: day.label,
+            difficultyLevel: day.difficultyLevel,
+            difficultyManual: true,
             exercises: day.exercises.map((row) => ({
               exerciseLibraryId: row.exerciseLibraryId,
               name:

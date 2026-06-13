@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { difficultyLevelSchema } from '../constants/difficulty-level.js';
 import { muscleGroupSchema } from './exercise.js';
 
 export const sessionTypeSchema = z.enum(['programmed', 'free']);
@@ -105,6 +106,7 @@ export const workoutSessionDetailSchema = z.object({
   programAssignmentId: z.string().uuid().nullable(),
   workoutDayId: z.string().uuid().nullable(),
   workoutDayLabel: z.string().nullable(),
+  workoutDayDifficultyLevel: difficultyLevelSchema.nullable(),
   startedAt: z.string().datetime(),
   completedAt: z.string().datetime().nullable(),
   durationSeconds: z.number().int().nullable(),
@@ -131,6 +133,7 @@ export const nextWorkoutDayExerciseSchema = z.object({
 export const workoutDayOptionSchema = z.object({
   workoutDayId: z.string().uuid(),
   label: z.string(),
+  difficultyLevel: difficultyLevelSchema,
   exerciseCount: z.number().int(),
   muscleGroups: z.array(muscleGroupSchema),
   exercises: z.array(nextWorkoutDayExerciseSchema),

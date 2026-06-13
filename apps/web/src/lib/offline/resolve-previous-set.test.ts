@@ -11,6 +11,7 @@ function makeSession(
     programAssignmentId: null,
     workoutDayId: null,
     workoutDayLabel: null,
+    workoutDayDifficultyLevel: null,
     startedAt: '2026-06-01T10:00:00.000Z',
     completedAt: null,
     durationSeconds: null,

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { aggregateMuscleGroups, resolveDayDifficulty } from '@onemore/shared';
 import type { Prisma } from '@prisma/client';
 import { PrismaClient } from '@prisma/client';
 
@@ -28,6 +29,7 @@ interface TemplateSeedRow {
   };
   days: Array<{
     label: string;
+    difficulty?: number;
     exercises: TemplateExerciseSeed[];
   }>;
 }
@@ -61,11 +63,19 @@ async function replaceTemplateDays(
   await tx.workoutDay.deleteMany({ where: { programVersionId: versionId } });
 
   for (const [dayIndex, day] of template.days.entries()) {
+    const dayExercises = day.exercises.map((exercise) => ({
+      targetSets: exercise.sets,
+      targetReps: exercise.reps,
+      restSeconds: exercise.rest,
+    }));
+    const difficultyLevel = resolveDayDifficulty(dayExercises, day.difficulty ?? null);
+
     const workoutDay = await tx.workoutDay.create({
       data: {
         programVersionId: versionId,
         label: day.label,
         sortOrder: dayIndex,
+        difficultyLevel,
       },
     });
 

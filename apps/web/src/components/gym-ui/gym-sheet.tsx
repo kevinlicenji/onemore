@@ -3,6 +3,7 @@
 import { cn } from '@onemore/ui';
 import { motion } from 'motion/react';
 import type { ReactElement, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
@@ -31,8 +32,13 @@ export function GymSheet({
   const reducedMotion = useReducedMotion();
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const dragStartYRef = useRef(0);
   const draggingRef = useRef(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -73,7 +79,7 @@ export function GymSheet({
     };
   }, [onClose, open]);
 
-  if (!open) {
+  if (!open || !mounted) {
     return null;
   }
 
@@ -124,8 +130,8 @@ export function GymSheet({
     dragStartYRef.current = 0;
   }
 
-  return (
-    <div className="fixed inset-0 z-[60] flex flex-col justify-end">
+  return createPortal(
+    <div className="fixed inset-0 z-[80] flex flex-col justify-end">
       <motion.button
         aria-label={ariaLabel}
         className="absolute inset-0 bg-black/45"
@@ -188,6 +194,7 @@ export function GymSheet({
           {children}
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body,
   );
 }

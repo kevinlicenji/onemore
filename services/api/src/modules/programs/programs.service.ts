@@ -8,8 +8,11 @@ import type {
 } from '@onemore/shared';
 import {
   aggregateMuscleGroups,
+  aggregateProgramDifficulty,
+  computeDayDifficulty,
   estimateSessionMinutes,
   normalizeMuscleTags,
+  resolveDayDifficulty,
 } from '@onemore/shared';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
@@ -38,7 +41,7 @@ export class ProgramsService {
           versions: {
             orderBy: { versionNumber: 'desc' },
             take: 1,
-            include: { workoutDays: true },
+            include: { workoutDays: { select: { id: true, difficultyLevel: true } } },
           },
         },
       }),
@@ -401,6 +404,8 @@ export class ProgramsService {
       const muscleVolumes: Partial<Record<MuscleGroup, number>> = {};
       const daySessionMinutes: number[] = [];
 
+      const dayLevels: number[] = [];
+
       for (const day of published?.workoutDays ?? []) {
         const dayExercises = day.programExercises.map((row) => ({
           targetSets: row.targetSets,
@@ -408,6 +413,7 @@ export class ProgramsService {
           restSeconds: row.restSeconds,
         }));
         daySessionMinutes.push(estimateSessionMinutes(dayExercises));
+        dayLevels.push(resolveDayDifficulty(dayExercises, day.difficultyLevel));
 
         for (const row of day.programExercises) {
           const tags = normalizeMuscleTags(row.exerciseLibrary.primaryMuscles as string[]);
@@ -437,6 +443,7 @@ export class ProgramsService {
         equipmentProfile: meta.equipmentProfile ?? null,
         split: meta.split ?? null,
         estimatedSessionMinutes,
+        difficultyLevel: aggregateProgramDifficulty(dayLevels),
         muscleVolumes,
       };
     });
@@ -557,11 +564,22 @@ export class ProgramsService {
     days: CreateProgramInput['days'],
   ): Promise<void> {
     for (const [dayIndex, day] of days.entries()) {
+      const difficultyLevel =
+        day.difficultyLevel ??
+        computeDayDifficulty(
+          day.exercises.map((exercise) => ({
+            targetSets: exercise.targetSets,
+            targetReps: exercise.targetReps,
+            restSeconds: exercise.restSeconds,
+          })),
+        );
+
       const workoutDay = await tx.workoutDay.create({
         data: {
           programVersionId: versionId,
           label: day.label,
           sortOrder: dayIndex,
+          difficultyLevel,
         },
       });
 
@@ -606,12 +624,13 @@ export class ProgramsService {
       versions: Array<{
         status: string;
         versionNumber: number;
-        workoutDays: Array<{ id: string }>;
+        workoutDays: Array<{ id: string; difficultyLevel: number }>;
       }>;
     },
     isActive = false,
   ): ProgramSummary {
     const latest = program.versions[0];
+    const dayLevels = latest?.workoutDays.map((day) => day.difficultyLevel) ?? [];
     return {
       id: program.id,
       name: program.name,
@@ -622,6 +641,7 @@ export class ProgramsService {
       latestVersionStatus: latest ? (latest.status as ProgramSummary['latestVersionStatus']) : null,
       latestVersionNumber: latest?.versionNumber ?? null,
       daysCount: latest?.workoutDays.length ?? 0,
+      difficultyLevel: aggregateProgramDifficulty(dayLevels),
       isActive,
       createdAt: program.createdAt.toISOString(),
       updatedAt: program.updatedAt.toISOString(),
@@ -647,6 +667,7 @@ export class ProgramsService {
           id: string;
           label: string;
           sortOrder: number;
+          difficultyLevel: number;
           programExercises: Array<{
             id: string;
             exerciseLibraryId: string;
@@ -702,6 +723,14 @@ export class ProgramsService {
             id: day.id,
             label: day.label,
             sortOrder: day.sortOrder,
+            difficultyLevel: resolveDayDifficulty(
+              exercises.map((row) => ({
+                targetSets: row.targetSets,
+                targetReps: row.targetReps,
+                restSeconds: row.restSeconds,
+              })),
+              day.difficultyLevel,
+            ),
             muscleGroups: aggregateMuscleGroups(
               exercises.map((row) => ({ primaryMuscles: row.exercise.primaryMuscles })),
             ),

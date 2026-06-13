@@ -1,8 +1,9 @@
 'use client';
 
-import type { CreateProgramInput, MuscleGroup } from '@onemore/shared';
+import type { CreateProgramInput, DifficultyLevel, MuscleGroup } from '@onemore/shared';
 import {
   aggregateMuscleGroups,
+  computeDayDifficulty,
   defaultWorkoutDayLabel,
   localizeWorkoutDayLabel,
 } from '@onemore/shared';
@@ -15,6 +16,7 @@ import {
   type ProgramExerciseDraft,
 } from '@/components/add-program-exercise-modal';
 import { ProgramBuilderExerciseRow } from '@/components/program-builder-exercise-row';
+import { DifficultyLevelPicker } from '@/components/difficulty-level-picker';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
 import { moveArrayItem } from '@/lib/move-array-item';
 
@@ -31,6 +33,24 @@ export interface BuilderExercise {
 export interface BuilderDay {
   label: string;
   exercises: BuilderExercise[];
+  difficultyLevel: DifficultyLevel;
+  difficultyManual: boolean;
+}
+
+function syncAutoDifficulty(day: BuilderDay): BuilderDay {
+  if (day.difficultyManual || day.exercises.length === 0) {
+    return day;
+  }
+  return {
+    ...day,
+    difficultyLevel: computeDayDifficulty(
+      day.exercises.map((row) => ({
+        targetSets: row.targetSets,
+        targetReps: row.targetReps,
+        restSeconds: row.restSeconds,
+      })),
+    ),
+  };
 }
 
 interface ProgramBuilderProps {
@@ -43,7 +63,12 @@ interface ProgramBuilderProps {
 }
 
 function emptyDay(index: number, locale: string): BuilderDay {
-  return { label: defaultWorkoutDayLabel(index, locale), exercises: [] };
+  return {
+    label: defaultWorkoutDayLabel(index, locale),
+    exercises: [],
+    difficultyLevel: 2,
+    difficultyManual: false,
+  };
 }
 
 function dayMuscleLabel(day: BuilderDay, translate: (key: MuscleGroup) => string): string {
@@ -81,25 +106,26 @@ export function ProgramBuilder({
 
   function addExercise(draft: ProgramExerciseDraft): void {
     setDays((prev) =>
-      prev.map((day, index) =>
-        index === dayIndex
-          ? {
-              ...day,
-              exercises: [
-                ...day.exercises,
-                {
-                  exerciseLibraryId: draft.exerciseLibraryId,
-                  name: draft.name,
-                  primaryMuscles: draft.primaryMuscles,
-                  targetSets: draft.targetSets,
-                  targetReps: draft.targetReps,
-                  restSeconds: draft.restSeconds,
-                  targetWeightKg: draft.targetWeightKg,
-                },
-              ],
-            }
-          : day,
-      ),
+      prev.map((day, index) => {
+        if (index !== dayIndex) {
+          return day;
+        }
+        return syncAutoDifficulty({
+          ...day,
+          exercises: [
+            ...day.exercises,
+            {
+              exerciseLibraryId: draft.exerciseLibraryId,
+              name: draft.name,
+              primaryMuscles: draft.primaryMuscles,
+              targetSets: draft.targetSets,
+              targetReps: draft.targetReps,
+              restSeconds: draft.restSeconds,
+              targetWeightKg: draft.targetWeightKg,
+            },
+          ],
+        });
+      }),
     );
   }
 
@@ -119,7 +145,7 @@ export function ProgramBuilder({
           }
           return { ...row, [field]: value };
         });
-        return { ...day, exercises };
+        return syncAutoDifficulty({ ...day, exercises });
       }),
     );
   }
@@ -133,11 +159,15 @@ export function ProgramBuilder({
           : current,
     );
     setDays((prev) =>
-      prev.map((day, index) =>
-        index === dayIndex
-          ? { ...day, exercises: day.exercises.filter((_, i) => i !== exerciseIndex) }
-          : day,
-      ),
+      prev.map((day, index) => {
+        if (index !== dayIndex) {
+          return day;
+        }
+        return syncAutoDifficulty({
+          ...day,
+          exercises: day.exercises.filter((_, i) => i !== exerciseIndex),
+        });
+      }),
     );
   }
 
@@ -198,6 +228,7 @@ export function ProgramBuilder({
         name: name.trim(),
         days: validDays.map((day) => ({
           label: day.label,
+          difficultyLevel: day.difficultyLevel,
           exercises: day.exercises.map((row) => ({
             exerciseLibraryId: row.exerciseLibraryId,
             targetSets: row.targetSets,
@@ -273,6 +304,21 @@ export function ProgramBuilder({
           </span>
         )}
       </label>
+
+      {currentDay ? (
+        <DifficultyLevelPicker
+          value={currentDay.difficultyLevel}
+          onChange={(level) => {
+            setDays((prev) =>
+              prev.map((day, index) =>
+                index === dayIndex
+                  ? { ...day, difficultyLevel: level, difficultyManual: true }
+                  : day,
+              ),
+            );
+          }}
+        />
+      ) : null}
 
       <Button
         type="button"

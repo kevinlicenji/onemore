@@ -282,6 +282,7 @@ model WorkoutDay {
   programVersionId String @map("program_version_id") @db.Uuid
   label            String
   sortOrder        Int    @map("sort_order")
+  difficultyLevel  Int    @default(2) @map("difficulty_level")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

@@ -48,9 +48,9 @@ const sizeClasses: Record<MetricInputSize, { label: string; button: string; inpu
     input: 'min-h-11 text-sm',
   },
   gym: {
-    label: 'text-sm font-medium',
-    button: 'min-h-14 min-w-14 text-2xl',
-    input: 'min-h-14 text-2xl font-semibold',
+    label: 'text-xs font-medium',
+    button: 'min-h-11 min-w-11 text-lg',
+    input: 'min-h-11 text-lg font-semibold',
   },
 };
 
@@ -139,13 +139,14 @@ export function MetricInput({
   }
 
   if (useWheel) {
+    const resolvedWheelSize = wheelSize ?? (size === 'gym' ? 'workout' : 'default');
     return (
       <ScrollWheelPicker
         disabled={disabled}
         label={label}
         options={buildWheelOptions(kind, failureLabel)}
         showLabel={showLabel}
-        size={wheelSize}
+        size={resolvedWheelSize}
         value={wheelValue}
         onChange={(nextValue) => {
           onChange(nextValue);

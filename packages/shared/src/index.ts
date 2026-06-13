@@ -1,4 +1,5 @@
 export * from './constants.js';
+export * from './constants/difficulty-level.js';
 export * from './constants/equipment-types.js';
 export * from './constants/exercise-categories.js';
 export * from './constants/exercise-filters.js';
@@ -10,6 +11,8 @@ export * from './lib/person-name.js';
 export * from './lib/recommend-template.js';
 export * from './lib/workout-day-label.js';
 export * from './lib/aggregate-muscle-groups.js';
+export * from './lib/aggregate-program-difficulty.js';
+export * from './lib/compute-day-difficulty.js';
 export * from './constants/template-meta.js';
 export * from './schemas/auth.js';
 export * from './schemas/health.js';

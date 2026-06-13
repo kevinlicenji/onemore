@@ -55,6 +55,48 @@
       }
     },
     "workoutStart": {
+      "d1": {
+        "withName": {
+          "0": "{name}, riscaldati e non farti male — è facile.",
+          "1": "Sessione leggera, {name}. Se sbagli qui, molla tutto.",
+          "2": "{name}, partenza soft. Niente eroismi oggi.",
+          "3": "Facile, {name}. Anche mia nonna la farebbe."
+        },
+        "generic": {
+          "0": "Riscaldati e non farti male — è facile.",
+          "1": "Sessione leggera. Se sbagli qui, molla tutto.",
+          "2": "Partenza soft. Niente eroismi oggi.",
+          "3": "Facile. Anche mia nonna la farebbe."
+        }
+      },
+      "d2": {
+        "withName": {
+          "0": "{name}, oggi si lavora — tieni il ritmo.",
+          "1": "Sessione seria, {name}. Concentrati e spingi.",
+          "2": "{name}, niente scuse: esegui ogni serie come conta.",
+          "3": "Ce la fai, {name}. Questa non è una passeggiata."
+        },
+        "generic": {
+          "0": "Oggi si lavora — tieni il ritmo.",
+          "1": "Sessione seria. Concentrati e spingi.",
+          "2": "Niente scuse: esegui ogni serie come conta.",
+          "3": "Questa non è una passeggiata."
+        }
+      },
+      "d3": {
+        "withName": {
+          "0": "{name}, oggi non si chiede permesso.",
+          "1": "Sessione dura, {name}. Vai fino in fondo.",
+          "2": "{name}, esci dalla comfort zone o esci dalla palestra.",
+          "3": "Tutto o niente, {name}. Oggi si lascia il cuore."
+        },
+        "generic": {
+          "0": "Oggi non si chiede permesso.",
+          "1": "Sessione dura. Vai fino in fondo.",
+          "2": "Esci dalla comfort zone o esci dalla palestra.",
+          "3": "Tutto o niente. Oggi si lascia il cuore."
+        }
+      },
       "withName": {
         "0": "{name}, allacciati — questa sessione è tua.",
         "1": "È ora di lavorare, {name}. Concentrati sulla prossima serie.",
@@ -81,6 +123,42 @@
       }
     },
     "programs": {
+      "d1": {
+        "withName": {
+          "0": "{name}, schede facili — se non le segui, il problema non è la scheda.",
+          "1": "Programmi leggeri, {name}. Anche un bambino potrebbe iniziare.",
+          "2": "{name}, mappa semplice. Non complicare."
+        },
+        "generic": {
+          "0": "Schede facili — se non le segui, il problema non è la scheda.",
+          "1": "Programmi leggeri. Anche un bambino potrebbe iniziare.",
+          "2": "Mappa semplice. Non complicare."
+        }
+      },
+      "d2": {
+        "withName": {
+          "0": "{name}, i programmi sono la mappa — le sessioni i passi.",
+          "1": "Ottimi piani, {name}. Ora eseguili sul serio.",
+          "2": "{name}, modifica o riparti — ma poi spingi."
+        },
+        "generic": {
+          "0": "I programmi sono la mappa — le sessioni i passi.",
+          "1": "Pianifica il lavoro, poi lavora il piano.",
+          "2": "Modifica o riparti — ma poi spingi."
+        }
+      },
+      "d3": {
+        "withName": {
+          "0": "{name}, schede dure. Sei pronto o fai solo finta?",
+          "1": "Programmi seri, {name}. Niente mezze misure.",
+          "2": "{name}, oggi si costruisce — domani si paga il conto."
+        },
+        "generic": {
+          "0": "Schede dure. Sei pronto o fai solo finta?",
+          "1": "Programmi seri. Niente mezze misure.",
+          "2": "Oggi si costruisce — domani si paga il conto."
+        }
+      },
       "withName": {
         "0": "{name}, i programmi sono la mappa — le sessioni i passi.",
         "1": "Ottimi piani, {name}. Ora eseguili.",
@@ -102,6 +180,44 @@
         "0": "Scegli un punto di partenza — puoi sempre cambiare.",
         "1": "Quasi fatto. Scegli come vuoi iniziare.",
         "2": "Il programma giusto è quello che seguirai davvero."
+      }
+    },
+    "rest": {
+      "d1": {
+        "withName": {
+          "0": "{name}, respira. Anche questo recupero è facile.",
+          "1": "Pausa, {name}. Se non recuperi neanche così…",
+          "2": "{name}, rilassati — la prossima serie è un gioco."
+        },
+        "generic": {
+          "0": "Respira. Anche questo recupero è facile.",
+          "1": "Pausa. Se non recuperi neanche così…",
+          "2": "Rilassati — la prossima serie è un gioco."
+        }
+      },
+      "d2": {
+        "withName": {
+          "0": "{name}, recupera bene — la prossima serie conta.",
+          "1": "Pausa attiva, {name}. Torna più forte.",
+          "2": "{name}, usa il recupero. Non sprecarlo."
+        },
+        "generic": {
+          "0": "Recupera bene — la prossima serie conta.",
+          "1": "Pausa attiva. Torna più forte.",
+          "2": "Usa il recupero. Non sprecarlo."
+        }
+      },
+      "d3": {
+        "withName": {
+          "0": "{name}, il tempo stringe — preparati.",
+          "1": "Pausa breve, {name}. La prossima è guerra.",
+          "2": "{name}, non rilassarti troppo. Torna affamato."
+        },
+        "generic": {
+          "0": "Il tempo stringe — preparati.",
+          "1": "Pausa breve. La prossima è guerra.",
+          "2": "Non rilassarti troppo. Torna affamato."
+        }
       }
     }
   },
@@ -425,6 +541,10 @@
     "programLoadError": "Impossibile caricare il programma.",
     "loadingProgram": "Caricamento…",
     "programListMeta": "{days} giorni · {status}",
+    "difficultyLabel": "Difficoltà giorno",
+    "difficultyLevel1": "Facile",
+    "difficultyLevel2": "Media",
+    "difficultyLevel3": "Difficile",
     "programDetailMeta": "{days} giorni · stato {status}",
     "browseTemplates": "Sfoglia template",
     "backToPrograms": "Torna ai programmi",

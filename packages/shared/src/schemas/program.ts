@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { difficultyLevelSchema } from '../constants/difficulty-level.js';
 import { muscleGroupSchema } from './exercise.js';
 import { localizedTextSchema } from '../constants/template-meta.js';
 import { trainingGoalSchema } from './user.js';
@@ -15,6 +16,7 @@ export const programExerciseInputSchema = z.object({
 
 export const workoutDayInputSchema = z.object({
   label: z.string().min(1).max(100),
+  difficultyLevel: difficultyLevelSchema.optional(),
   exercises: z.array(programExerciseInputSchema).min(1).max(30),
 });
 
@@ -36,6 +38,7 @@ export const programSummarySchema = z.object({
   latestVersionStatus: z.enum(['draft', 'published', 'archived']).nullable(),
   latestVersionNumber: z.number().int().nullable(),
   daysCount: z.number().int(),
+  difficultyLevel: difficultyLevelSchema,
   isActive: z.boolean(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
@@ -62,6 +65,7 @@ export const workoutDaySchema = z.object({
   id: z.string().uuid(),
   label: z.string(),
   sortOrder: z.number().int(),
+  difficultyLevel: difficultyLevelSchema,
   muscleGroups: z.array(muscleGroupSchema),
   exercises: z.array(programExerciseSchema),
 });
@@ -96,6 +100,7 @@ export const templateSummarySchema = z.object({
     .enum(['full_body', 'upper_lower', 'push_pull_legs', 'bro_split', 'conditioning'])
     .nullable(),
   estimatedSessionMinutes: z.number().int().min(10).max(180),
+  difficultyLevel: difficultyLevelSchema,
   muscleVolumes: z.record(muscleGroupSchema, z.number().int().nonnegative()),
 });
 

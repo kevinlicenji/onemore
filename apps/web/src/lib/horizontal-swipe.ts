@@ -38,7 +38,7 @@ export function isSwipeInteractiveTarget(target: EventTarget | null): boolean {
 
   return Boolean(
     (target as Element).closest(
-      'input, textarea, button, select, a, [role="slider"], [contenteditable="true"], [data-no-swipe]',
+      'input, textarea, button, select, a, [role="slider"], [contenteditable="true"], [data-no-swipe], [data-wheel-picker]',
     ),
   );
 }

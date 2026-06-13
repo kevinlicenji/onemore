@@ -8,7 +8,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { ExerciseNotesModal } from '@/components/exercise-notes-modal';
 import { ExerciseSearchCombobox } from '@/components/exercise-search-combobox';
 import { RestTimer } from '@/components/rest-timer';
+import { useAuth } from '@/components/auth-provider';
 import { useHorizontalSwipe } from '@/hooks/use-horizontal-swipe';
+import { useMotivationalLine } from '@/hooks/use-motivational-line';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { getExerciseDisplayName } from '@/lib/exercise-display-name';
 import { formatWorkoutDuration, getWorkoutElapsedSeconds } from '@/lib/format-workout-duration';
@@ -38,7 +40,6 @@ export interface GymActiveWorkoutViewProps {
     freeWorkoutTitle: string;
     restLabel: string;
     nextSet: string;
-    skipRest: string;
     searchExercises: string;
     searchNoResults: string;
     searchingExercises: string;
@@ -71,7 +72,6 @@ export interface GymActiveWorkoutViewProps {
     previousSetLabel: string;
   };
   onRestComplete: (setId: string, actualRestSeconds: number) => void;
-  onSkipRest: () => void;
   onSelectExerciseToAdd: (exerciseLibraryId: string) => void;
   onSelectSubstitute: (exerciseLibraryId: string) => void;
   onCompleteSet: (setId: string, setNumber: number) => void;
@@ -124,7 +124,6 @@ export function GymActiveWorkoutView({
   formatSetProgress,
   labels,
   onRestComplete,
-  onSkipRest,
   onSelectExerciseToAdd,
   onSelectSubstitute,
   onCompleteSet,
@@ -140,7 +139,11 @@ export function GymActiveWorkoutView({
   onNotesModalClose,
   onNotesSave,
 }: GymActiveWorkoutViewProps): React.ReactElement {
+  const { profile } = useAuth();
   const reducedMotion = useReducedMotion();
+  const restMotivationalLine = useMotivationalLine('rest', profile, {
+    difficultyLevel: session.workoutDayDifficultyLevel ?? 2,
+  });
   const [transitionDirection, setTransitionDirection] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(() =>
     getWorkoutElapsedSeconds(session.startedAt),
@@ -208,16 +211,12 @@ export function GymActiveWorkoutView({
           >
             <RestTimer
               label={labels.restLabel}
+              motivationalLine={restMotivationalLine}
               nextSetLabel={labels.nextSet}
               seconds={restTimerContext.seconds}
-              skipRestLabel={labels.skipRest}
               variant="gym"
               onNextSet={(actualRestSeconds) => {
                 handleRestComplete(restTimerContext.setId, actualRestSeconds);
-              }}
-              onSkipRest={() => {
-                triggerHaptic('light');
-                onSkipRest();
               }}
             />
           </motion.div>

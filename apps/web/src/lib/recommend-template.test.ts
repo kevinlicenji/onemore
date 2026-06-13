@@ -16,6 +16,7 @@ function buildTemplate(
     equipmentProfile: 'mixed',
     split: 'full_body',
     estimatedSessionMinutes: 60,
+    difficultyLevel: 2,
     muscleVolumes: {},
     ...overrides,
   };

@@ -6,9 +6,10 @@ import { Button, Card, CardContent } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { DifficultyStepsIcon } from '@/components/difficulty-steps-icon';
 import { GymHeroCta } from '@/components/gym-ui/gym-hero-cta';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
 import { GymListRow } from '@/components/gym-ui/gym-list-row';
@@ -43,7 +44,16 @@ export default function StartWorkoutPage(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { refreshPendingCount } = useSync();
-  const motivationalLine = useMotivationalLine('workoutStart', profile);
+  const workoutDifficulty = useMemo(() => {
+    if (!preview?.workoutDayId) {
+      return 2;
+    }
+    const day = preview.days.find((entry) => entry.workoutDayId === preview.workoutDayId);
+    return day?.difficultyLevel ?? 2;
+  }, [preview]);
+  const motivationalLine = useMotivationalLine('workoutStart', profile, {
+    difficultyLevel: workoutDifficulty,
+  });
 
   useEffect(() => {
     if (!accessToken) {
@@ -263,6 +273,7 @@ export default function StartWorkoutPage(): React.ReactElement {
                   .filter(Boolean)
                   .join(' · ')}
                 title={localizeWorkoutDayLabel(day.label, locale)}
+                trailing={<DifficultyStepsIcon level={day.difficultyLevel} size="sm" />}
                 onClick={() => {
                   void handleStartProgrammedDay(day.workoutDayId);
                 }}

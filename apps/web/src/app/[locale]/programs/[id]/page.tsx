@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { DifficultyStepsIcon } from '@/components/difficulty-steps-icon';
 import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
 import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
@@ -95,6 +96,12 @@ export default function ProgramDetailPage(): React.ReactElement {
         variant="wide"
       >
         {program?.isActive ? <Badge variant="accent">{t('activeBadge')}</Badge> : null}
+
+        {program ? (
+          <div className="flex justify-end">
+            <DifficultyStepsIcon level={program.difficultyLevel} />
+          </div>
+        ) : null}
 
         {program ? (
           <ProgramDayList

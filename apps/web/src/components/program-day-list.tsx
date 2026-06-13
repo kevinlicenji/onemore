@@ -5,6 +5,7 @@ import { localizeWorkoutDayLabel } from '@onemore/shared';
 import { cn } from '@onemore/ui';
 import { useTranslations } from 'next-intl';
 
+import { DifficultyStepsIcon } from '@/components/difficulty-steps-icon';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
 import { formatProgramExerciseSummary } from '@/lib/program-exercise-display';
 
@@ -36,15 +37,18 @@ export function ProgramDayList({
     <div className={cn('flex flex-col gap-4', className)}>
       {days.map((day) => (
         <section key={day.id} className="rounded-lg border p-4">
-          <h2 className="font-semibold">
-            {localizeWorkoutDayLabel(day.label, locale)}
-            {day.muscleGroups.length > 0 && (
-              <span className="font-normal text-muted-foreground">
-                {' '}
-                — {formatMuscleGroupsForLocale(day.muscleGroups, tMuscle)}
-              </span>
-            )}
-          </h2>
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="min-w-0 font-semibold">
+              {localizeWorkoutDayLabel(day.label, locale)}
+              {day.muscleGroups.length > 0 && (
+                <span className="font-normal text-muted-foreground">
+                  {' '}
+                  — {formatMuscleGroupsForLocale(day.muscleGroups, tMuscle)}
+                </span>
+              )}
+            </h2>
+            <DifficultyStepsIcon className="shrink-0" level={day.difficultyLevel} />
+          </div>
           <ul className="mt-3 flex flex-col gap-3">
             {day.exercises.map((row) => (
               <li key={row.id} className="text-sm">

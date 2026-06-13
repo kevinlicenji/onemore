@@ -17,8 +17,10 @@ import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
 import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
 import { ProgramActionsMenu } from '@/components/program-actions-menu';
 import { RequireAuth } from '@/components/require-auth';
+import { DifficultyStepsIcon } from '@/components/difficulty-steps-icon';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useMotivationalLine } from '@/hooks/use-motivational-line';
+import { gymMobileStackedActionsClassName } from '@/lib/gym-mobile-layout';
 import { activateProgram, deleteProgram, fetchPrograms } from '@/lib/api-auth';
 
 export default function ProgramsPage(): React.ReactElement {
@@ -32,7 +34,11 @@ export default function ProgramsPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const motivationalLine = useMotivationalLine('programs', profile);
+  const activeProgram = programs.find((program) => program.isActive);
+  const programsDifficulty = activeProgram?.difficultyLevel ?? programs[0]?.difficultyLevel ?? 2;
+  const motivationalLine = useMotivationalLine('programs', profile, {
+    difficultyLevel: programsDifficulty,
+  });
 
   const loadPrograms = useCallback(async (): Promise<void> => {
     if (!accessToken) {
@@ -91,9 +97,9 @@ export default function ProgramsPage(): React.ReactElement {
     }
   }
 
-  const showHeaderActions = isDesktop || programs.length > 0;
+  const showHeaderActions = isDesktop && programs.length > 0;
 
-  const headerActions = showHeaderActions ? (
+  const programActionButtons = (
     <>
       <Button asChild variant="outline">
         <Link href={`/${locale}/programs/templates`}>{t('browseTemplates')}</Link>
@@ -102,7 +108,9 @@ export default function ProgramsPage(): React.ReactElement {
         <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
       </Button>
     </>
-  ) : null;
+  );
+
+  const headerActions = showHeaderActions ? programActionButtons : null;
 
   const emptyProgramsContent = (
     <div className="flex flex-col gap-4">
@@ -156,23 +164,26 @@ export default function ProgramsPage(): React.ReactElement {
             </span>
           }
           trailing={
-            <ProgramActionsMenu
-              disabled={actionId !== null}
-              editHref={`/${locale}/programs/${program.id}/edit`}
-              labels={{
-                menu: t('programActionsMenu'),
-                edit: t('editProgram'),
-                setActive: t('setActive'),
-                delete: t('deleteProgram'),
-              }}
-              showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
-              onDelete={() => {
-                requestDelete(program.id);
-              }}
-              onSetActive={() => {
-                void handleActivate(program.id);
-              }}
-            />
+            <div className="flex shrink-0 items-center gap-1.5 pr-1">
+              <DifficultyStepsIcon level={program.difficultyLevel} size="sm" />
+              <ProgramActionsMenu
+                disabled={actionId !== null}
+                editHref={`/${locale}/programs/${program.id}/edit`}
+                labels={{
+                  menu: t('programActionsMenu'),
+                  edit: t('editProgram'),
+                  setActive: t('setActive'),
+                  delete: t('deleteProgram'),
+                }}
+                showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
+                onDelete={() => {
+                  requestDelete(program.id);
+                }}
+                onSetActive={() => {
+                  void handleActivate(program.id);
+                }}
+              />
+            </div>
           }
         />
       ))}
@@ -198,23 +209,26 @@ export default function ProgramsPage(): React.ReactElement {
                     })}
                   </p>
                 </Link>
-                <ProgramActionsMenu
-                  disabled={actionId !== null}
-                  editHref={`/${locale}/programs/${program.id}/edit`}
-                  labels={{
-                    menu: t('programActionsMenu'),
-                    edit: t('editProgram'),
-                    setActive: t('setActive'),
-                    delete: t('deleteProgram'),
-                  }}
-                  showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
-                  onDelete={() => {
-                    requestDelete(program.id);
-                  }}
-                  onSetActive={() => {
-                    void handleActivate(program.id);
-                  }}
-                />
+                <div className="flex shrink-0 items-start gap-2">
+                  <DifficultyStepsIcon level={program.difficultyLevel} />
+                  <ProgramActionsMenu
+                    disabled={actionId !== null}
+                    editHref={`/${locale}/programs/${program.id}/edit`}
+                    labels={{
+                      menu: t('programActionsMenu'),
+                      edit: t('editProgram'),
+                      setActive: t('setActive'),
+                      delete: t('deleteProgram'),
+                    }}
+                    showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
+                    onDelete={() => {
+                      requestDelete(program.id);
+                    }}
+                    onSetActive={() => {
+                      void handleActivate(program.id);
+                    }}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -247,6 +261,11 @@ export default function ProgramsPage(): React.ReactElement {
           desktopProgramList
         ) : (
           <StaggerGroup compact>
+            {programs.length > 0 ? (
+              <StaggerItem>
+                <div className={gymMobileStackedActionsClassName}>{programActionButtons}</div>
+              </StaggerItem>
+            ) : null}
             <StaggerItem>{mobileProgramList}</StaggerItem>
           </StaggerGroup>
         )}

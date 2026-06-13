@@ -55,6 +55,48 @@
       }
     },
     "workoutStart": {
+      "d1": {
+        "withName": {
+          "0": "{name}, warm up and don't get hurt — it's easy.",
+          "1": "Light session, {name}. If you mess this up, quit entirely.",
+          "2": "{name}, soft start. No heroics today.",
+          "3": "Easy one, {name}. My grandma could do this."
+        },
+        "generic": {
+          "0": "Warm up and don't get hurt — it's easy.",
+          "1": "Light session. If you mess this up, quit entirely.",
+          "2": "Soft start. No heroics today.",
+          "3": "Easy one. My grandma could do this."
+        }
+      },
+      "d2": {
+        "withName": {
+          "0": "{name}, time to work — keep the pace.",
+          "1": "Serious session, {name}. Focus and push.",
+          "2": "{name}, no excuses — execute every set.",
+          "3": "You've got this, {name}. This isn't a walk in the park."
+        },
+        "generic": {
+          "0": "Time to work — keep the pace.",
+          "1": "Serious session. Focus and push.",
+          "2": "No excuses — execute every set.",
+          "3": "This isn't a walk in the park."
+        }
+      },
+      "d3": {
+        "withName": {
+          "0": "{name}, no permission needed today.",
+          "1": "Hard session, {name}. Go all the way.",
+          "2": "{name}, leave the comfort zone or leave the gym.",
+          "3": "All or nothing, {name}. Leave your heart here."
+        },
+        "generic": {
+          "0": "No permission needed today.",
+          "1": "Hard session. Go all the way.",
+          "2": "Leave the comfort zone or leave the gym.",
+          "3": "All or nothing. Leave your heart here."
+        }
+      },
       "withName": {
         "0": "{name}, lace up — this session is yours.",
         "1": "Time to work, {name}. Focus on the next set.",
@@ -81,6 +123,42 @@
       }
     },
     "programs": {
+      "d1": {
+        "withName": {
+          "0": "{name}, easy programs — if you skip these, it's not the plan's fault.",
+          "1": "Light programs, {name}. A kid could start here.",
+          "2": "{name}, simple map. Don't overthink it."
+        },
+        "generic": {
+          "0": "Easy programs — if you skip these, it's not the plan's fault.",
+          "1": "Light programs. A kid could start here.",
+          "2": "Simple map. Don't overthink it."
+        }
+      },
+      "d2": {
+        "withName": {
+          "0": "{name}, your programs are the map — sessions are the steps.",
+          "1": "Strong plans, {name}. Now execute them.",
+          "2": "{name}, tweak or restart — then push."
+        },
+        "generic": {
+          "0": "Your programs are the map — sessions are the steps.",
+          "1": "Plan the work, then work the plan.",
+          "2": "Tweak or restart — then push."
+        }
+      },
+      "d3": {
+        "withName": {
+          "0": "{name}, hard programs. Ready or just pretending?",
+          "1": "Serious programs, {name}. No half measures.",
+          "2": "{name}, build today — pay tomorrow."
+        },
+        "generic": {
+          "0": "Hard programs. Ready or just pretending?",
+          "1": "Serious programs. No half measures.",
+          "2": "Build today — pay tomorrow."
+        }
+      },
       "withName": {
         "0": "{name}, your programs are the map — sessions are the steps.",
         "1": "Strong plans, {name}. Now execute them.",
@@ -102,6 +180,44 @@
         "0": "Pick a starting point — you can always change course.",
         "1": "Almost there. Choose how you want to begin.",
         "2": "The right program is the one you'll actually follow."
+      }
+    },
+    "rest": {
+      "d1": {
+        "withName": {
+          "0": "{name}, breathe. Even this rest is easy.",
+          "1": "Pause, {name}. If you can't recover from this…",
+          "2": "{name}, relax — the next set is a joke."
+        },
+        "generic": {
+          "0": "Breathe. Even this rest is easy.",
+          "1": "Pause. If you can't recover from this…",
+          "2": "Relax — the next set is a joke."
+        }
+      },
+      "d2": {
+        "withName": {
+          "0": "{name}, recover well — the next set counts.",
+          "1": "Active rest, {name}. Come back stronger.",
+          "2": "{name}, use the rest. Don't waste it."
+        },
+        "generic": {
+          "0": "Recover well — the next set counts.",
+          "1": "Active rest. Come back stronger.",
+          "2": "Use the rest. Don't waste it."
+        }
+      },
+      "d3": {
+        "withName": {
+          "0": "{name}, time is tight — get ready.",
+          "1": "Short break, {name}. Next set is war.",
+          "2": "{name}, don't chill too long. Come back hungry."
+        },
+        "generic": {
+          "0": "Time is tight — get ready.",
+          "1": "Short break. Next set is war.",
+          "2": "Don't chill too long. Come back hungry."
+        }
       }
     }
   },
@@ -425,6 +541,10 @@
     "programLoadError": "Could not load program.",
     "loadingProgram": "Loading…",
     "programListMeta": "{days} days · {status}",
+    "difficultyLabel": "Day difficulty",
+    "difficultyLevel1": "Easy",
+    "difficultyLevel2": "Medium",
+    "difficultyLevel3": "Hard",
     "programDetailMeta": "{days} days · status {status}",
     "browseTemplates": "Browse templates",
     "backToPrograms": "Back to programs",

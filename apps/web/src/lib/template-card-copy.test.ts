@@ -22,6 +22,7 @@ const template: TemplateSummary = {
   equipmentProfile: 'mixed',
   split: 'full_body',
   estimatedSessionMinutes: 55,
+  difficultyLevel: 1,
   muscleVolumes: {},
 };
 

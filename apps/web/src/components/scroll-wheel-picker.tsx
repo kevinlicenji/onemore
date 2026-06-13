@@ -6,7 +6,7 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { clampWheelIndex, scrollTopForIndex, snapIndexFromScroll } from '@/lib/scroll-wheel-snap';
 import { getWheelItemStyle } from '@/lib/wheel-picker-style';
 
-export type ScrollWheelPickerSize = 'default' | 'compact';
+export type ScrollWheelPickerSize = 'default' | 'compact' | 'workout';
 
 interface WheelLayoutPreset {
   itemHeight: number;
@@ -30,6 +30,13 @@ const WHEEL_LAYOUT: Record<ScrollWheelPickerSize, WheelLayoutPreset> = {
     paddingRows: 1,
     highlightHeightClass: 'h-8',
     gradientHeightClass: 'h-10',
+  },
+  workout: {
+    itemHeight: 28,
+    visibleHeight: 100,
+    paddingRows: 1,
+    highlightHeightClass: 'h-8',
+    gradientHeightClass: 'h-9',
   },
 };
 
@@ -166,10 +173,10 @@ export function ScrollWheelPicker<T extends string | number>({
   }, []);
 
   return (
-    <div className="flex flex-col gap-1" data-no-swipe>
+    <div className="flex min-w-0 flex-col gap-1">
       {showLabel ? <span className="text-sm font-medium">{label}</span> : null}
       <div
-        className="relative overflow-hidden rounded-xl border bg-muted/15"
+        className="relative isolate overflow-hidden rounded-xl border bg-muted/15"
         style={{ height: layout.visibleHeight, perspective: '1000px' }}
       >
         <div
@@ -189,6 +196,7 @@ export function ScrollWheelPicker<T extends string | number>({
           ref={listRef}
           aria-label={label}
           className="h-full overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [scroll-snap-type:y_mandatory] [&::-webkit-scrollbar]:hidden"
+          data-wheel-picker
           style={{
             WebkitOverflowScrolling: 'touch',
             paddingTop: padding,

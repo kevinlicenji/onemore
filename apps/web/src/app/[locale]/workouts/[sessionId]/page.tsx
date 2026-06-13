@@ -450,7 +450,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     freeWorkoutTitle: t('freeWorkoutTitle'),
     restLabel: t('restLabel'),
     nextSet: t('nextSet'),
-    skipRest: t('skipRest'),
     searchExercises: t('searchExercises'),
     searchNoResults: t('searchNoResults'),
     searchingExercises: t('searchingExercises'),
@@ -550,16 +549,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           }}
           onSkipExercise={() => {
             void handleSkipExercise();
-          }}
-          onSkipRest={() => {
-            if (!restTimerContext) {
-              return;
-            }
-            setActualRestBySetId((prev) => ({
-              ...prev,
-              [restTimerContext.setId]: 0,
-            }));
-            setRestTimerContext(null);
           }}
           onSkipSet={(setId, setNumber) => {
             void handleSkipSet(setId, setNumber);

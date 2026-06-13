@@ -116,7 +116,6 @@ export function GymExerciseSets({
             key={setState.activeSet.id}
             animate={reducedMotion ? undefined : activeSetTransition.animate}
             className="rounded-2xl border-2 border-primary/40 bg-card p-4 shadow-sm"
-            data-no-swipe
             exit={reducedMotion ? undefined : activeSetTransition.exit}
             initial={reducedMotion ? undefined : activeSetTransition.initial}
             transition={motionTransition}
@@ -147,7 +146,7 @@ export function GymExerciseSets({
               </p>
             )}
 
-            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-2 gap-3">
               <NumberStepper
                 disabled={loading}
                 kind="reps"

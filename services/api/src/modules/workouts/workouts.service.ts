@@ -10,7 +10,7 @@ import type {
   UpsertSetResponse,
   WorkoutSessionDetail,
 } from '@onemore/shared';
-import { aggregateMuscleGroups, normalizeMuscleTags } from '@onemore/shared';
+import { aggregateMuscleGroups, normalizeMuscleTags, resolveDayDifficulty } from '@onemore/shared';
 import { randomUUID } from 'node:crypto';
 
 import type { Prisma, PrismaClient } from '@prisma/client';
@@ -80,6 +80,14 @@ export class WorkoutsService {
       return {
         workoutDayId: workoutDay.id,
         label: workoutDay.label,
+        difficultyLevel: resolveDayDifficulty(
+          dayExercises.map((item) => ({
+            targetSets: item.targetSets,
+            targetReps: item.targetReps,
+            restSeconds: item.restSeconds,
+          })),
+          workoutDay.difficultyLevel,
+        ),
         exerciseCount: dayExercises.length,
         muscleGroups: aggregateMuscleGroups(
           dayExercises.map((item) => ({
@@ -951,7 +959,7 @@ export class WorkoutsService {
       completedAt: Date | null;
       durationSeconds: number | null;
       privateNotes: string | null;
-      workoutDay: { label: string } | null;
+      workoutDay: { label: string; difficultyLevel: number } | null;
       exerciseExecutions: Array<{
         id: string;
         exerciseLibraryId: string;
@@ -987,6 +995,9 @@ export class WorkoutsService {
       programAssignmentId: session.programAssignmentId,
       workoutDayId: session.workoutDayId,
       workoutDayLabel: session.workoutDay?.label ?? null,
+      workoutDayDifficultyLevel: session.workoutDay
+        ? resolveDayDifficulty([], session.workoutDay.difficultyLevel)
+        : null,
       startedAt: session.startedAt.toISOString(),
       completedAt: session.completedAt?.toISOString() ?? null,
       durationSeconds: session.durationSeconds,

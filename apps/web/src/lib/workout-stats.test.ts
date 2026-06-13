@@ -10,6 +10,7 @@ const baseSession: WorkoutSessionDetail = {
   programAssignmentId: null,
   workoutDayId: null,
   workoutDayLabel: 'Day A',
+  workoutDayDifficultyLevel: 2,
   startedAt: '2026-06-01T10:00:00.000Z',
   completedAt: '2026-06-01T11:00:00.000Z',
   durationSeconds: 3600,

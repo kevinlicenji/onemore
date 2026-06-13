@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { DifficultyStepsIcon } from '@/components/difficulty-steps-icon';
 import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
@@ -93,9 +94,16 @@ export default function ProgramTemplatesPage(): React.ReactElement {
                 <Link href={`/${locale}/programs/templates/${template.slug}`}>
                   <Card className="h-full transition-colors hover:bg-muted/30">
                     <CardContent className="p-5">
-                      <span className="text-base font-semibold leading-snug">
-                        {templateCardTitle(template, locale)}
-                      </span>
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-base font-semibold leading-snug">
+                          {templateCardTitle(template, locale)}
+                        </span>
+                        <DifficultyStepsIcon
+                          className="shrink-0"
+                          level={template.difficultyLevel}
+                          size="sm"
+                        />
+                      </div>
                       <p className="mt-1.5 text-sm font-medium leading-snug text-foreground/90">
                         {templateCardTagline(template, locale)}
                       </p>
