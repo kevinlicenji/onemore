@@ -139,9 +139,14 @@ describe('AuthService.changePassword', () => {
 
     await service.changePassword('user-1', 'current-password', 'new-password-1');
 
-    expect(prisma.userCredential.update).toHaveBeenCalledWith({
-      where: { userId: 'user-1' },
-      data: expect.objectContaining({ passwordHash: 'new-hash' }),
-    });
+    const updateMock = prisma.userCredential.update;
+    expect(updateMock).toHaveBeenCalledOnce();
+    const updateArgs = updateMock.mock.calls[0]?.[0] as {
+      where: { userId: string };
+      data: { passwordHash: string; passwordChangedAt: Date };
+    };
+    expect(updateArgs.where).toEqual({ userId: 'user-1' });
+    expect(updateArgs.data.passwordHash).toBe('new-hash');
+    expect(updateArgs.data.passwordChangedAt).toBeInstanceOf(Date);
   });
 });
