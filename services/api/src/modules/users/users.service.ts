@@ -60,10 +60,8 @@ export class UsersService {
 
     const nextDisplayName =
       input.firstName !== undefined || input.lastName !== undefined
-        ? (formatDisplayName(
-            input.firstName ?? user.firstName,
-            input.lastName ?? user.lastName,
-          ) ?? user.displayName)
+        ? (formatDisplayName(input.firstName ?? user.firstName, input.lastName ?? user.lastName) ??
+          user.displayName)
         : input.displayName;
 
     const updated = await this.prisma.user.update({

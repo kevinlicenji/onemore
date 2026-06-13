@@ -30,7 +30,9 @@ export function OnboardingThemePicker({
             aria-pressed={selected}
             className={cn(
               'flex items-center gap-3 rounded-xl border p-3 text-left transition-all active:scale-[0.99]',
-              selected ? 'border-primary bg-gym-tint ring-2 ring-primary ring-offset-2 ring-offset-background' : 'hover:bg-muted/40',
+              selected
+                ? 'border-primary bg-gym-tint ring-2 ring-primary ring-offset-2 ring-offset-background'
+                : 'hover:bg-muted/40',
             )}
             type="button"
             onClick={() => {

@@ -10,9 +10,7 @@ describe('buildOnboardingPatch', () => {
   });
 
   it('passes muscle groups when provided', () => {
-    expect(
-      buildOnboardingPatch({ preferredMuscleGroups: ['chest', 'back'] }),
-    ).toEqual({
+    expect(buildOnboardingPatch({ preferredMuscleGroups: ['chest', 'back'] })).toEqual({
       preferredMuscleGroups: ['chest', 'back'],
     });
   });

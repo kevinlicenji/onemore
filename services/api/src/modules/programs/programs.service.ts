@@ -6,7 +6,11 @@ import type {
   TemplateMeta,
   TemplateSummary,
 } from '@onemore/shared';
-import { aggregateMuscleGroups, estimateSessionMinutes, normalizeMuscleTags } from '@onemore/shared';
+import {
+  aggregateMuscleGroups,
+  estimateSessionMinutes,
+  normalizeMuscleTags,
+} from '@onemore/shared';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';

@@ -234,7 +234,11 @@ export function OnboardingWizard(): React.ReactElement {
   const stepSubtitle = t(`steps.${stepId}.subtitle`);
 
   return (
-    <AdaptivePageShell title={stepTitle} description={stepSubtitle} variant={isDesktop ? 'default' : 'centered'}>
+    <AdaptivePageShell
+      title={stepTitle}
+      description={stepSubtitle}
+      variant={isDesktop ? 'default' : 'centered'}
+    >
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
         <div className="flex flex-col gap-2">
           {stepIndex === 0 ? (

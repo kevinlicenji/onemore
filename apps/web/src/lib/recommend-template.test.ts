@@ -103,7 +103,9 @@ describe('rankTemplates', () => {
         preferredSessionMinutes: 60,
         preferredMuscleGroups: ['chest'] as MuscleGroup[],
       },
-      templates.filter((template) => template.audience.includes('gym') && template.daysPerWeek === 3),
+      templates.filter(
+        (template) => template.audience.includes('gym') && template.daysPerWeek === 3,
+      ),
     );
 
     expect(ranked[0]?.template.slug).toBe('beginner_machine_gym_3day');

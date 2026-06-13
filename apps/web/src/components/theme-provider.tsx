@@ -12,7 +12,12 @@ interface ThemeProviderProps {
  */
 export function ThemeProvider({ children }: ThemeProviderProps): ReactElement {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme="light">
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={false}
+      forcedTheme="light"
+    >
       {children}
     </NextThemesProvider>
   );

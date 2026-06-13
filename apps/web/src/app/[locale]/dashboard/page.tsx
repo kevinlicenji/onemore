@@ -187,11 +187,7 @@ export default function DashboardPage(): React.ReactElement {
         <ActiveWorkoutBanner />
 
         {!isDesktop && dashboard ? (
-          <GymHeroCta
-            description={subtitle}
-            title={motivationalLine}
-            action={startWorkoutButton}
-          />
+          <GymHeroCta description={subtitle} title={motivationalLine} action={startWorkoutButton} />
         ) : null}
 
         {loading && !dashboard ? (

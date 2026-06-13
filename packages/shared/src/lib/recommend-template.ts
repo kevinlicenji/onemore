@@ -96,7 +96,11 @@ function scoreTemplate(
   let score = 100;
   score += scoreLevel(template, levelToken);
 
-  if (environment === 'gym' && levelToken === 'beginner' && template.equipmentProfile === 'machines') {
+  if (
+    environment === 'gym' &&
+    levelToken === 'beginner' &&
+    template.equipmentProfile === 'machines'
+  ) {
     score += 20;
   }
   if (environment === 'home' && template.equipmentProfile === 'bodyweight') {

@@ -24,7 +24,9 @@ describe('resolveGreetingName', () => {
 
 describe('pickVariantIndex', () => {
   it('returns stable index for the same seed', () => {
-    expect(pickVariantIndex('user-123-dashboard', 4)).toBe(pickVariantIndex('user-123-dashboard', 4));
+    expect(pickVariantIndex('user-123-dashboard', 4)).toBe(
+      pickVariantIndex('user-123-dashboard', 4),
+    );
   });
 
   it('stays within variant count', () => {

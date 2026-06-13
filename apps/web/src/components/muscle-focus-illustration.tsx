@@ -19,12 +19,7 @@ export function MuscleFocusIllustration({
   className,
 }: MuscleFocusIllustrationProps): ReactElement {
   return (
-    <svg
-      aria-hidden
-      className={className}
-      viewBox="0 0 64 96"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg aria-hidden className={className} viewBox="0 0 64 96" xmlns="http://www.w3.org/2000/svg">
       <g fill="none" stroke={BODY} strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
         <circle cx="32" cy="10" r="7" />
         <path d="M32 17v10M20 30h24M18 30v8c0 6 4 10 14 10s14-4 14-10v-8" />

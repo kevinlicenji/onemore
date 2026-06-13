@@ -98,10 +98,17 @@ export default function ChooseProgramPage(): React.ReactElement {
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium">{t('chooseProgram.alsoFitsTitle')}</p>
               {rankedTemplates.slice(1, 4).map((template) => (
-                <Button key={template.slug} asChild className="h-auto min-h-11 py-3" variant="outline">
+                <Button
+                  key={template.slug}
+                  asChild
+                  className="h-auto min-h-11 py-3"
+                  variant="outline"
+                >
                   <Link href={`/${locale}/programs/templates/${template.slug}`}>
                     <span className="block font-medium">
-                      {locale === 'it' && template.description ? template.description : template.name}
+                      {locale === 'it' && template.description
+                        ? template.description
+                        : template.name}
                     </span>
                     <span className="block text-sm font-normal opacity-80">
                       {programsT('templateMeta', {
