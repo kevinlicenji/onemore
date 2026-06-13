@@ -116,7 +116,9 @@ export function ProgramBuilderExerciseRow({
         <div
           className="mt-2 grid grid-cols-2 gap-2"
           data-no-swipe
-          onPointerDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+          }}
         >
           <MetricInput
             kind="sets"
