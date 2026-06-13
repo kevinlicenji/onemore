@@ -10,15 +10,8 @@ import { GymAuthField } from '@/components/gym-ui/gym-auth-field';
 interface SettingsPersonalSectionProps {
   profile: UserProfile;
   loading: boolean;
-  onSaveProfile: (payload: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  }) => Promise<void>;
-  onChangePassword: (payload: {
-    currentPassword: string;
-    newPassword: string;
-  }) => Promise<void>;
+  onSaveProfile: (payload: { firstName: string; lastName: string; email: string }) => Promise<void>;
+  onChangePassword: (payload: { currentPassword: string; newPassword: string }) => Promise<void>;
 }
 
 /**

@@ -1,7 +1,11 @@
 'use client';
 
 import type { CreateProgramInput, MuscleGroup } from '@onemore/shared';
-import { aggregateMuscleGroups, defaultWorkoutDayLabel, localizeWorkoutDayLabel } from '@onemore/shared';
+import {
+  aggregateMuscleGroups,
+  defaultWorkoutDayLabel,
+  localizeWorkoutDayLabel,
+} from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';

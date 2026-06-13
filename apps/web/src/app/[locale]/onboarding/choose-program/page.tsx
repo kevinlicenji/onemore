@@ -72,7 +72,9 @@ export default function ChooseProgramPage(): React.ReactElement {
                 <p className="mt-1 text-sm text-muted-foreground">
                   {t('chooseProgram.recommendedHint')}
                 </p>
-                <p className="mt-3 text-base font-semibold">{templateCardTitle(topTemplate, locale)}</p>
+                <p className="mt-3 text-base font-semibold">
+                  {templateCardTitle(topTemplate, locale)}
+                </p>
                 <p className="mt-1 text-sm font-medium text-foreground/90">
                   {templateCardTagline(topTemplate, locale)}
                 </p>

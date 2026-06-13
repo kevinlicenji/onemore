@@ -11,11 +11,7 @@
       "daysPerWeek": 3,
       "equipmentProfile": "mixed",
       "split": "full_body",
-      "tags": [
-        "beginner",
-        "gym",
-        "full_body"
-      ],
+      "tags": ["beginner", "gym", "full_body"],
       "guide": {
         "en": "Three full-body sessions per week repeat the main movement patterns without long gym stays. Heavy compounds come first while you are fresh; machines and core close each day. Designed for beginners who need a clear weekly map and consistent strength habits.",
         "it": "Tre sessioni full body a settimana ripetono i pattern fondamentali senza lunghe permanenze in palestra. I multiarticolari arrivano per primi quando sei fresco; macchine e core chiudono la seduta. Pensata per chi inizia e vuole una mappa settimanale chiara e abitudini di forza costanti."
@@ -128,11 +124,7 @@
       "daysPerWeek": 4,
       "equipmentProfile": "mixed",
       "split": "upper_lower",
-      "tags": [
-        "beginner",
-        "gym",
-        "upper_lower"
-      ],
+      "tags": ["beginner", "gym", "upper_lower"],
       "guide": {
         "en": "Upper and lower days alternate so each muscle group trains twice per week with recovery between sessions. Machines support learning on leg day; free weights build pushing and pulling strength upstairs. Best when you can train four days and want more volume than full body without a complex split.",
         "it": "I giorni upper e lower si alternano così ogni distretto si allena due volte a settimana con recupero tra le sedute. Le macchine supportano l'apprendimento nei giorni gambe; i pesi liberi costruiscono forza di spinta e trazione nei giorni upper. Ideale se puoi allenarti quattro volte e vuoi più volume del full body senza uno split complesso."
@@ -279,11 +271,7 @@
       "daysPerWeek": 3,
       "equipmentProfile": "bodyweight",
       "split": "full_body",
-      "tags": [
-        "beginner",
-        "home",
-        "bodyweight"
-      ],
+      "tags": ["beginner", "home", "bodyweight"],
       "guide": {
         "en": "No equipment required: each day mixes push, legs, and core so you stay balanced without a gym. Higher reps and timed holds build work capacity before you add load. Built for home training when consistency matters more than maximal strength.",
         "it": "Senza attrezzi: ogni giorno combina spinta, gambe e core per restare equilibrato senza palestra. Ripetizioni alte e tenute a tempo costruiscono capacità di lavoro prima di aggiungere carico. Pensata per allenarsi a casa quando la costanza conta più della forza massimale."
@@ -399,11 +387,7 @@
       "daysPerWeek": 4,
       "equipmentProfile": "mixed",
       "split": "upper_lower",
-      "tags": [
-        "intermediate",
-        "gym",
-        "strength"
-      ],
+      "tags": ["intermediate", "gym", "strength"],
       "guide": {
         "en": "Four days with heavier compounds on the first exercise of each session and moderate accessories after. Lower rep ranges on main lifts target strength; machines and cables add volume without extra coordination cost. For lifters who outgrew beginner templates and recover well between sessions.",
         "it": "Quattro giorni con compound pesanti come primo esercizio e accessori moderati dopo. Range bassi sui fondamentali per la forza; macchine e cavi aggiungono volume senza costo di coordinazione extra. Per chi ha superato i template principianti e recupera bene tra le sedute."
@@ -544,11 +528,7 @@
       "daysPerWeek": 3,
       "equipmentProfile": "machines",
       "split": "full_body",
-      "tags": [
-        "beginner",
-        "gym",
-        "machines"
-      ],
+      "tags": ["beginner", "gym", "machines"],
       "guide": {
         "en": "Every session stays on machines and cables so movement paths are fixed and easy to learn. Full-body rotation three times per week builds familiarity with gym stations before free weights. Ideal for first months in a commercial gym or after a long break.",
         "it": "Ogni seduta resta su macchine e cavi così le traiettorie sono guidate e facili da imparare. Rotazione full body tre volte a settimana costruisce familiarità con le postazioni prima dei pesi liberi. Ideale per i primi mesi in palestra commerciale o dopo una pausa lunga."
@@ -660,11 +640,7 @@
       "daysPerWeek": 3,
       "equipmentProfile": "dumbbells",
       "split": "full_body",
-      "tags": [
-        "beginner",
-        "home",
-        "dumbbells"
-      ],
+      "tags": ["beginner", "home", "dumbbells"],
       "guide": {
         "en": "A pair of dumbbells covers push, pull, and legs across three short sessions. Unilateral work (split squats, rows) exposes imbalances early. For home setups with minimal gear who still want progressive overload beyond bodyweight.",
         "it": "Un paio di manubri copre spinta, trazione e gambe in tre sedute brevi. Il lavoro unilaterale (split squat, rematori) mette in luce gli squilibri presto. Per chi si allena a casa con poco materiale ma vuole progressione oltre il corpo libero."
@@ -776,11 +752,7 @@
       "daysPerWeek": 3,
       "equipmentProfile": "bands",
       "split": "full_body",
-      "tags": [
-        "beginner",
-        "home",
-        "bands"
-      ],
+      "tags": ["beginner", "home", "bands"],
       "guide": {
         "en": "Bands add scalable resistance for travel or tight spaces where dumbbells are not an option. Sessions stay short with antagonist pairs (press/row) to keep joints happy. Targets anyone who needs portable load and joint-friendly tension curves.",
         "it": "Gli elastici aggiungono resistenza scalabile per viaggi o spazi piccoli senza manubri. Sedute brevi con coppie antagoniste (press/remata) per rispettare le articolazioni. Per chi ha bisogno di carico portatile e curve di tensione più dolci."
@@ -892,11 +864,7 @@
       "daysPerWeek": 3,
       "equipmentProfile": "mixed",
       "split": "push_pull_legs",
-      "tags": [
-        "intermediate",
-        "gym",
-        "ppl"
-      ],
+      "tags": ["intermediate", "gym", "ppl"],
       "guide": {
         "en": "Classic PPL groups muscles by movement pattern so each session has a clear focus. One pass per week fits three available days; repeat the cycle when you add a fourth day later. Suited to intermediate lifters who like structured push, pull, and leg blocks.",
         "it": "Il PPL classico raggruppa i muscoli per pattern di movimento così ogni seduta ha un focus chiaro. Un giro a settimana su tre giorni; ripeti il ciclo quando aggiungi un quarto giorno. Per intermedi che preferiscono blocchi strutturati di spinta, trazione e gambe."
@@ -1026,11 +994,7 @@
       "daysPerWeek": 3,
       "equipmentProfile": "free_weights",
       "split": "full_body",
-      "tags": [
-        "intermediate",
-        "gym",
-        "strength"
-      ],
+      "tags": ["intermediate", "gym", "strength"],
       "guide": {
         "en": "Low reps on squat, bench, and deadlift variations drive neural strength adaptations. Each day hits the whole body but rotates emphasis so fatigue does not stack on one lift. For lifters prioritising barbell strength over pump work.",
         "it": "Poche ripetizioni su squat, panca e varianti di stacco spingono adattamenti neurali alla forza. Ogni giorno coinvolge tutto il corpo ma ruota l'enfasi così la fatica non si accumula su un solo lift. Per chi prioritizza la forza col bilanciere rispetto al lavoro di pump."
@@ -1143,11 +1107,7 @@
       "daysPerWeek": 4,
       "equipmentProfile": "mixed",
       "split": "upper_lower",
-      "tags": [
-        "intermediate",
-        "gym",
-        "hypertrophy"
-      ],
+      "tags": ["intermediate", "gym", "hypertrophy"],
       "guide": {
         "en": "Moderate reps and extra machine/cable volume accumulate time under tension without crushing recovery. Upper/lower split hits each muscle twice weekly — the minimum effective frequency for growth. Built for physique-focused training with enough gym time for accessories.",
         "it": "Ripetizioni moderate e volume extra su macchine e cavi accumulano tempo sotto tensione senza distruggere il recupero. Lo split upper/lower allena ogni muscolo due volte a settimana — la frequenza minima efficace per l'ipertrofia. Per chi punta all'estetica con tempo in palestra per gli accessori."
@@ -1312,11 +1272,7 @@
       "daysPerWeek": 4,
       "equipmentProfile": "mixed",
       "split": "upper_lower",
-      "tags": [
-        "advanced",
-        "gym",
-        "strength"
-      ],
+      "tags": ["advanced", "gym", "strength"],
       "guide": {
         "en": "Heavy compounds early in the week with higher sets on primary lifts; second upper/lower pass uses machines and cables for volume without extra axial load. Targets experienced lifters who tolerate four hard days and need structure around peaking strength.",
         "it": "Compound pesanti all'inizio della settimana con più serie sui fondamentali; il secondo passaggio upper/lower usa macchine e cavi per volume senza carico assiale extra. Per lifter esperti che reggono quattro giorni intensi e vogliono struttura intorno alla forza."
@@ -1463,12 +1419,7 @@
       "daysPerWeek": 3,
       "equipmentProfile": "mixed",
       "split": "conditioning",
-      "tags": [
-        "intermediate",
-        "gym",
-        "cardio",
-        "conditioning"
-      ],
+      "tags": ["intermediate", "gym", "cardio", "conditioning"],
       "guide": {
         "en": "Strength work stays at the start of each session; short cardio finishers raise heart rate without replacing lifting. Alternates machine strength with bodyweight conditioning so you build work capacity alongside muscle. For general fitness athletes who want both strength and stamina.",
         "it": "Il lavoro di forza resta all'inizio di ogni seduta; finisher cardio brevi alzano la frequenza cardiaca senza sostituire il sollevamento. Alterna forza alle macchine e conditioning a corpo libero per costruire capacità di lavoro e muscolo. Per chi vuole forza e resistenza insieme."

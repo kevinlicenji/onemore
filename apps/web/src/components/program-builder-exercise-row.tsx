@@ -186,7 +186,13 @@ export function ProgramBuilderExerciseRow({
               }}
             />
           </div>
-          <Button className="mt-2 w-full" size="sm" type="button" variant="outline" onClick={onDone}>
+          <Button
+            className="mt-2 w-full"
+            size="sm"
+            type="button"
+            variant="outline"
+            onClick={onDone}
+          >
             {labels.doneEditing}
           </Button>
         </div>

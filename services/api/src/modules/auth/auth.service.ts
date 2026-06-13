@@ -293,10 +293,7 @@ export class AuthService {
       throw new HttpError(404, 'User not found', 'USER_NOT_FOUND');
     }
 
-    const valid = await this.passwordService.verify(
-      currentPassword,
-      user.credential.passwordHash,
-    );
+    const valid = await this.passwordService.verify(currentPassword, user.credential.passwordHash);
     if (!valid) {
       throw new HttpError(401, 'Current password is incorrect', 'INVALID_CURRENT_PASSWORD');
     }
