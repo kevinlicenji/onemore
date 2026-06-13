@@ -21,6 +21,7 @@ import type {
   TemplateSummary,
   UpdateWorkoutExerciseNotesInput,
   UpdateWorkoutSessionNotesInput,
+  UpdateHistorySet,
   UpdateUserProfile,
   UpdateCustomExercise,
   UpsertSetLogInput,
@@ -460,6 +461,38 @@ export async function fetchHistorySessionDetail(
   });
   if (!response.ok) {
     throw await parseApiError(response, 'Failed to load session');
+  }
+  return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function deleteHistorySession(accessToken: string, sessionId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/history/sessions/${sessionId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to delete session');
+  }
+}
+
+export async function updateHistorySet(
+  accessToken: string,
+  sessionId: string,
+  setId: string,
+  payload: UpdateHistorySet,
+): Promise<WorkoutSessionDetail> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/history/sessions/${sessionId}/sets/${setId}`,
+    {
+      method: 'PATCH',
+      headers: authHeaders(accessToken),
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to update set');
   }
   return response.json() as Promise<WorkoutSessionDetail>;
 }

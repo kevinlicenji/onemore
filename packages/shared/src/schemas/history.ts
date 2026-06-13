@@ -30,3 +30,10 @@ export const historyListResponseSchema = z.object({
 export type HistorySessionSummary = z.infer<typeof historySessionSummarySchema>;
 export type HistoryListQuery = z.infer<typeof historyListQuerySchema>;
 export type HistoryListResponse = z.infer<typeof historyListResponseSchema>;
+
+export const updateHistorySetSchema = z.object({
+  weightKg: z.number().min(0).max(500).nullable(),
+  reps: z.number().int().min(0).max(200).nullable(),
+});
+
+export type UpdateHistorySet = z.infer<typeof updateHistorySetSchema>;

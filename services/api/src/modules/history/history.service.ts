@@ -87,6 +87,73 @@ export class HistoryService {
     return this.workoutsService.getSession(userId, sessionId);
   }
 
+  /**
+   * Delete a completed session from history.
+   *
+   * @param userId - Session owner id.
+   * @param sessionId - Workout session id.
+   */
+  async deleteSession(userId: string, sessionId: string): Promise<void> {
+    const session = await this.prisma.workoutSession.findFirst({
+      where: { id: sessionId, userId, status: 'completed' },
+      select: { id: true },
+    });
+
+    if (!session) {
+      throw new HttpError(404, 'Workout session not found', 'SESSION_NOT_FOUND');
+    }
+
+    await this.prisma.workoutSession.delete({
+      where: { id: sessionId },
+    });
+  }
+
+  /**
+   * Update weight/reps on a completed session set log.
+   *
+   * @param userId - Session owner id.
+   * @param sessionId - Workout session id.
+   * @param setId - Set log id.
+   * @param input - Updated metrics.
+   */
+  async updateSet(
+    userId: string,
+    sessionId: string,
+    setId: string,
+    input: { weightKg: number | null; reps: number | null },
+  ) {
+    const session = await this.prisma.workoutSession.findFirst({
+      where: { id: sessionId, userId, status: 'completed' },
+      select: { id: true },
+    });
+
+    if (!session) {
+      throw new HttpError(404, 'Workout session not found', 'SESSION_NOT_FOUND');
+    }
+
+    const set = await this.prisma.setLog.findFirst({
+      where: {
+        id: setId,
+        exerciseExecution: { workoutSessionId: sessionId },
+        isCompleted: true,
+      },
+    });
+
+    if (!set) {
+      throw new HttpError(404, 'Completed set not found', 'SET_NOT_FOUND');
+    }
+
+    await this.prisma.setLog.update({
+      where: { id: setId },
+      data: {
+        weightKg: input.weightKg,
+        reps: input.reps,
+      },
+    });
+
+    return this.workoutsService.getSession(userId, sessionId);
+  }
+
   private toSummary(
     session: Awaited<ReturnType<PrismaClient['workoutSession']['findMany']>>[number] & {
       workoutDay: { label: string } | null;

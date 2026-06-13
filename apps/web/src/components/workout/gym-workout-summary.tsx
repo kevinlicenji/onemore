@@ -17,6 +17,7 @@ interface GymWorkoutSummaryProps {
   session: WorkoutSessionDetail;
   locale: string;
   records: PersonalRecordSummary[];
+  editHref: string;
   labels: {
     title: string;
     subtitle: string;
@@ -27,8 +28,11 @@ interface GymWorkoutSummaryProps {
     prTitle: string;
     done: string;
     dashboard: string;
+    editSession: string;
+    deleteSession: string;
   };
   translatePrType: (type: PersonalRecordSummary['prType']) => string;
+  onDelete: () => void;
 }
 
 /**
@@ -38,8 +42,10 @@ export function GymWorkoutSummary({
   session,
   locale,
   records,
+  editHref,
   labels,
   translatePrType,
+  onDelete,
 }: GymWorkoutSummaryProps): React.ReactElement {
   const reducedMotion = useReducedMotion();
   const stats = computeWorkoutSessionStats(session);
@@ -97,7 +103,13 @@ export function GymWorkoutSummary({
           <Link href={`/${locale}/dashboard`}>{labels.done}</Link>
         </Button>
         <Button asChild className="min-h-11" variant="outline">
+          <Link href={editHref}>{labels.editSession}</Link>
+        </Button>
+        <Button asChild className="min-h-11" variant="outline">
           <Link href={`/${locale}/history`}>{labels.dashboard}</Link>
+        </Button>
+        <Button className="min-h-11" type="button" variant="ghost" onClick={onDelete}>
+          {labels.deleteSession}
         </Button>
       </div>
     </div>

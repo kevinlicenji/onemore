@@ -1,4 +1,4 @@
-import { historyListQuerySchema } from '@onemore/shared';
+import { historyListQuerySchema, updateHistorySetSchema } from '@onemore/shared';
 import { Router } from 'express';
 
 import { HttpError } from '../lib/errors.js';
@@ -35,6 +35,28 @@ export function createHistoryRouter(historyService: HistoryService): Router {
       const authReq = req as AuthenticatedRequest;
       const sessionId = requireRouteParam(req.params.sessionId, 'sessionId');
       const session = await historyService.getSessionDetail(authReq.userId ?? '', sessionId);
+      res.json(session);
+    }),
+  );
+
+  router.delete(
+    '/sessions/:sessionId',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const sessionId = requireRouteParam(req.params.sessionId, 'sessionId');
+      await historyService.deleteSession(authReq.userId ?? '', sessionId);
+      res.status(204).send();
+    }),
+  );
+
+  router.patch(
+    '/sessions/:sessionId/sets/:setId',
+    asyncHandler(async (req, res) => {
+      const authReq = req as AuthenticatedRequest;
+      const sessionId = requireRouteParam(req.params.sessionId, 'sessionId');
+      const setId = requireRouteParam(req.params.setId, 'setId');
+      const body = updateHistorySetSchema.parse(req.body);
+      const session = await historyService.updateSet(authReq.userId ?? '', sessionId, setId, body);
       res.json(session);
     }),
   );

@@ -1,12 +1,12 @@
 'use client';
 
 import type { ProgramSummary } from '@onemore/shared';
-import { Badge, Button, Card, CardContent } from '@onemore/ui';
+import { Button, Card, CardContent } from '@onemore/ui';
 import { ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactElement } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
@@ -20,7 +20,6 @@ import { RequireAuth } from '@/components/require-auth';
 import { DifficultyStepsIcon } from '@/components/difficulty-steps-icon';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useMotivationalLine } from '@/hooks/use-motivational-line';
-import { gymMobileStackedActionsClassName } from '@/lib/gym-mobile-layout';
 import { activateProgram, deleteProgram, fetchPrograms } from '@/lib/api-auth';
 
 export default function ProgramsPage(): React.ReactElement {
@@ -145,96 +144,161 @@ export default function ProgramsPage(): React.ReactElement {
     </div>
   );
 
-  const mobileProgramList = (
-    <GymListGroup>
-      {programs.map((program) => (
-        <GymListRow
-          key={program.id}
-          active={program.isActive}
-          href={`/${locale}/programs/${program.id}`}
-          showChevron
-          subtitle={t('programListMeta', {
-            days: program.daysCount,
-            status: program.latestVersionStatus ?? 'draft',
-          })}
-          title={
-            <span className="inline-flex items-center gap-2">
-              <span className="truncate">{program.name}</span>
-              {program.isActive ? <Badge variant="accent">{t('activeBadge')}</Badge> : null}
-            </span>
-          }
-          trailing={
-            <div className="flex shrink-0 items-center gap-1.5 pr-1">
-              <DifficultyStepsIcon level={program.difficultyLevel} size="sm" />
-              <ProgramActionsMenu
-                disabled={actionId !== null}
-                editHref={`/${locale}/programs/${program.id}/edit`}
-                labels={{
-                  menu: t('programActionsMenu'),
-                  edit: t('editProgram'),
-                  setActive: t('setActive'),
-                  delete: t('deleteProgram'),
-                }}
-                showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
-                onDelete={() => {
-                  requestDelete(program.id);
-                }}
-                onSetActive={() => {
-                  void handleActivate(program.id);
-                }}
-              />
-            </div>
-          }
+  const draftPrograms = programs.filter((program) => !program.isActive);
+
+  function programActions(program: ProgramSummary): ReactElement {
+    return (
+      <div className="flex shrink-0 items-center gap-1.5 pr-1">
+        <DifficultyStepsIcon level={program.difficultyLevel} size="sm" />
+        <ProgramActionsMenu
+          disabled={actionId !== null}
+          editHref={`/${locale}/programs/${program.id}/edit`}
+          labels={{
+            menu: t('programActionsMenu'),
+            edit: t('editProgram'),
+            setActive: t('setActive'),
+            delete: t('deleteProgram'),
+          }}
+          showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
+          onDelete={() => {
+            requestDelete(program.id);
+          }}
+          onSetActive={() => {
+            void handleActivate(program.id);
+          }}
         />
-      ))}
-    </GymListGroup>
+      </div>
+    );
+  }
+
+  const mobileProgramList = (
+    <div className="flex flex-col gap-5">
+      {activeProgram ? (
+        <section>
+          <h2 className="mb-2 px-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('myScheduleSection')}
+          </h2>
+          <GymListGroup>
+            <GymListRow
+              active
+              href={`/${locale}/programs/${activeProgram.id}`}
+              subtitle={t('programDaysMeta', { days: activeProgram.daysCount })}
+              title={activeProgram.name}
+              trailing={programActions(activeProgram)}
+            />
+          </GymListGroup>
+        </section>
+      ) : null}
+
+      {draftPrograms.length > 0 ? (
+        <section>
+          <h2 className="mb-2 px-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('draftsSection')}
+          </h2>
+          <GymListGroup>
+            {draftPrograms.map((program) => (
+              <GymListRow
+                key={program.id}
+                href={`/${locale}/programs/${program.id}`}
+                subtitle={t('programDaysMeta', { days: program.daysCount })}
+                title={program.name}
+                trailing={programActions(program)}
+              />
+            ))}
+          </GymListGroup>
+        </section>
+      ) : null}
+
+      <section className="flex flex-col items-center gap-3 px-8 pt-1">
+        <div className="h-px w-24 bg-gym-separator" />
+        <Button asChild className="min-h-12 w-full" variant="outline">
+          <Link href={`/${locale}/programs/templates`}>{t('browseTemplates')}</Link>
+        </Button>
+        <p className="max-w-xs text-center text-xs text-muted-foreground">
+          {t('browseSectionPrompt')}
+        </p>
+        <Button asChild className="min-h-10 w-full max-w-xs text-sm" size="sm">
+          <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
+        </Button>
+      </section>
+    </div>
   );
 
   const desktopProgramList = (
-    <StaggerGroup className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {programs.map((program) => (
-        <StaggerItem key={program.id}>
-          <Card className="h-full transition-shadow hover:shadow-md">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between gap-3">
-                <Link href={`/${locale}/programs/${program.id}`} className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold">{program.name}</p>
-                    {program.isActive ? <Badge variant="accent">{t('activeBadge')}</Badge> : null}
+    <div className="flex flex-col gap-8">
+      {activeProgram ? (
+        <section>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('myScheduleSection')}
+          </h2>
+          <StaggerGroup className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <StaggerItem key={activeProgram.id}>
+              <Card className="h-full border-primary/25 transition-shadow hover:shadow-md">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <Link
+                      href={`/${locale}/programs/${activeProgram.id}`}
+                      className="min-w-0 flex-1"
+                    >
+                      <p className="font-semibold">{activeProgram.name}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {t('programDaysMeta', { days: activeProgram.daysCount })}
+                      </p>
+                    </Link>
+                    <div className="flex shrink-0 items-start gap-2">
+                      <DifficultyStepsIcon level={activeProgram.difficultyLevel} />
+                      {programActions(activeProgram)}
+                    </div>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {t('programListMeta', {
-                      days: program.daysCount,
-                      status: program.latestVersionStatus ?? 'draft',
-                    })}
-                  </p>
-                </Link>
-                <div className="flex shrink-0 items-start gap-2">
-                  <DifficultyStepsIcon level={program.difficultyLevel} />
-                  <ProgramActionsMenu
-                    disabled={actionId !== null}
-                    editHref={`/${locale}/programs/${program.id}/edit`}
-                    labels={{
-                      menu: t('programActionsMenu'),
-                      edit: t('editProgram'),
-                      setActive: t('setActive'),
-                      delete: t('deleteProgram'),
-                    }}
-                    showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
-                    onDelete={() => {
-                      requestDelete(program.id);
-                    }}
-                    onSetActive={() => {
-                      void handleActivate(program.id);
-                    }}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </StaggerItem>
-      ))}
-    </StaggerGroup>
+                </CardContent>
+              </Card>
+            </StaggerItem>
+          </StaggerGroup>
+        </section>
+      ) : null}
+
+      {draftPrograms.length > 0 ? (
+        <section>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('draftsSection')}
+          </h2>
+          <StaggerGroup className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {draftPrograms.map((program) => (
+              <StaggerItem key={program.id}>
+                <Card className="h-full transition-shadow hover:shadow-md">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between gap-3">
+                      <Link href={`/${locale}/programs/${program.id}`} className="min-w-0 flex-1">
+                        <p className="font-semibold">{program.name}</p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {t('programDaysMeta', { days: program.daysCount })}
+                        </p>
+                      </Link>
+                      <div className="flex shrink-0 items-start gap-2">
+                        <DifficultyStepsIcon level={program.difficultyLevel} />
+                        {programActions(program)}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+            ))}
+          </StaggerGroup>
+        </section>
+      ) : null}
+
+      <section className="flex flex-col items-center gap-3 border-t border-gym-separator/80 px-8 py-8">
+        <Button asChild variant="outline">
+          <Link href={`/${locale}/programs/templates`}>{t('browseTemplates')}</Link>
+        </Button>
+        <p className="max-w-md text-center text-sm text-muted-foreground">
+          {t('browseSectionPrompt')}
+        </p>
+        <Button asChild size="sm">
+          <Link href={`/${locale}/programs/new`}>{t('buildManual')}</Link>
+        </Button>
+      </section>
+    </div>
   );
 
   return (
@@ -261,11 +325,6 @@ export default function ProgramsPage(): React.ReactElement {
           desktopProgramList
         ) : (
           <StaggerGroup compact>
-            {programs.length > 0 ? (
-              <StaggerItem>
-                <div className={gymMobileStackedActionsClassName}>{programActionButtons}</div>
-              </StaggerItem>
-            ) : null}
             <StaggerItem>{mobileProgramList}</StaggerItem>
           </StaggerGroup>
         )}

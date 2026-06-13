@@ -195,7 +195,7 @@ export function ScrollWheelPicker<T extends string | number>({
         <div
           ref={listRef}
           aria-label={label}
-          className="h-full overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [scroll-snap-type:y_mandatory] [&::-webkit-scrollbar]:hidden"
+          className="h-full overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [scroll-snap-type:y_mandatory] [&::-webkit-scrollbar]:hidden"
           data-wheel-picker
           style={{
             WebkitOverflowScrolling: 'touch',
@@ -211,15 +211,16 @@ export function ScrollWheelPicker<T extends string | number>({
             const distance = index - centerIndexFloat;
             const style = getWheelItemStyle(distance, size);
             const isSelected = option.value === value;
+            const useScaleTransform = size !== 'workout';
             return (
               <button
                 key={String(option.value)}
-                className="flex w-full shrink-0 items-center justify-center tabular-nums disabled:opacity-50 [scroll-snap-align:center]"
+                className="flex w-full shrink-0 items-center justify-center overflow-hidden tabular-nums disabled:opacity-50 [scroll-snap-align:center]"
                 disabled={disabled}
                 style={{
                   height: itemHeight,
                   opacity: style.opacity,
-                  transform: `scale(${String(style.scale)})`,
+                  transform: useScaleTransform ? `scale(${String(style.scale)})` : undefined,
                   transformOrigin: 'center center',
                   fontSize: `${String(style.fontSizeRem)}rem`,
                   fontWeight: style.fontWeight,

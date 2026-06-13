@@ -480,6 +480,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     nextExercise: t('nextExercise'),
     swipeHint: t('swipeHint'),
     elapsedLabel: t('elapsedLabel'),
+    homeLabel: t('homeLabel'),
     previousSetLabel: t('previousSetLabel'),
   };
 
@@ -503,7 +504,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           exerciseIndex={exerciseIndex}
           exerciseProgressText={exerciseProgressText}
           formatSetLabel={(setNumber) => t('setLabel', { number: setNumber })}
-          formatSetProgress={(current, total) => t('setProgress', { current, total })}
           labels={gymLabels}
           loading={loading}
           locale={locale}

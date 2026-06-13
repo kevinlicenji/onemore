@@ -1,7 +1,9 @@
 'use client';
 
 import type { WorkoutSessionDetail } from '@onemore/shared';
-import { Button, cn } from '@onemore/ui';
+import { Button } from '@onemore/ui';
+import { Home } from 'lucide-react';
+import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -18,6 +20,7 @@ import { triggerHaptic } from '@/lib/haptic';
 import type { RestTimerContext, WorkoutExerciseDetail } from '@/lib/workout-exercise-set-state';
 
 import { GymExerciseSets } from './gym-exercise-sets';
+import { GymExerciseProgress } from './gym-exercise-progress';
 import { GymWorkoutMenu } from './gym-workout-menu';
 
 export interface GymActiveWorkoutViewProps {
@@ -35,7 +38,6 @@ export interface GymActiveWorkoutViewProps {
   notesSaving: boolean;
   exerciseProgressText: string;
   formatSetLabel: (setNumber: number) => string;
-  formatSetProgress: (current: number, total: number) => string;
   labels: {
     freeWorkoutTitle: string;
     restLabel: string;
@@ -70,6 +72,7 @@ export interface GymActiveWorkoutViewProps {
     nextExercise: string;
     swipeHint: string;
     elapsedLabel: string;
+    homeLabel: string;
     previousSetLabel: string;
   };
   onRestComplete: (setId: string, actualRestSeconds: number) => void;
@@ -120,9 +123,8 @@ export function GymActiveWorkoutView({
   substituteMode,
   notesModalOpen,
   notesSaving,
-  exerciseProgressText,
+  exerciseProgressText: _exerciseProgressText,
   formatSetLabel,
-  formatSetProgress,
   labels,
   onRestComplete,
   onSelectExerciseToAdd,
@@ -241,30 +243,43 @@ export function GymActiveWorkoutView({
                     {labels.elapsedLabel}: {formatWorkoutDuration(elapsedSeconds)}
                   </p>
                 </div>
-                {currentExercise && currentExercise.status !== 'skipped' && (
-                  <GymWorkoutMenu
-                    disabled={loading}
-                    labels={{
-                      menu: labels.exerciseActionsMenu,
-                      notes: labels.menuNotes,
-                      substitute: labels.substituteExercise,
-                      skipExercise: labels.skipExercise,
-                      finishWorkout: labels.finishWorkout,
-                      abandon: labels.abandon,
-                      addSet: labels.addSet,
-                    }}
-                    showAddSet={
-                      !currentExercise.sets.some((set) => !set.isCompleted && !set.isSkipped)
-                    }
-                    showSubstitute={session.sessionType === 'programmed'}
-                    onAbandon={onAbandon}
-                    onAddSet={onAddSet}
-                    onFinishWorkout={onFinishWorkout}
-                    onNotes={onOpenNotes}
-                    onSkipExercise={onSkipExercise}
-                    onSubstitute={onOpenSubstitute}
-                  />
-                )}
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <Button
+                    aria-label={labels.homeLabel}
+                    asChild
+                    className="min-h-11 min-w-11 px-0"
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Link href={`/${locale}/dashboard`}>
+                      <Home aria-hidden className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                  {currentExercise ? (
+                    <GymWorkoutMenu
+                      disabled={loading}
+                      labels={{
+                        menu: labels.exerciseActionsMenu,
+                        notes: labels.menuNotes,
+                        substitute: labels.substituteExercise,
+                        skipExercise: labels.skipExercise,
+                        finishWorkout: labels.finishWorkout,
+                        abandon: labels.abandon,
+                        addSet: labels.addSet,
+                      }}
+                      showAddSet={
+                        !currentExercise.sets.some((set) => !set.isCompleted && !set.isSkipped)
+                      }
+                      showSubstitute={session.sessionType === 'programmed'}
+                      onAbandon={onAbandon}
+                      onAddSet={onAddSet}
+                      onFinishWorkout={onFinishWorkout}
+                      onNotes={onOpenNotes}
+                      onSkipExercise={onSkipExercise}
+                      onSubstitute={onOpenSubstitute}
+                    />
+                  ) : null}
+                </div>
               </div>
 
               {currentExercise && (
@@ -272,54 +287,43 @@ export function GymActiveWorkoutView({
                   <h1 className="mt-2 text-2xl font-bold leading-tight">
                     {getExerciseDisplayName(currentExercise.exercise, locale)}
                   </h1>
-                  <div aria-hidden className="mt-3 flex items-center justify-center gap-1.5">
-                    {session.exercises.map((exercise, index) => (
-                      <span
-                        key={exercise.id}
-                        className={cn(
-                          'h-1.5 rounded-full transition-all',
-                          index === exerciseIndex
-                            ? 'w-5 bg-primary'
-                            : exercise.status === 'completed' || exercise.status === 'skipped'
-                              ? 'w-1.5 bg-primary/35'
-                              : 'w-1.5 bg-muted-foreground/25',
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <div className="mt-2 flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{exerciseProgressText}</p>
-                      <p className="text-[11px] text-muted-foreground/80">{labels.swipeHint}</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        aria-label={labels.prevExercise}
-                        className="min-h-10 min-w-10 px-0"
-                        disabled={exerciseIndex === 0 || loading}
-                        size="sm"
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          navigateExercise(exerciseIndex - 1);
-                        }}
-                      >
-                        ‹
-                      </Button>
-                      <Button
-                        aria-label={labels.nextExercise}
-                        className="min-h-10 min-w-10 px-0"
-                        disabled={exerciseIndex >= session.exercises.length - 1 || loading}
-                        size="sm"
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          navigateExercise(exerciseIndex + 1);
-                        }}
-                      >
-                        ›
-                      </Button>
-                    </div>
+                  <GymExerciseProgress
+                    completedIndexes={session.exercises
+                      .map((exercise, index) => (exercise.status === 'completed' ? index : -1))
+                      .filter((index) => index >= 0)}
+                    currentIndex={exerciseIndex}
+                    skippedIndexes={session.exercises
+                      .map((exercise, index) => (exercise.status === 'skipped' ? index : -1))
+                      .filter((index) => index >= 0)}
+                    total={session.exercises.length}
+                  />
+                  <div className="mt-2 flex items-center justify-end gap-1">
+                    <Button
+                      aria-label={labels.prevExercise}
+                      className="min-h-10 min-w-10 px-0"
+                      disabled={exerciseIndex === 0 || loading}
+                      size="sm"
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        navigateExercise(exerciseIndex - 1);
+                      }}
+                    >
+                      ‹
+                    </Button>
+                    <Button
+                      aria-label={labels.nextExercise}
+                      className="min-h-10 min-w-10 px-0"
+                      disabled={exerciseIndex >= session.exercises.length - 1 || loading}
+                      size="sm"
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        navigateExercise(exerciseIndex + 1);
+                      }}
+                    >
+                      ›
+                    </Button>
                   </div>
                 </>
               )}
@@ -361,7 +365,6 @@ export function GymActiveWorkoutView({
                           actualRestBySetId={actualRestBySetId}
                           exercise={currentExercise}
                           formatSetLabel={formatSetLabel}
-                          formatSetProgress={formatSetProgress}
                           labels={{
                             setSkippedLabel: labels.setSkippedLabel,
                             skipSet: labels.skipSet,

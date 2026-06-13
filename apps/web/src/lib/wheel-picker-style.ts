@@ -22,13 +22,22 @@ export function getWheelItemStyle(
     fontWeight: distance < 0.35 ? 700 : distance < 1.2 ? 500 : 400,
   };
 
+  if (size === 'workout') {
+    const fontScale = 0.74;
+    return {
+      scale: 1,
+      opacity: Math.max(0.22, 1 - distance * 0.42),
+      fontSizeRem: (distance < 0.35 ? 1.22 : distance < 1.2 ? 0.95 : 0.78) * fontScale,
+      fontWeight: distance < 0.35 ? 700 : distance < 1.2 ? 500 : 400,
+    };
+  }
+
   if (size === 'default') {
     return base;
   }
 
-  const scale = size === 'workout' ? 0.74 : COMPACT_FONT_SCALE;
   return {
     ...base,
-    fontSizeRem: base.fontSizeRem * scale,
+    fontSizeRem: base.fontSizeRem * COMPACT_FONT_SCALE,
   };
 }

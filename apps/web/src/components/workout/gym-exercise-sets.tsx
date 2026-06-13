@@ -34,7 +34,6 @@ interface GymExerciseSetsProps {
     previousSetLabel: string;
   };
   formatSetLabel: (setNumber: number) => string;
-  formatSetProgress: (current: number, total: number) => string;
   onSkipSet: (setId: string, setNumber: number) => void;
   onUpdateSetValue: (setId: string, field: 'weightKg' | 'reps', value: number | null) => void;
 }
@@ -55,7 +54,6 @@ export function GymExerciseSets({
   loading,
   labels,
   formatSetLabel,
-  formatSetProgress,
   onSkipSet,
   onUpdateSetValue,
 }: GymExerciseSetsProps): React.ReactElement {
@@ -76,8 +74,6 @@ export function GymExerciseSets({
     exercise.previousSet?.reps ?? null,
     labels.failureReps,
   );
-  const totalSets = exercise.sets.length;
-  const completedCount = setState.completedSets.length;
   const motionTransition = reducedMotion
     ? { duration: 0 }
     : { duration: 0.28, ease: [0.25, 0.1, 0.25, 1] as const };
@@ -131,13 +127,25 @@ export function GymExerciseSets({
                 {previousSetLine}
               </p>
             ) : null}
-            <div className="flex items-baseline justify-between gap-2">
+            <div className="flex items-start justify-between gap-2">
               <p className="text-lg font-semibold">
                 {formatSetLabel(setState.activeSet.setNumber)}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {formatSetProgress(completedCount + 1, totalSets)}
-              </p>
+              <Button
+                className="min-h-8 shrink-0 px-2 text-xs"
+                disabled={loading}
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  const activeSet = setState.activeSet;
+                  if (!activeSet) {
+                    return;
+                  }
+                  onSkipSet(activeSet.id, activeSet.setNumber);
+                }}
+              >
+                {labels.skipSet}
+              </Button>
             </div>
             {!isExtraSet(setState.activeSet.setNumber, prescription.targetSets) && (
               <p className="mt-1 text-sm text-muted-foreground">
@@ -194,24 +202,6 @@ export function GymExerciseSets({
                   }}
                 />
               ) : null}
-            </div>
-
-            <div className="mt-3 flex justify-end">
-              <Button
-                className="min-h-9 px-3 text-sm"
-                disabled={loading}
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  const activeSet = setState.activeSet;
-                  if (!activeSet) {
-                    return;
-                  }
-                  onSkipSet(activeSet.id, activeSet.setNumber);
-                }}
-              >
-                {labels.skipSet}
-              </Button>
             </div>
           </motion.div>
         )}
