@@ -15,6 +15,7 @@ function makeExercise(overrides: Partial<WorkoutExerciseDetail> = {}): WorkoutEx
       id: 'lib-1',
       names: { en: 'Bench Press', it: 'Panca piana' },
       slug: 'bench-press',
+      isBodyweight: false,
     },
     prescription: {
       targetSets: 3,

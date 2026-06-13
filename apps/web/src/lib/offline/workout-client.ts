@@ -445,6 +445,7 @@ export async function addWorkoutExerciseClient(
       id: exercise.id,
       slug: exercise.slug,
       names: exercise.names,
+      isBodyweight: exercise.isBodyweight,
     },
     previousSet: previousByExercise.get(exercise.id) ?? null,
     sets: Array.from({ length: payload.targetSets }, (_, index) => ({

@@ -43,7 +43,12 @@ describe('findPreviousSetInSessions', () => {
               restSeconds: 90,
               coachNote: null,
             },
-            exercise: { id: exerciseId, slug: 'bench', names: { en: 'Bench' } },
+            exercise: {
+              id: exerciseId,
+              slug: 'bench',
+              names: { en: 'Bench' },
+              isBodyweight: false,
+            },
             previousSet: null,
             sets: [
               {
@@ -78,7 +83,12 @@ describe('findPreviousSetInSessions', () => {
               restSeconds: 90,
               coachNote: null,
             },
-            exercise: { id: exerciseId, slug: 'bench', names: { en: 'Bench' } },
+            exercise: {
+              id: exerciseId,
+              slug: 'bench',
+              names: { en: 'Bench' },
+              isBodyweight: false,
+            },
             previousSet: null,
             sets: [
               {
@@ -123,7 +133,12 @@ describe('findPreviousSetInSessions', () => {
               restSeconds: 90,
               coachNote: null,
             },
-            exercise: { id: exerciseId, slug: 'bench', names: { en: 'Bench' } },
+            exercise: {
+              id: exerciseId,
+              slug: 'bench',
+              names: { en: 'Bench' },
+              isBodyweight: false,
+            },
             previousSet: null,
             sets: [
               {
@@ -177,7 +192,12 @@ describe('findPreviousSetInSessions', () => {
               restSeconds: 90,
               coachNote: null,
             },
-            exercise: { id: exerciseId, slug: 'bench', names: { en: 'Bench' } },
+            exercise: {
+              id: exerciseId,
+              slug: 'bench',
+              names: { en: 'Bench' },
+              isBodyweight: false,
+            },
             previousSet: null,
             sets: [
               {

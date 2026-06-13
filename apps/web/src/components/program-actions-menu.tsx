@@ -20,6 +20,23 @@ interface ProgramActionsMenuProps {
   onDelete: () => void;
 }
 
+interface ProgramLinkAction {
+  label: string;
+  href: string;
+}
+
+interface ProgramButtonAction {
+  label: string;
+  onClick: () => void;
+  destructive?: true;
+}
+
+type ProgramAction = ProgramLinkAction | ProgramButtonAction;
+
+function isLinkAction(action: ProgramAction): action is ProgramLinkAction {
+  return 'href' in action;
+}
+
 /**
  * Program card overflow actions as a full-screen bottom sheet (mobile-safe).
  */
@@ -38,7 +55,7 @@ export function ProgramActionsMenu({
     action();
   }
 
-  const actions = [
+  const actions: ProgramAction[] = [
     { label: labels.edit, href: editHref },
     ...(showSetActive
       ? [
@@ -87,7 +104,7 @@ export function ProgramActionsMenu({
       >
         <ul className="overflow-hidden rounded-2xl border border-gym-separator bg-gym-surface">
           {actions.map((action, index) => {
-            if ('href' in action) {
+            if (isLinkAction(action)) {
               return (
                 <li key={action.label} className={cn(index > 0 && 'border-t border-gym-separator')}>
                   <Link
