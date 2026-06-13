@@ -5,9 +5,17 @@ import {
 } from '@onemore/shared';
 import { Router } from 'express';
 
+import { HttpError } from '../lib/errors.js';
 import { asyncHandler } from '../middleware/async-handler.js';
 import type { AuthenticatedRequest } from '../middleware/authenticate.js';
 import type { ExercisesService } from '../modules/exercises/exercises.service.js';
+
+function requireRouteParam(value: string | string[] | undefined, name: string): string {
+  if (typeof value === 'string' && value.length > 0) {
+    return value;
+  }
+  throw new HttpError(400, `Missing route parameter: ${name}`, 'INVALID_ROUTE_PARAM');
+}
 
 /**
  * Exercise library routes under /api/v1/exercises.
@@ -42,7 +50,7 @@ export function createExercisesRouter(exercisesService: ExercisesService): Route
       const body = updateCustomExerciseSchema.parse(req.body);
       const exercise = await exercisesService.updateCustom(
         authReq.userId ?? '',
-        req.params.id,
+        requireRouteParam(req.params.id, 'id'),
         body,
       );
       res.json(exercise);
