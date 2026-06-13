@@ -19,11 +19,12 @@ import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
 import { ProgramActionsMenu } from '@/components/program-actions-menu';
 import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
+import { useMotivationalLine } from '@/hooks/use-motivational-line';
 import { activateProgram, deleteProgram, fetchPrograms } from '@/lib/api-auth';
 
 export default function ProgramsPage(): React.ReactElement {
   const t = useTranslations('Programs');
-  const { accessToken } = useAuth();
+  const { accessToken, profile } = useAuth();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const isDesktop = useIsDesktop();
@@ -32,6 +33,7 @@ export default function ProgramsPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const motivationalLine = useMotivationalLine('programs', profile);
 
   const loadPrograms = useCallback(async (): Promise<void> => {
     if (!accessToken) {
@@ -202,7 +204,7 @@ export default function ProgramsPage(): React.ReactElement {
         backHref={isDesktop ? undefined : `/${locale}/dashboard`}
         backLabel={t('backToDashboard')}
         title={t('myProgramsTitle')}
-        description={`${t('myProgramsSubtitle')} ${t('singleActiveHint')}`}
+        description={motivationalLine}
         actions={headerActions}
         onRefresh={isDesktop ? undefined : loadPrograms}
       >

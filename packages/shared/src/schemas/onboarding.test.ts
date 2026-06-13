@@ -24,9 +24,12 @@ describe('onboardingCompleteSchema', () => {
       trainingLevel: 'beginner',
       trainingEnvironment: 'gym',
       trainingDaysPerWeek: 3,
+      preferredSessionMinutes: 60,
+      preferredMuscleGroups: ['chest', 'back'],
       motivationLevel: 2,
     });
     expect(result.trainingDaysPerWeek).toBe(3);
+    expect(result.preferredSessionMinutes).toBe(60);
   });
 
   it('rejects missing fields', () => {

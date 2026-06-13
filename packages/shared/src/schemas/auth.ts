@@ -34,10 +34,18 @@ export const usernameSchema = z
     }
   });
 
+export const personNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Name is required')
+  .max(50, 'Name must be at most 50 characters');
+
 export const registerBodySchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   username: usernameSchema,
+  firstName: personNameSchema,
+  lastName: personNameSchema,
   displayName: z.string().min(1).max(100).optional(),
   locale: z.enum(['it', 'en']).default('it'),
   birthYear: z
@@ -93,6 +101,8 @@ export const authTokensResponseSchema = z.object({
     id: z.string().uuid(),
     email: z.string().email(),
     username: z.string().nullable(),
+    firstName: z.string().nullable(),
+    lastName: z.string().nullable(),
     displayName: z.string().nullable(),
     locale: z.enum(['it', 'en']),
   }),

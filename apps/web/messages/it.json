@@ -11,6 +11,8 @@
     "password": "Password",
     "username": "Username",
     "usernameHint": "3–30 caratteri: lettere, numeri e _ (niente @)",
+    "firstName": "Nome",
+    "lastName": "Cognome",
     "birthYear": "Anno di nascita",
     "loginSubmit": "Accedi",
     "registerSubmit": "Registrati",
@@ -22,6 +24,84 @@
     "registerError": "Registrazione non riuscita",
     "forgotError": "Richiesta non riuscita",
     "forgotSuccess": "Se l'email esiste, riceverai un link di reset."
+  },
+  "Motivation": {
+    "dashboardActive": {
+      "withName": {
+        "0": "Forza {name}, oggi conta.",
+        "1": "{name}, una sessione vale più di cento scuse.",
+        "2": "Ehi {name}, fallo per te stesso.",
+        "3": "{name}, costruisci l'abitudine — i risultati arrivano."
+      },
+      "generic": {
+        "0": "Presentati oggi. Il te del futuro ti ringrazierà.",
+        "1": "Un allenamento alla volta — è così che funziona.",
+        "2": "La parte difficile è iniziare. Ci sei.",
+        "3": "La costanza batte l'intensità. Andiamo."
+      }
+    },
+    "dashboardEmpty": {
+      "withName": {
+        "0": "{name}, il primo allenamento è il più duro — e il più importante.",
+        "1": "Quando vuoi, {name}. Scegli un programma e inizia.",
+        "2": "{name}, ogni campione è partito dal giorno uno."
+      },
+      "generic": {
+        "0": "Il percorso inizia con un programma e una sessione.",
+        "1": "Nessun allenamento ancora — sta per cambiare.",
+        "2": "Scegli un piano, allenati, guarda i numeri crescere."
+      }
+    },
+    "workoutStart": {
+      "withName": {
+        "0": "{name}, allacciati — questa sessione è tua.",
+        "1": "È ora di lavorare, {name}. Concentrati sulla prossima serie.",
+        "2": "{name}, lascia tutto in palestra oggi.",
+        "3": "Ce la fai, {name}. Una ripetizione alla volta."
+      },
+      "generic": {
+        "0": "È ora di allenarsi. Concentrati sulla prossima serie.",
+        "1": "Presentati, lavora duro, esci più forte.",
+        "2": "Il bilanciere non si solleva da solo — andiamo.",
+        "3": "Una ripetizione alla volta. È tutto il gioco."
+      }
+    },
+    "onboardingWelcome": {
+      "withName": {
+        "0": "Benvenuto {name} — costruiamo qualcosa su misura per te.",
+        "1": "{name}, poche domande e siamo pronti.",
+        "2": "Felici di averti, {name}. Ci vogliono due minuti."
+      },
+      "generic": {
+        "0": "Benvenuto — costruiamo un piano su misura per te.",
+        "1": "Poche domande e siamo pronti.",
+        "2": "Felici di averti. Ci vogliono due minuti."
+      }
+    },
+    "programs": {
+      "withName": {
+        "0": "{name}, i programmi sono la mappa — le sessioni i passi.",
+        "1": "Ottimi piani, {name}. Ora eseguili.",
+        "2": "{name}, modifica un programma o riparti da zero — decidi tu."
+      },
+      "generic": {
+        "0": "I programmi sono la mappa — le sessioni i passi.",
+        "1": "Pianifica il lavoro, poi lavora il piano.",
+        "2": "Modifica un programma o riparti da zero — decidi tu."
+      }
+    },
+    "chooseProgram": {
+      "withName": {
+        "0": "{name}, scegli un punto di partenza — puoi sempre cambiare.",
+        "1": "Quasi fatto, {name}. Scegli come vuoi iniziare.",
+        "2": "{name}, il programma giusto è quello che seguirai davvero."
+      },
+      "generic": {
+        "0": "Scegli un punto di partenza — puoi sempre cambiare.",
+        "1": "Quasi fatto. Scegli come vuoi iniziare.",
+        "2": "Il programma giusto è quello che seguirai davvero."
+      }
+    }
   },
   "Home": {
     "title": "OneMore",
@@ -135,7 +215,7 @@
     "steps": {
       "goal": {
         "title": "Qual è il tuo obiettivo principale?",
-        "subtitle": "Personalizziamo l'esperienza in base a questo."
+        "subtitle": "Costruiamo l'esperienza intorno a questo."
       },
       "level": {
         "title": "Qual è il tuo livello?",
@@ -143,7 +223,15 @@
       },
       "availability": {
         "title": "Quanti giorni puoi allenarti?",
-        "subtitle": "Scegli un ritmo sostenibile."
+        "subtitle": "Scegli un ritmo sostenibile tutto l'anno."
+      },
+      "sessionDuration": {
+        "title": "Quanto dura ogni allenamento?",
+        "subtitle": "Ti suggeriremo sessioni adatte al tuo tempo."
+      },
+      "muscleFocus": {
+        "title": "Quali muscoli vuoi privilegiare?",
+        "subtitle": "Scegli una o più aree — abbineremo i programmi al tuo focus."
       },
       "environment": {
         "title": "Dove ti alleni di solito?",
@@ -152,6 +240,10 @@
       "motivation": {
         "title": "Quanto supporto vuoi?",
         "subtitle": "Puoi cambiarlo dopo nelle impostazioni."
+      },
+      "theme": {
+        "title": "Scegli il tuo stile",
+        "subtitle": "Ogni tema cambia colori e contrasti in tutta l'app."
       }
     },
     "goals": {
@@ -167,6 +259,17 @@
       "advanced": "Avanzato"
     },
     "daysPerWeek": "{count} giorni a settimana",
+    "sessionMinutes": "{count} minuti",
+    "muscleFocus": {
+      "chest": { "title": "Petto", "hint": "Pettorali e spinta" },
+      "back": { "title": "Schiena", "hint": "Dorsali e trazione" },
+      "shoulders": { "title": "Spalle", "hint": "Deltoidi e overhead" },
+      "arms": { "title": "Braccia", "hint": "Bicipiti e tricipiti" },
+      "legs": { "title": "Gambe", "hint": "Quadricipiti, femorali e polpacci" },
+      "glutes": { "title": "Glutei", "hint": "Fianchi e catena posteriore" },
+      "core": { "title": "Core", "hint": "Addome e stabilità" },
+      "balanced": { "title": "Equilibrato", "hint": "Sviluppo full body uniforme" }
+    },
     "environments": {
       "gym": "Palestra",
       "home": "Casa"
@@ -185,12 +288,36 @@
         "description": "Incoraggiamenti frequenti e check-in."
       }
     },
+    "themes": {
+      "classic": {
+        "title": "Classico",
+        "description": "Bianco e nero — pulito e minimale."
+      },
+      "solar": {
+        "title": "Solare",
+        "description": "Blu e oro su sfondo crema."
+      },
+      "midnight": {
+        "title": "Mezzanotte",
+        "description": "Superfici scure con accenti blu brillanti."
+      },
+      "forest": {
+        "title": "Foresta",
+        "description": "Verdi soft per un'atmosfera naturale."
+      },
+      "ember": {
+        "title": "Brace",
+        "description": "Toni caldi scuri con highlight arancio."
+      }
+    },
     "chooseProgram": {
       "title": "Come vuoi iniziare?",
       "subtitle": "Scegli un template o crea il tuo programma.",
       "recommendedTitle": "Consigliato per te",
-      "recommendedHint": "In base al tuo profilo di onboarding.",
+      "recommendedHint": "In base a giorni, durata sessione e muscoli scelti.",
       "recommendedCta": "Vedi scheda consigliata",
+      "sessionEstimate": "~{minutes} min a sessione",
+      "alsoFitsTitle": "Altri programmi adatti a te",
       "templateTitle": "Usa un template",
       "templateDescription": "Split pronti in linea con il tuo profilo.",
       "manualTitle": "Crea il mio programma",
@@ -416,20 +543,14 @@
   "Settings": {
     "title": "Impostazioni",
     "appearanceTitle": "Aspetto",
-    "appearanceSubtitle": "Personalizza colori, font e modalità chiaro/scuro.",
-    "appearanceModeLabel": "Modalità schermo",
-    "appearanceModes": {
-      "system": "Sistema",
-      "light": "Chiaro",
-      "dark": "Scuro"
-    },
-    "colorThemeLabel": "Tema colori",
+    "appearanceSubtitle": "Personalizza colori e font.",
+    "colorThemeLabel": "Tema",
     "colorThemes": {
-      "ocean": "Oceano",
-      "midnight": "Notte",
-      "arctic": "Artico",
-      "cobalt": "Cobalto",
-      "pulse": "Pulse"
+      "classic": "Classico",
+      "solar": "Solare",
+      "midnight": "Mezzanotte",
+      "forest": "Foresta",
+      "ember": "Brace"
     },
     "fontLabel": "Font",
     "fonts": {

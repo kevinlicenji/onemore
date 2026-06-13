@@ -12,6 +12,8 @@ const validRegisterPayload = {
   email: 'athlete@example.com',
   password: 'Str0ng!Pass',
   username: 'athlete42',
+  firstName: 'Marco',
+  lastName: 'Rossi',
   locale: 'it' as const,
   birthYear: 1995,
   timezone: 'Europe/Rome',

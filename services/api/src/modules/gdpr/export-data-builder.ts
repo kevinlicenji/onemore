@@ -47,6 +47,8 @@ export async function buildGdprExportBundle(
     user: {
       id: safeUser.id,
       email: safeUser.email,
+      firstName: safeUser.firstName,
+      lastName: safeUser.lastName,
       displayName: safeUser.displayName,
       username: safeUser.username,
       locale: safeUser.locale,

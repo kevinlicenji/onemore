@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import type { UpdateUserProfile, UserSettings } from '@onemore/shared';
+import { formatDisplayName } from '@onemore/shared';
 
 import { HttpError } from '../../lib/errors.js';
 import { mergeUserSettings, parseUserSettings } from '../../lib/settings.js';
@@ -57,10 +58,20 @@ export class UsersService {
       ? mergeUserSettings(parseUserSettings(user.settings), input.settings)
       : undefined;
 
+    const nextDisplayName =
+      input.firstName !== undefined || input.lastName !== undefined
+        ? (formatDisplayName(
+            input.firstName ?? user.firstName,
+            input.lastName ?? user.lastName,
+          ) ?? user.displayName)
+        : input.displayName;
+
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        displayName: input.displayName,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        displayName: nextDisplayName,
         username,
         usernameChangedAt:
           input.username && input.username.toLowerCase() !== user.username?.toLowerCase()
@@ -87,6 +98,8 @@ export class UsersService {
     email: string;
     emailVerifiedAt: Date | null;
     displayName: string | null;
+    firstName: string | null;
+    lastName: string | null;
     username: string | null;
     locale: string;
     birthYear: number | null;
@@ -99,6 +112,8 @@ export class UsersService {
     trainingLevel: string | null;
     trainingEnvironment: string | null;
     trainingDaysPerWeek: number | null;
+    preferredSessionMinutes: number | null;
+    preferredMuscleGroups: string[];
     isCoach: boolean;
     mfaEnabled: boolean;
     settings: unknown;
@@ -111,6 +126,8 @@ export class UsersService {
       email: user.email,
       emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
       displayName: user.displayName,
+      firstName: user.firstName,
+      lastName: user.lastName,
       username: user.username,
       locale: user.locale as 'it' | 'en',
       birthYear: user.birthYear,
@@ -123,6 +140,8 @@ export class UsersService {
       trainingLevel: user.trainingLevel,
       trainingEnvironment: user.trainingEnvironment,
       trainingDaysPerWeek: user.trainingDaysPerWeek,
+      preferredSessionMinutes: user.preferredSessionMinutes,
+      preferredMuscleGroups: user.preferredMuscleGroups.filter((muscle) => muscle.length > 0),
       isCoach: user.isCoach,
       mfaEnabled: user.mfaEnabled,
       settings,

@@ -130,6 +130,8 @@ model User {
   email                   String              @unique
   emailVerifiedAt         DateTime?           @map("email_verified_at")
   displayName             String?             @map("display_name")
+  firstName               String?             @map("first_name")
+  lastName                String?             @map("last_name")
   username                String?             @unique
   usernameChangedAt       DateTime?           @map("username_changed_at")
   birthYear               Int?                @map("birth_year")
@@ -144,6 +146,8 @@ model User {
   trainingLevel           TrainingLevel?      @map("training_level")
   trainingEnvironment     TrainingEnvironment? @map("training_environment")
   trainingDaysPerWeek     Int?                @map("training_days_per_week")
+  preferredSessionMinutes Int?                @map("preferred_session_minutes")
+  preferredMuscleGroups   String[]            @default([]) @map("preferred_muscle_groups")
   isCoach                 Boolean             @default(false) @map("is_coach")
   mfaEnabled              Boolean             @default(false) @map("mfa_enabled")
   totpSecretEncrypted     Bytes?              @map("totp_secret_encrypted")

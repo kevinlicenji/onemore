@@ -49,6 +49,8 @@ describeIntegration('integration: onboarding flows', () => {
         email: testEmail,
         password: 'zQ8!mKp2vLn9Wx4rOnboard',
         username: `ob_${String(Date.now()).slice(-8)}`,
+        firstName: 'Onboard',
+        lastName: 'Test',
         locale: 'it',
         birthYear: 1995,
         timezone: 'Europe/Rome',
@@ -84,6 +86,8 @@ describeIntegration('integration: onboarding flows', () => {
         trainingLevel: 'beginner',
         trainingEnvironment: 'gym',
         trainingDaysPerWeek: 3,
+        preferredSessionMinutes: 60,
+        preferredMuscleGroups: ['chest', 'quadriceps'],
         motivationLevel: 2,
       });
 

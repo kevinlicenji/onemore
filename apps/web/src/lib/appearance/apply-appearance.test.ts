@@ -9,8 +9,8 @@ import {
 
 describe('buildAppearanceAttributes', () => {
   it('maps preferences to html data attributes', () => {
-    expect(buildAppearanceAttributes({ colorThemeId: 'arctic', fontId: 'outfit' })).toEqual({
-      'data-color-theme': 'arctic',
+    expect(buildAppearanceAttributes({ colorThemeId: 'solar', fontId: 'outfit' })).toEqual({
+      'data-color-theme': 'solar',
       'data-font': 'outfit',
     });
   });
@@ -21,7 +21,7 @@ describe('buildAppearanceInitScript', () => {
     const script = buildAppearanceInitScript();
     expect(script).toContain(APPEARANCE_COLOR_ATTR);
     expect(script).toContain(APPEARANCE_FONT_ATTR);
-    expect(script).toContain('ocean');
+    expect(script).toContain('classic');
     expect(script).toContain('plus-jakarta');
   });
 });

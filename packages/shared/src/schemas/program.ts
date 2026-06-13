@@ -92,6 +92,8 @@ export const templateSummarySchema = z.object({
   split: z
     .enum(['full_body', 'upper_lower', 'push_pull_legs', 'bro_split', 'conditioning'])
     .nullable(),
+  estimatedSessionMinutes: z.number().int().min(10).max(180),
+  muscleVolumes: z.record(muscleGroupSchema, z.number().int().nonnegative()),
 });
 
 export type CreateProgramInput = z.infer<typeof createProgramSchema>;

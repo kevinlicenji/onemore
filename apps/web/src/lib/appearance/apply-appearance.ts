@@ -1,7 +1,7 @@
 import type { ColorThemeId } from './color-themes';
-import { DEFAULT_COLOR_THEME_ID } from './color-themes';
+import { DEFAULT_COLOR_THEME_ID, normalizeColorThemeId } from './color-themes';
 import type { FontId } from './font-options';
-import { DEFAULT_FONT_ID } from './font-options';
+import { DEFAULT_FONT_ID, normalizeFontId } from './font-options';
 
 export const APPEARANCE_COLOR_ATTR = 'data-color-theme';
 export const APPEARANCE_FONT_ATTR = 'data-font';
@@ -39,6 +39,9 @@ export function applyAppearanceToDocument(preferences: AppearanceAttributes): vo
   const root = document.documentElement;
   root.setAttribute(APPEARANCE_COLOR_ATTR, preferences.colorThemeId);
   root.setAttribute(APPEARANCE_FONT_ATTR, preferences.fontId);
+  // Color themes are self-contained — drop next-themes dark class so presets control contrast.
+  root.classList.remove('dark');
+  root.classList.add('light');
 }
 
 /**
@@ -49,6 +52,11 @@ export function buildAppearanceInitScript(): string {
   const fontKey = 'onemore-appearance-font';
   const defaultColor = DEFAULT_COLOR_THEME_ID;
   const defaultFont = DEFAULT_FONT_ID;
+  const validThemes = "['classic','solar','midnight','forest','ember']";
+  const legacyMap =
+    "{ocean:'classic',arctic:'solar',midnight:'midnight',cobalt:'forest',pulse:'ember'}";
 
-  return `(function(){try{var r=document.documentElement;var c=localStorage.getItem('${colorKey}');var f=localStorage.getItem('${fontKey}');r.setAttribute('${APPEARANCE_COLOR_ATTR}',c||'${defaultColor}');r.setAttribute('${APPEARANCE_FONT_ATTR}',f||'${defaultFont}');}catch(e){}})();`;
+  return `(function(){try{var r=document.documentElement;var valid=${validThemes};var legacy=${legacyMap};var c=localStorage.getItem('${colorKey}');var f=localStorage.getItem('${fontKey}');var theme=legacy[c]||c;if(!theme||valid.indexOf(theme)<0){theme='${defaultColor}';}r.setAttribute('${APPEARANCE_COLOR_ATTR}',theme);r.setAttribute('${APPEARANCE_FONT_ATTR}',f||'${defaultFont}');r.classList.remove('dark');r.classList.add('light');}catch(e){}})();`;
 }
+
+export { normalizeColorThemeId };

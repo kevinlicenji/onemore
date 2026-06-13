@@ -3,12 +3,15 @@ import type { PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
 import type { UsersService } from '../users/users.service.js';
+import { buildOnboardingPatch } from './onboarding-patch.js';
 
 const ONBOARDING_REQUIRED_FIELDS: (keyof OnboardingComplete)[] = [
   'trainingGoal',
   'trainingLevel',
   'trainingEnvironment',
   'trainingDaysPerWeek',
+  'preferredSessionMinutes',
+  'preferredMuscleGroups',
   'motivationLevel',
 ];
 
@@ -44,13 +47,7 @@ export class OnboardingService {
 
     await this.prisma.user.update({
       where: { id: userId },
-      data: {
-        trainingGoal: input.trainingGoal,
-        trainingLevel: input.trainingLevel,
-        trainingEnvironment: input.trainingEnvironment,
-        trainingDaysPerWeek: input.trainingDaysPerWeek,
-        motivationLevel: input.motivationLevel,
-      },
+      data: buildOnboardingPatch(input),
     });
 
     return this.usersService.getMe(userId);
@@ -80,6 +77,8 @@ export class OnboardingService {
         trainingLevel: input.trainingLevel,
         trainingEnvironment: input.trainingEnvironment,
         trainingDaysPerWeek: input.trainingDaysPerWeek,
+        preferredSessionMinutes: input.preferredSessionMinutes,
+        preferredMuscleGroups: input.preferredMuscleGroups,
         motivationLevel: input.motivationLevel,
         onboardingCompletedAt: new Date(),
       },
@@ -106,6 +105,9 @@ export class OnboardingService {
 
     const missing = ONBOARDING_REQUIRED_FIELDS.filter((field) => {
       const value = user[field];
+      if (field === 'preferredMuscleGroups') {
+        return !Array.isArray(value) || value.length === 0;
+      }
       return value === null;
     });
 

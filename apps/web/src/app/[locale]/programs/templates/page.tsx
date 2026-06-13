@@ -1,11 +1,12 @@
 'use client';
 
 import type { TemplateSummary } from '@onemore/shared';
+import { rankTemplates } from '@onemore/shared';
 import { Button, Card, CardContent } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
@@ -19,13 +20,38 @@ import { pickLocalizedText } from '@/lib/pick-localized-text';
 
 export default function ProgramTemplatesPage(): React.ReactElement {
   const t = useTranslations('Programs');
-  const { accessToken } = useAuth();
+  const { accessToken, profile } = useAuth();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const isDesktop = useIsDesktop();
   const [templates, setTemplates] = useState<TemplateSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const sortedTemplates = useMemo(() => {
+    if (!profile?.onboardingCompletedAt) {
+      return templates;
+    }
+
+    const ranked = rankTemplates(
+      {
+        trainingLevel: profile.trainingLevel ?? undefined,
+        trainingEnvironment: profile.trainingEnvironment ?? undefined,
+        trainingDaysPerWeek: profile.trainingDaysPerWeek ?? undefined,
+        preferredSessionMinutes: profile.preferredSessionMinutes ?? undefined,
+        preferredMuscleGroups: profile.preferredMuscleGroups,
+      },
+      templates,
+    );
+
+    if (ranked.length === 0) {
+      return templates;
+    }
+
+    const rankedSlugs = new Set(ranked.map((entry) => entry.template.slug));
+    const remainder = templates.filter((template) => !rankedSlugs.has(template.slug));
+    return [...ranked.map((entry) => entry.template), ...remainder];
+  }, [profile, templates]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -62,7 +88,7 @@ export default function ProgramTemplatesPage(): React.ReactElement {
             className={isDesktop ? 'grid gap-4 sm:grid-cols-2' : 'flex flex-col gap-3'}
             enabled={isDesktop === true}
           >
-            {templates.map((template) => (
+            {sortedTemplates.map((template) => (
               <StaggerItem key={template.slug}>
                 <Link href={`/${locale}/programs/templates/${template.slug}`}>
                   <Card className="h-full transition-colors hover:bg-muted/30">

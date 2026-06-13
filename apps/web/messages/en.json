@@ -11,6 +11,8 @@
     "password": "Password",
     "username": "Username",
     "usernameHint": "3–30 characters: letters, numbers, and _ (no @)",
+    "firstName": "First name",
+    "lastName": "Last name",
     "birthYear": "Birth year",
     "loginSubmit": "Sign in",
     "registerSubmit": "Register",
@@ -22,6 +24,84 @@
     "registerError": "Registration failed",
     "forgotError": "Request failed",
     "forgotSuccess": "If the email exists, you will receive a reset link."
+  },
+  "Motivation": {
+    "dashboardActive": {
+      "withName": {
+        "0": "Let's go, {name} — today counts.",
+        "1": "{name}, one session beats a hundred excuses.",
+        "2": "Hey {name}, show up for yourself.",
+        "3": "{name}, build the habit — results follow."
+      },
+      "generic": {
+        "0": "Show up today. Future you will notice.",
+        "1": "One workout at a time — that's how it works.",
+        "2": "The hard part is starting. You're here.",
+        "3": "Consistency beats intensity. Let's move."
+      }
+    },
+    "dashboardEmpty": {
+      "withName": {
+        "0": "{name}, your first workout is the hardest — and the most important.",
+        "1": "Ready when you are, {name}. Pick a program and begin.",
+        "2": "{name}, every champion started with day one."
+      },
+      "generic": {
+        "0": "Your journey starts with one program and one session.",
+        "1": "No workouts yet — that's about to change.",
+        "2": "Pick a plan, start training, watch the numbers grow."
+      }
+    },
+    "workoutStart": {
+      "withName": {
+        "0": "{name}, lace up — this session is yours.",
+        "1": "Time to work, {name}. Focus on the next set.",
+        "2": "{name}, leave it all in the gym today.",
+        "3": "You've got this, {name}. One rep at a time."
+      },
+      "generic": {
+        "0": "Time to train. Focus on the next set.",
+        "1": "Show up, work hard, leave stronger.",
+        "2": "The bar won't lift itself — let's go.",
+        "3": "One rep at a time. That's the whole game."
+      }
+    },
+    "onboardingWelcome": {
+      "withName": {
+        "0": "Welcome, {name} — let's build something that fits you.",
+        "1": "{name}, a few quick questions and we're ready.",
+        "2": "Great to have you, {name}. This takes two minutes."
+      },
+      "generic": {
+        "0": "Welcome — let's build a plan that fits you.",
+        "1": "A few quick questions and we're ready.",
+        "2": "Great to have you. This takes two minutes."
+      }
+    },
+    "programs": {
+      "withName": {
+        "0": "{name}, your programs are the map — sessions are the steps.",
+        "1": "Strong plans, {name}. Now execute them.",
+        "2": "{name}, tweak a program or start fresh — you're in control."
+      },
+      "generic": {
+        "0": "Your programs are the map — sessions are the steps.",
+        "1": "Plan the work, then work the plan.",
+        "2": "Tweak a program or start fresh — you're in control."
+      }
+    },
+    "chooseProgram": {
+      "withName": {
+        "0": "{name}, pick a starting point — you can always change course.",
+        "1": "Almost there, {name}. Choose how you want to begin.",
+        "2": "{name}, the right program is the one you'll actually follow."
+      },
+      "generic": {
+        "0": "Pick a starting point — you can always change course.",
+        "1": "Almost there. Choose how you want to begin.",
+        "2": "The right program is the one you'll actually follow."
+      }
+    }
   },
   "Home": {
     "title": "OneMore",
@@ -135,23 +215,35 @@
     "steps": {
       "goal": {
         "title": "What's your main goal?",
-        "subtitle": "We'll tailor your experience around this."
+        "subtitle": "We'll build your experience around this."
       },
       "level": {
         "title": "What's your training level?",
-        "subtitle": "Be honest — programs scale with you."
+        "subtitle": "Be honest — programs grow with you."
       },
       "availability": {
         "title": "How many days can you train?",
-        "subtitle": "Pick a realistic weekly schedule."
+        "subtitle": "Pick a rhythm you can keep all year."
+      },
+      "sessionDuration": {
+        "title": "How long is each workout?",
+        "subtitle": "We'll suggest sessions that fit your schedule."
+      },
+      "muscleFocus": {
+        "title": "Which muscles do you want to prioritize?",
+        "subtitle": "Pick one or more areas — we'll match programs to your focus."
       },
       "environment": {
         "title": "Where do you usually train?",
-        "subtitle": "Gym equipment or home setup."
+        "subtitle": "Full gym or home setup."
       },
       "motivation": {
         "title": "How much support do you want?",
         "subtitle": "You can change this later in settings."
+      },
+      "theme": {
+        "title": "Choose your look",
+        "subtitle": "Each theme changes colors and contrast across the app."
       }
     },
     "goals": {
@@ -167,6 +259,17 @@
       "advanced": "Advanced"
     },
     "daysPerWeek": "{count} days per week",
+    "sessionMinutes": "{count} minutes",
+    "muscleFocus": {
+      "chest": { "title": "Chest", "hint": "Pecs & pushing strength" },
+      "back": { "title": "Back", "hint": "Lats, rows & pulling" },
+      "shoulders": { "title": "Shoulders", "hint": "Delts & overhead work" },
+      "arms": { "title": "Arms", "hint": "Biceps & triceps" },
+      "legs": { "title": "Legs", "hint": "Quads, hamstrings & calves" },
+      "glutes": { "title": "Glutes", "hint": "Hips & posterior chain" },
+      "core": { "title": "Core", "hint": "Abs & trunk stability" },
+      "balanced": { "title": "Balanced", "hint": "Even full-body development" }
+    },
     "environments": {
       "gym": "Gym",
       "home": "Home"
@@ -185,12 +288,36 @@
         "description": "Frequent encouragement and check-ins."
       }
     },
+    "themes": {
+      "classic": {
+        "title": "Classic",
+        "description": "Black & white — clean and minimal."
+      },
+      "solar": {
+        "title": "Solar",
+        "description": "Blue & gold on warm cream."
+      },
+      "midnight": {
+        "title": "Midnight",
+        "description": "Dark surfaces with bright blue accents."
+      },
+      "forest": {
+        "title": "Forest",
+        "description": "Soft greens for a calm, natural feel."
+      },
+      "ember": {
+        "title": "Ember",
+        "description": "Dark warm tones with orange highlights."
+      }
+    },
     "chooseProgram": {
       "title": "How do you want to start?",
       "subtitle": "Pick a template or build your own program.",
       "recommendedTitle": "Recommended for you",
-      "recommendedHint": "Based on your onboarding profile.",
+      "recommendedHint": "Matched to your days, session length, and muscle focus.",
       "recommendedCta": "View recommended program",
+      "sessionEstimate": "~{minutes} min per session",
+      "alsoFitsTitle": "Other programs that fit",
       "templateTitle": "Use a program template",
       "templateDescription": "Ready-made splits matched to your profile.",
       "manualTitle": "Build my own program",
@@ -416,20 +543,14 @@
   "Settings": {
     "title": "Settings",
     "appearanceTitle": "Appearance",
-    "appearanceSubtitle": "Customize colors, fonts, and light/dark mode.",
-    "appearanceModeLabel": "Screen mode",
-    "appearanceModes": {
-      "system": "System",
-      "light": "Light",
-      "dark": "Dark"
-    },
-    "colorThemeLabel": "Color theme",
+    "appearanceSubtitle": "Customize colors and fonts.",
+    "colorThemeLabel": "Theme",
     "colorThemes": {
-      "ocean": "Ocean",
+      "classic": "Classic",
+      "solar": "Solar",
       "midnight": "Midnight",
-      "arctic": "Arctic",
-      "cobalt": "Cobalt",
-      "pulse": "Pulse"
+      "forest": "Forest",
+      "ember": "Ember"
     },
     "fontLabel": "Font",
     "fonts": {

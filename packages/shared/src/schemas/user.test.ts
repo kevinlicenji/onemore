@@ -8,6 +8,8 @@ describe('userProfileSchema', () => {
     email: 'athlete@example.com',
     emailVerifiedAt: null,
     displayName: 'Athlete',
+    firstName: 'Marco',
+    lastName: 'Rossi',
     username: 'athlete_one',
     locale: 'it' as const,
     birthYear: 1995,
@@ -20,6 +22,8 @@ describe('userProfileSchema', () => {
     trainingLevel: 'intermediate' as const,
     trainingEnvironment: 'gym' as const,
     trainingDaysPerWeek: 4,
+    preferredSessionMinutes: 60,
+    preferredMuscleGroups: ['chest'],
     isCoach: false,
     mfaEnabled: false,
     settings: {

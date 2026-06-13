@@ -8,7 +8,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
-import { AppearanceModePicker } from '@/components/appearance/appearance-mode-picker';
 import { ColorThemePicker } from '@/components/appearance/color-theme-picker';
 import { FontPicker } from '@/components/appearance/font-picker';
 import { useAuth } from '@/components/auth-provider';
@@ -169,10 +168,6 @@ export default function SettingsPage(): React.ReactElement {
 
   const appearancePickers = (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium">{t('appearanceModeLabel')}</span>
-        <AppearanceModePicker />
-      </div>
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium">{t('colorThemeLabel')}</span>
         <ColorThemePicker />

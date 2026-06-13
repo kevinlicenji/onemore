@@ -55,6 +55,8 @@ describeIntegration('integration: auth flows', () => {
         email: testEmail,
         password: 'zQ8!mKp2vLn9Wx4rUniq',
         username: `user_${String(Date.now()).slice(-8)}`,
+        firstName: 'Test',
+        lastName: 'Athlete',
         locale: 'it',
         birthYear: 1995,
         timezone: 'Europe/Rome',

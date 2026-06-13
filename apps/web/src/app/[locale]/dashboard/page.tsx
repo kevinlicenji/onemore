@@ -19,6 +19,7 @@ import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { SyncStatusBadge } from '@/components/sync-status-badge';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { fetchAnalyticsDashboard } from '@/lib/api-auth';
+import { useMotivationalLine } from '@/hooks/use-motivational-line';
 
 function formatDate(iso: string, locale: string): string {
   return new Date(iso).toLocaleDateString(locale, {
@@ -140,6 +141,10 @@ export default function DashboardPage(): React.ReactElement {
   const hasActivity =
     dashboard !== null && (dashboard.lastWorkout !== null || dashboard.streakWeeks > 0);
 
+  const motivationalLine = useMotivationalLine(
+    hasActivity ? 'dashboardActive' : 'dashboardEmpty',
+    profile,
+  );
   const subtitle = hasActivity ? t('subtitle') : t('emptySubtitle');
 
   const startWorkoutButton = (
@@ -174,8 +179,8 @@ export default function DashboardPage(): React.ReactElement {
   return (
     <RequireAuth>
       <AdaptivePageShell
-        title={t('title')}
-        description={isDesktop ? subtitle : undefined}
+        title={motivationalLine}
+        description={subtitle}
         actions={isDesktop ? startWorkoutButton : undefined}
       >
         {loadError ? <p className="text-sm text-destructive">{loadError}</p> : null}
@@ -184,7 +189,7 @@ export default function DashboardPage(): React.ReactElement {
         {!isDesktop && dashboard ? (
           <GymHeroCta
             description={subtitle}
-            title={t('startWorkoutCta')}
+            title={motivationalLine}
             action={startWorkoutButton}
           />
         ) : null}

@@ -101,6 +101,8 @@ describe('OnboardingService', () => {
       trainingLevel: 'beginner',
       trainingEnvironment: 'home',
       trainingDaysPerWeek: 4,
+      preferredSessionMinutes: 45,
+      preferredMuscleGroups: ['back'],
       motivationLevel: 3,
     });
 

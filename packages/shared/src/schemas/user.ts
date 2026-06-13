@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { muscleGroupSchema } from './exercise.js';
 import { userSettingsSchema } from './settings.js';
 
 export const trainingGoalSchema = z.enum(['mass', 'strength', 'fat_loss', 'recomp', 'fitness']);
@@ -19,6 +20,8 @@ export const userProfileSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
   emailVerifiedAt: z.string().datetime().nullable(),
+  firstName: z.string().nullable(),
+  lastName: z.string().nullable(),
   displayName: z.string().nullable(),
   username: z.string().nullable(),
   locale: z.enum(['it', 'en']),
@@ -32,6 +35,8 @@ export const userProfileSchema = z.object({
   trainingLevel: trainingLevelSchema.nullable(),
   trainingEnvironment: trainingEnvironmentSchema.nullable(),
   trainingDaysPerWeek: z.number().int().nullable(),
+  preferredSessionMinutes: z.number().int().nullable(),
+  preferredMuscleGroups: z.array(muscleGroupSchema),
   isCoach: z.boolean(),
   mfaEnabled: z.boolean(),
   settings: userSettingsSchema,

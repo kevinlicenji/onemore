@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import { ThemeToggle } from '@/components/theme-toggle';
 import { buildNavItems } from '@/lib/nav-items';
 
 interface AppHeaderProps {
@@ -26,9 +25,6 @@ export function AppHeader({ locale }: AppHeaderProps): React.ReactElement {
       <p className="text-sm font-medium text-muted-foreground">
         {activeItem ? t(activeItem.labelKey) : 'OneMore'}
       </p>
-      <div className="flex items-center gap-1">
-        <ThemeToggle />
-      </div>
     </header>
   );
 }

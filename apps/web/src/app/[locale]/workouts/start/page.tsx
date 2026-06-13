@@ -15,6 +15,7 @@ import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { RequireAuth } from '@/components/require-auth';
 import { useSync } from '@/components/sync-provider';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
+import { useMotivationalLine } from '@/hooks/use-motivational-line';
 import { trackEvent } from '@/lib/analytics';
 import { generateClientUuid } from '@/lib/generate-client-uuid';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
@@ -29,7 +30,7 @@ import {
 export default function StartWorkoutPage(): React.ReactElement {
   const t = useTranslations('Workouts');
   const tMuscle = useTranslations('MuscleGroups');
-  const { accessToken } = useAuth();
+  const { accessToken, profile } = useAuth();
   const router = useRouter();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
@@ -41,6 +42,7 @@ export default function StartWorkoutPage(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { refreshPendingCount } = useSync();
+  const motivationalLine = useMotivationalLine('workoutStart', profile);
 
   useEffect(() => {
     if (!accessToken) {
@@ -270,7 +272,7 @@ export default function StartWorkoutPage(): React.ReactElement {
       <AdaptivePageShell
         backHref={isDesktop ? undefined : `/${locale}/dashboard`}
         backLabel={t('backToDashboard')}
-        title={t('startTitle')}
+        title={motivationalLine}
         description={t('startSubtitle')}
       >
         <div className={isDesktop ? 'grid gap-6 lg:grid-cols-2' : 'flex flex-col gap-5'}>

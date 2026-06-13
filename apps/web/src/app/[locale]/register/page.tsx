@@ -26,6 +26,8 @@ export default function RegisterPage(): React.ReactElement {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [birthYear, setBirthYear] = useState(1995);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,6 +41,8 @@ export default function RegisterPage(): React.ReactElement {
         email,
         password,
         username,
+        firstName,
+        lastName,
         locale,
         birthYear,
         timezone: 'Europe/Rome',
@@ -94,6 +98,28 @@ export default function RegisterPage(): React.ReactElement {
             }}
             required
           />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GymAuthField
+              autoComplete="given-name"
+              label={t('firstName')}
+              maxLength={50}
+              value={firstName}
+              onChange={(e) => {
+                setFirstName(e.target.value);
+              }}
+              required
+            />
+            <GymAuthField
+              autoComplete="family-name"
+              label={t('lastName')}
+              maxLength={50}
+              value={lastName}
+              onChange={(e) => {
+                setLastName(e.target.value);
+              }}
+              required
+            />
+          </div>
           <GymAuthField
             autoComplete="username"
             hint={t('usernameHint')}

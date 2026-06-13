@@ -1,113 +1,132 @@
 /**
- * Color palettes — applied via data-color-theme on <html>.
- * Default (ocean) uses intense saturated blue.
+ * Full appearance presets — each theme overrides surface + contrast tokens.
+ * Applied via `data-color-theme` on `<html>` (no separate light/dark mode).
  */
 
 :root,
-:root[data-color-theme='ocean'] {
-  --primary: 224 88% 45%;
-  --primary-foreground: 210 40% 98%;
-  --ring: 224 88% 45%;
-  --accent: 142 72% 42%;
+:root[data-color-theme='classic'] {
+  color-scheme: light;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 7%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 7%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 42%;
+  --accent: 0 0% 20%;
   --accent-foreground: 0 0% 100%;
-  --gym-tint: 224 60% 96%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --ring: 0 0% 9%;
+  --gym-surface: 0 0% 100%;
+  --gym-surface-elevated: 0 0% 99%;
+  --gym-separator: 0 0% 90%;
+  --gym-tint: 0 0% 96%;
+}
+
+:root[data-color-theme='solar'] {
+  color-scheme: light;
+  --background: 48 100% 97%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --primary: 221 83% 48%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 48 70% 92%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 48 60% 93%;
+  --muted-foreground: 215 16% 38%;
+  --accent: 45 93% 47%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 45 40% 84%;
+  --input: 45 40% 84%;
+  --ring: 221 83% 48%;
+  --gym-surface: 0 0% 100%;
+  --gym-surface-elevated: 48 80% 99%;
+  --gym-separator: 45 35% 86%;
+  --gym-tint: 48 85% 92%;
 }
 
 :root[data-color-theme='midnight'] {
-  --primary: 230 78% 38%;
-  --primary-foreground: 210 40% 98%;
-  --ring: 230 78% 38%;
-  --accent: 200 80% 48%;
-  --accent-foreground: 0 0% 100%;
-  --gym-tint: 230 35% 95%;
-}
-
-:root[data-color-theme='arctic'] {
-  --primary: 205 96% 42%;
-  --primary-foreground: 210 40% 98%;
-  --ring: 205 96% 42%;
-  --accent: 186 85% 42%;
-  --accent-foreground: 0 0% 100%;
-  --gym-tint: 205 70% 96%;
-}
-
-:root[data-color-theme='cobalt'] {
-  --primary: 221 92% 40%;
-  --primary-foreground: 210 40% 98%;
-  --ring: 221 92% 40%;
-  --accent: 158 64% 45%;
-  --accent-foreground: 0 0% 100%;
-  --gym-tint: 221 45% 95%;
-}
-
-:root[data-color-theme='pulse'] {
-  --primary: 224 88% 45%;
-  --primary-foreground: 210 40% 98%;
-  --ring: 224 88% 45%;
-  --accent: 25 95% 53%;
-  --accent-foreground: 0 0% 100%;
-  --gym-tint: 224 55% 96%;
-}
-
-.dark[data-color-theme='ocean'],
-.dark {
-  --primary: 217 95% 58%;
+  color-scheme: dark;
+  --background: 222 47% 6%;
+  --foreground: 210 40% 98%;
+  --card: 222 40% 9%;
+  --card-foreground: 210 40% 98%;
+  --primary: 217 91% 60%;
   --primary-foreground: 222 47% 8%;
-  --ring: 217 95% 58%;
-  --accent: 142 60% 52%;
+  --secondary: 217 32% 14%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 28% 13%;
+  --muted-foreground: 215 16% 64%;
+  --accent: 199 89% 48%;
   --accent-foreground: 222 47% 8%;
-  --gym-tint: 224 42% 9%;
+  --destructive: 0 63% 45%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 26% 16%;
+  --input: 217 26% 16%;
+  --ring: 217 91% 60%;
   --gym-surface: 222 38% 7%;
   --gym-surface-elevated: 222 36% 10%;
   --gym-separator: 217 24% 16%;
+  --gym-tint: 224 42% 9%;
 }
 
-.dark[data-color-theme='midnight'] {
-  --primary: 225 88% 55%;
-  --primary-foreground: 222 47% 8%;
-  --ring: 225 88% 55%;
-  --accent: 200 75% 55%;
-  --accent-foreground: 222 47% 8%;
-  --gym-tint: 230 36% 8%;
-  --gym-surface: 230 34% 7%;
-  --gym-surface-elevated: 230 32% 10%;
-  --gym-separator: 230 24% 15%;
+:root[data-color-theme='forest'] {
+  color-scheme: light;
+  --background: 140 25% 97%;
+  --foreground: 150 30% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 150 30% 12%;
+  --primary: 152 65% 32%;
+  --primary-foreground: 140 40% 98%;
+  --secondary: 140 30% 92%;
+  --secondary-foreground: 150 30% 12%;
+  --muted: 140 22% 93%;
+  --muted-foreground: 150 12% 38%;
+  --accent: 85 55% 42%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 140 20% 84%;
+  --input: 140 20% 84%;
+  --ring: 152 65% 32%;
+  --gym-surface: 0 0% 100%;
+  --gym-surface-elevated: 140 35% 99%;
+  --gym-separator: 140 18% 86%;
+  --gym-tint: 140 35% 92%;
 }
 
-.dark[data-color-theme='arctic'] {
-  --primary: 205 100% 55%;
-  --primary-foreground: 222 47% 8%;
-  --ring: 205 100% 55%;
-  --accent: 186 80% 50%;
-  --accent-foreground: 222 47% 8%;
-  --gym-tint: 205 38% 9%;
-  --gym-surface: 205 36% 7%;
-  --gym-surface-elevated: 205 34% 10%;
-  --gym-separator: 205 24% 15%;
-}
-
-.dark[data-color-theme='cobalt'] {
-  --primary: 220 94% 52%;
-  --primary-foreground: 222 47% 8%;
-  --ring: 220 94% 52%;
-  --accent: 158 58% 50%;
-  --accent-foreground: 222 47% 8%;
-  --gym-tint: 221 38% 9%;
-  --gym-surface: 221 36% 7%;
-  --gym-surface-elevated: 221 34% 10%;
-  --gym-separator: 221 24% 15%;
-}
-
-.dark[data-color-theme='pulse'] {
-  --primary: 217 95% 58%;
-  --primary-foreground: 222 47% 8%;
-  --ring: 217 95% 58%;
-  --accent: 25 90% 58%;
-  --accent-foreground: 222 47% 8%;
-  --gym-tint: 224 38% 9%;
-  --gym-surface: 224 36% 7%;
-  --gym-surface-elevated: 224 34% 10%;
-  --gym-separator: 224 24% 15%;
+:root[data-color-theme='ember'] {
+  color-scheme: dark;
+  --background: 20 14% 8%;
+  --foreground: 30 20% 96%;
+  --card: 20 12% 12%;
+  --card-foreground: 30 20% 96%;
+  --primary: 24 95% 53%;
+  --primary-foreground: 20 14% 8%;
+  --secondary: 20 10% 16%;
+  --secondary-foreground: 30 20% 96%;
+  --muted: 20 8% 15%;
+  --muted-foreground: 30 12% 68%;
+  --accent: 45 90% 55%;
+  --accent-foreground: 20 14% 8%;
+  --destructive: 0 63% 45%;
+  --destructive-foreground: 30 20% 96%;
+  --border: 20 10% 18%;
+  --input: 20 10% 18%;
+  --ring: 24 95% 53%;
+  --gym-surface: 20 12% 10%;
+  --gym-surface-elevated: 20 10% 14%;
+  --gym-separator: 20 8% 18%;
+  --gym-tint: 24 30% 10%;
 }
 
 /* Font stacks — data-font on <html> */

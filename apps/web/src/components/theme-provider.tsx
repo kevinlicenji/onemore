@@ -8,16 +8,11 @@ interface ThemeProviderProps {
 }
 
 /**
- * Wraps the app with class-based light/dark/system theme switching.
+ * Wraps the app with a stable light class; color themes own contrast via data-color-theme.
  */
 export function ThemeProvider({ children }: ThemeProviderProps): ReactElement {
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
+    <NextThemesProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme="light">
       {children}
     </NextThemesProvider>
   );

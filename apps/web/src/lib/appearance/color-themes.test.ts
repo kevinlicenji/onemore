@@ -1,16 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import { COLOR_THEME_IDS, DEFAULT_COLOR_THEME_ID, normalizeColorThemeId } from './color-themes';
+import { normalizeColorThemeId } from './color-themes';
 
 describe('normalizeColorThemeId', () => {
-  it('returns the default for unknown values', () => {
-    expect(normalizeColorThemeId(null)).toBe(DEFAULT_COLOR_THEME_ID);
-    expect(normalizeColorThemeId('invalid')).toBe(DEFAULT_COLOR_THEME_ID);
+  it('returns valid theme ids unchanged', () => {
+    expect(normalizeColorThemeId('solar')).toBe('solar');
   });
 
-  it('accepts every defined theme id', () => {
-    for (const id of COLOR_THEME_IDS) {
-      expect(normalizeColorThemeId(id)).toBe(id);
-    }
+  it('maps legacy theme ids to the new palette', () => {
+    expect(normalizeColorThemeId('ocean')).toBe('classic');
+    expect(normalizeColorThemeId('pulse')).toBe('ember');
+  });
+
+  it('falls back to classic for unknown values', () => {
+    expect(normalizeColorThemeId('invalid')).toBe('classic');
+    expect(normalizeColorThemeId(null)).toBe('classic');
   });
 });

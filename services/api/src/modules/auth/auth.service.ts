@@ -1,4 +1,5 @@
 import {
+  formatDisplayName,
   isEmailLoginIdentifier,
   normalizeLoginIdentifier,
   type LoginBody,
@@ -21,6 +22,8 @@ export interface AuthResult {
     id: string;
     email: string;
     username: string | null;
+    firstName: string | null;
+    lastName: string | null;
     displayName: string | null;
     locale: string;
   };
@@ -73,7 +76,9 @@ export class AuthService {
       data: {
         email: input.email,
         username: input.username.toLowerCase(),
-        displayName: input.displayName ?? input.username,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        displayName: formatDisplayName(input.firstName, input.lastName) ?? input.username,
         locale: input.locale,
         birthYear: input.birthYear,
         timezone: input.timezone,
@@ -111,7 +116,7 @@ export class AuthService {
 
     await this.writeAudit(user.id, 'auth.register', 'user', user.id, ipHash);
 
-    return this.issueTokens(user.id, user.email, user.username, user.displayName, user.locale);
+    return this.issueTokens(user);
   }
 
   /**
@@ -132,7 +137,7 @@ export class AuthService {
 
     await this.writeAudit(user.id, 'auth.login', 'user', user.id, ipHash);
 
-    return this.issueTokens(user.id, user.email, user.username, user.displayName, user.locale);
+    return this.issueTokens(user);
   }
 
   private async findUserForLogin(identifier: string): Promise<{
@@ -178,13 +183,7 @@ export class AuthService {
 
     await this.writeAudit(stored.userId, 'auth.refresh', 'user', stored.userId, ipHash);
 
-    return this.issueTokens(
-      stored.user.id,
-      stored.user.email,
-      stored.user.username,
-      stored.user.displayName,
-      stored.user.locale,
-    );
+    return this.issueTokens(stored.user);
   }
 
   /**
@@ -289,7 +288,7 @@ export class AuthService {
 
     await this.writeAudit(user.id, auditAction, 'user', user.id, ipHash);
 
-    return this.issueTokens(user.id, user.email, user.username, user.displayName, user.locale);
+    return this.issueTokens(user);
   }
 
   /**
@@ -314,21 +313,23 @@ export class AuthService {
     }
   }
 
-  private async issueTokens(
-    userId: string,
-    email: string,
-    username: string | null,
-    displayName: string | null,
-    locale: string,
-  ): Promise<AuthResult> {
+  private async issueTokens(user: {
+    id: string;
+    email: string;
+    username: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    displayName: string | null;
+    locale: string;
+  }): Promise<AuthResult> {
     const roles = ['athlete'];
-    const { token, expiresIn } = await this.tokenService.signAccessToken(userId, roles);
+    const { token, expiresIn } = await this.tokenService.signAccessToken(user.id, roles);
     const refreshToken = generateSecureToken();
     const expiresAt = new Date(Date.now() + this.env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
 
     await this.prisma.refreshToken.create({
       data: {
-        userId,
+        userId: user.id,
         tokenHash: hashToken(refreshToken),
         expiresAt,
       },
@@ -338,7 +339,15 @@ export class AuthService {
       accessToken: token,
       expiresIn,
       refreshToken,
-      user: { id: userId, email, username, displayName, locale },
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        displayName: user.displayName,
+        locale: user.locale,
+      },
     };
   }
 

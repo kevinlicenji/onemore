@@ -1,11 +1,12 @@
 import type {
   CreateProgramInput,
+  MuscleGroup,
   ProgramDetail,
   ProgramSummary,
   TemplateMeta,
   TemplateSummary,
 } from '@onemore/shared';
-import { aggregateMuscleGroups, normalizeMuscleTags } from '@onemore/shared';
+import { aggregateMuscleGroups, estimateSessionMinutes, normalizeMuscleTags } from '@onemore/shared';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
@@ -373,7 +374,17 @@ export class ProgramsService {
           where: { status: 'published' },
           orderBy: { versionNumber: 'desc' },
           take: 1,
-          include: { workoutDays: true },
+          include: {
+            workoutDays: {
+              orderBy: { sortOrder: 'asc' },
+              include: {
+                programExercises: {
+                  orderBy: { sortOrder: 'asc' },
+                  include: { exerciseLibrary: true },
+                },
+              },
+            },
+          },
         },
       },
       orderBy: { name: 'asc' },
@@ -382,6 +393,33 @@ export class ProgramsService {
     return templates.map((template) => {
       const meta = this.parseTemplateMeta(template.description);
       const published = template.versions[0];
+      const muscleVolumes: Partial<Record<MuscleGroup, number>> = {};
+      const daySessionMinutes: number[] = [];
+
+      for (const day of published?.workoutDays ?? []) {
+        const dayExercises = day.programExercises.map((row) => ({
+          targetSets: row.targetSets,
+          targetReps: row.targetReps,
+          restSeconds: row.restSeconds,
+        }));
+        daySessionMinutes.push(estimateSessionMinutes(dayExercises));
+
+        for (const row of day.programExercises) {
+          const tags = normalizeMuscleTags(row.exerciseLibrary.primaryMuscles as string[]);
+          for (const tag of tags) {
+            muscleVolumes[tag] = (muscleVolumes[tag] ?? 0) + row.targetSets;
+          }
+        }
+      }
+
+      const estimatedSessionMinutes =
+        daySessionMinutes.length > 0
+          ? Math.round(
+              daySessionMinutes.reduce((sum, minutes) => sum + minutes, 0) /
+                daySessionMinutes.length,
+            )
+          : 60;
+
       return {
         slug: template.name,
         name: meta.displayName?.en ?? template.name,
@@ -392,6 +430,8 @@ export class ProgramsService {
         audience: meta.audience ?? 'general',
         equipmentProfile: meta.equipmentProfile ?? null,
         split: meta.split ?? null,
+        estimatedSessionMinutes,
+        muscleVolumes,
       };
     });
   }

@@ -21,6 +21,8 @@ export interface AuthUser {
   id: string;
   email: string;
   username: string | null;
+  firstName: string | null;
+  lastName: string | null;
   displayName: string | null;
   locale: string;
 }

@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
 import { trainingEnvironmentSchema, trainingGoalSchema, trainingLevelSchema } from './user.js';
-import { usernameSchema } from './auth.js';
+import { personNameSchema, usernameSchema } from './auth.js';
 import { updateUserSettingsSchema } from './settings.js';
 
 export const updateUserProfileSchema = z.object({
+  firstName: personNameSchema.optional(),
+  lastName: personNameSchema.optional(),
   displayName: z.string().min(1).max(100).optional(),
   username: usernameSchema.optional(),
   locale: z.enum(['it', 'en']).optional(),
