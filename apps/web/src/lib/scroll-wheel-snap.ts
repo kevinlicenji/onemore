@@ -1,4 +1,11 @@
 /**
+ * Top/bottom padding so the selected row sits in the visual center.
+ */
+export function wheelEdgePadding(visibleHeight: number, itemHeight: number): number {
+  return Math.max(0, (visibleHeight - itemHeight) / 2);
+}
+
+/**
  * Rounds a scroll offset to the nearest wheel item index.
  */
 export function snapIndexFromScroll(scrollTop: number, itemHeight: number): number {

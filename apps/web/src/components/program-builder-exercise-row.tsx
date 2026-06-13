@@ -6,13 +6,14 @@ import { useExerciseRowLongPressDrag } from '@/hooks/use-exercise-row-long-press
 import { MetricInput } from '@/components/metric-input';
 import { formatProgramExerciseSummary } from '@/lib/program-exercise-display';
 
-import type { BuilderExercise } from './program-builder';
+import type { BuilderExercise } from './program-builder-types';
 
 interface ProgramBuilderExerciseRowProps {
   exercise: BuilderExercise;
   exerciseIndex: number;
   isEditing: boolean;
-  isDragging: boolean;
+  isDragSource: boolean;
+  isDropTarget: boolean;
   labels: {
     failureReps: string;
     removeExercise: string;
@@ -25,8 +26,8 @@ interface ProgramBuilderExerciseRowProps {
   onEdit: () => void;
   onDone: () => void;
   onRemove: () => void;
-  onDragStart: (exerciseIndex: number) => void;
-  onDragEnter: (exerciseIndex: number) => void;
+  onDragStart: (exerciseIndex: number, rect: DOMRect) => void;
+  onDragMove: (clientX: number, clientY: number) => void;
   onDragEnd: () => void;
   onUpdate: (
     field: keyof BuilderExercise,
@@ -41,28 +42,29 @@ export function ProgramBuilderExerciseRow({
   exercise,
   exerciseIndex,
   isEditing,
-  isDragging,
+  isDragSource,
+  isDropTarget,
   labels,
   onEdit,
   onDone,
   onRemove,
   onDragStart,
-  onDragEnter,
+  onDragMove,
   onDragEnd,
   onUpdate,
 }: ProgramBuilderExerciseRowProps): React.ReactElement {
   const { handlePointerDown } = useExerciseRowLongPressDrag({
     exerciseIndex,
-    enabled: true,
+    enabled: !isEditing,
     onDragEnd,
-    onDragEnter,
+    onDragMove,
     onDragStart,
     onTap: onEdit,
   });
 
-  const rowClassName = `rounded-xl border px-3 py-3 transition-colors select-none touch-manipulation ${
-    isDragging ? 'pointer-events-none border-primary/40 bg-primary/5 shadow-sm' : ''
-  }`;
+  const rowClassName = `rounded-xl border px-3 py-3 transition-all select-none touch-manipulation ${
+    isDragSource ? 'border-dashed border-primary/30 bg-primary/5 opacity-30' : ''
+  } ${isDropTarget ? 'border-primary ring-2 ring-primary/30' : ''}`;
 
   if (!isEditing) {
     return (
@@ -91,14 +93,7 @@ export function ProgramBuilderExerciseRow({
   }
 
   return (
-    <li
-      className={`${rowClassName} p-2.5`}
-      data-exercise-row-index={exerciseIndex}
-      onContextMenu={(event) => {
-        event.preventDefault();
-      }}
-      onPointerDown={handlePointerDown}
-    >
+    <li className={`${rowClassName} p-2.5`} data-exercise-row-index={exerciseIndex}>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <p className="text-sm font-semibold">{exercise.name}</p>
@@ -122,7 +117,7 @@ export function ProgramBuilderExerciseRow({
         >
           <MetricInput
             kind="sets"
-            label=""
+            label={labels.targetSets}
             showLabel={false}
             value={exercise.targetSets}
             wheelSize="compact"

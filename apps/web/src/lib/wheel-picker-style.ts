@@ -12,7 +12,7 @@ const COMPACT_FONT_SCALE = 0.82;
  */
 export function getWheelItemStyle(
   distanceFromCenter: number,
-  size: 'default' | 'compact' | 'workout' = 'default',
+  size: 'default' | 'compact' | 'modal' | 'workout' = 'default',
 ): WheelItemStyle {
   const distance = Math.abs(distanceFromCenter);
   const base = {
@@ -34,6 +34,15 @@ export function getWheelItemStyle(
 
   if (size === 'default') {
     return base;
+  }
+
+  if (size === 'modal') {
+    return {
+      scale: 1,
+      opacity: Math.max(0.22, 1 - distance * 0.4),
+      fontSizeRem: (distance < 0.35 ? 1.05 : distance < 1.2 ? 0.88 : 0.72) * 0.78,
+      fontWeight: distance < 0.35 ? 700 : distance < 1.2 ? 500 : 400,
+    };
   }
 
   return {

@@ -3,14 +3,15 @@
 import type { CreateProgramInput } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
-import { ProgramBuilder, type BuilderDay } from '@/components/program-builder';
+import type { BuilderDay } from '@/components/program-builder-types';
+import { ProgramBuilder } from '@/components/program-builder';
 import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { fetchProgramDetail, updateProgram } from '@/lib/api-auth';
@@ -20,9 +21,21 @@ export default function EditProgramPage(): React.ReactElement {
   const { accessToken } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const programId = typeof params.id === 'string' ? params.id : '';
   const isDesktop = useIsDesktop();
+
+  const dayParam = searchParams.get('day');
+  const dayFocusMode = dayParam !== null;
+  const startWithNewDay = dayParam === 'new';
+  const initialDayIndex = useMemo(() => {
+    if (startWithNewDay || dayParam === null) {
+      return 0;
+    }
+    const parsed = Number(dayParam);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }, [dayParam, startWithNewDay]);
 
   const [initialName, setInitialName] = useState('');
   const [initialDays, setInitialDays] = useState<BuilderDay[] | undefined>(undefined);
@@ -72,11 +85,14 @@ export default function EditProgramPage(): React.ReactElement {
     router.push(`/${locale}/programs/${updated.id}`);
   }
 
+  const pageTitle = dayFocusMode ? t('editDayTitle') : t('editProgramTitle');
+  const pageDescription = dayFocusMode ? t('editDayHint') : t('editProgramHint');
+
   return (
     <RequireAuth>
       <AdaptivePageShell
-        title={t('editProgramTitle')}
-        description={t('editProgramHint')}
+        title={pageTitle}
+        description={pageDescription}
         variant="wide"
         actions={
           isDesktop ? (
@@ -93,9 +109,12 @@ export default function EditProgramPage(): React.ReactElement {
         ) : (
           <ProgramBuilder
             accessToken={accessToken ?? ''}
-            locale={locale}
-            initialName={initialName}
+            dayFocusMode={dayFocusMode}
+            initialDayIndex={initialDayIndex}
             initialDays={initialDays}
+            initialName={initialName}
+            locale={locale}
+            startWithNewDay={startWithNewDay}
             submitLabel={t('saveChanges')}
             onSubmit={handleSubmit}
           />

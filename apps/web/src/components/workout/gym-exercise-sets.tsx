@@ -39,9 +39,9 @@ interface GymExerciseSetsProps {
 }
 
 const activeSetTransition = {
-  initial: { opacity: 0, y: 16, scale: 0.98 },
+  initial: { opacity: 0, y: 20, scale: 0.96 },
   animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -12, scale: 0.98 },
+  exit: { opacity: 0, y: -14, scale: 0.97 },
 };
 
 /**
@@ -76,7 +76,7 @@ export function GymExerciseSets({
   );
   const motionTransition = reducedMotion
     ? { duration: 0 }
-    : { duration: 0.28, ease: [0.25, 0.1, 0.25, 1] as const };
+    : { type: 'spring' as const, stiffness: 420, damping: 32, mass: 0.75 };
 
   return (
     <div className="flex flex-col gap-4">

@@ -603,6 +603,8 @@
     "editProgram": "Modifica scheda",
     "editProgramTitle": "Modifica scheda",
     "editProgramHint": "Aggiorna esercizi, serie e ripetizioni. Salvando pubblichi la nuova versione.",
+    "editDayTitle": "Modifica giorno",
+    "editDayHint": "Aggiorna esercizi, serie e ripetizioni di questo giorno di allenamento.",
     "saveChanges": "Salva modifiche",
     "backToProgram": "Torna alla scheda",
     "deleteProgram": "Elimina scheda",

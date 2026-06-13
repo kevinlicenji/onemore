@@ -3,17 +3,13 @@
 import { useCallback, useRef } from 'react';
 
 import { triggerHaptic } from '@/lib/haptic';
-import {
-  findExerciseRowIndexFromPoint,
-  LONG_PRESS_DRAG_MS,
-  shouldCancelLongPress,
-} from '@/lib/long-press-drag';
+import { LONG_PRESS_DRAG_MS, shouldCancelLongPress } from '@/lib/long-press-drag';
 
 interface UseExerciseRowLongPressDragOptions {
   exerciseIndex: number;
   enabled: boolean;
-  onDragStart: (exerciseIndex: number) => void;
-  onDragEnter: (exerciseIndex: number) => void;
+  onDragStart: (exerciseIndex: number, rect: DOMRect) => void;
+  onDragMove: (clientX: number, clientY: number) => void;
   onDragEnd: () => void;
   onTap: () => void;
 }
@@ -23,13 +19,13 @@ interface UseExerciseRowLongPressDragResult {
 }
 
 /**
- * Long-press to reorder, tap to edit — used on program builder exercise cards.
+ * Long-press to start overlay drag, tap to edit — used on program builder exercise cards.
  */
 export function useExerciseRowLongPressDrag({
   exerciseIndex,
   enabled,
   onDragStart,
-  onDragEnter,
+  onDragMove,
   onDragEnd,
   onTap,
 }: UseExerciseRowLongPressDragOptions): UseExerciseRowLongPressDragResult {
@@ -57,6 +53,8 @@ export function useExerciseRowLongPressDrag({
       startRef.current = { x: event.clientX, y: event.clientY };
 
       const target = event.currentTarget;
+      const previousBodyTouchAction = document.body.style.touchAction;
+      document.body.style.touchAction = 'none';
 
       const handlePointerMove = (moveEvent: PointerEvent): void => {
         const deltaX = moveEvent.clientX - startRef.current.x;
@@ -71,14 +69,12 @@ export function useExerciseRowLongPressDrag({
         }
 
         moveEvent.preventDefault();
-        const hoverIndex = findExerciseRowIndexFromPoint(moveEvent.clientX, moveEvent.clientY);
-        if (hoverIndex !== null) {
-          onDragEnter(hoverIndex);
-        }
+        onDragMove(moveEvent.clientX, moveEvent.clientY);
       };
 
       const finish = (): void => {
         clearLongPressTimer();
+        document.body.style.touchAction = previousBodyTouchAction;
         window.removeEventListener('pointermove', handlePointerMove);
         window.removeEventListener('pointerup', finish);
         window.removeEventListener('pointercancel', finish);
@@ -101,14 +97,14 @@ export function useExerciseRowLongPressDrag({
         dragActiveRef.current = true;
         target.setPointerCapture(event.pointerId);
         triggerHaptic('medium');
-        onDragStart(exerciseIndex);
+        onDragStart(exerciseIndex, target.getBoundingClientRect());
       }, LONG_PRESS_DRAG_MS);
 
       window.addEventListener('pointermove', handlePointerMove);
       window.addEventListener('pointerup', finish);
       window.addEventListener('pointercancel', finish);
     },
-    [clearLongPressTimer, enabled, exerciseIndex, onDragEnd, onDragEnter, onDragStart, onTap],
+    [clearLongPressTimer, enabled, exerciseIndex, onDragEnd, onDragMove, onDragStart, onTap],
   );
 
   return { handlePointerDown };

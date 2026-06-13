@@ -5,6 +5,7 @@ import {
   clampWheelIndex,
   scrollTopForIndex,
   snapIndexFromScroll,
+  wheelEdgePadding,
 } from './scroll-wheel-snap';
 
 describe('scroll-wheel-snap', () => {
@@ -20,5 +21,11 @@ describe('scroll-wheel-snap', () => {
 
   it('builds weight values with 0.5 step', () => {
     expect(buildNumericWheelValues(0, 1, 0.5)).toEqual([0, 0.5, 1]);
+  });
+
+  it('centers workout wheel rows in the viewport', () => {
+    expect(wheelEdgePadding(100, 28)).toBe(36);
+    expect(wheelEdgePadding(118, 30)).toBe(44);
+    expect(wheelEdgePadding(94, 26)).toBe(34);
   });
 });

@@ -3,16 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
-import { clampWheelIndex, scrollTopForIndex, snapIndexFromScroll } from '@/lib/scroll-wheel-snap';
+import {
+  clampWheelIndex,
+  scrollTopForIndex,
+  snapIndexFromScroll,
+  wheelEdgePadding,
+} from '@/lib/scroll-wheel-snap';
 import { getWheelItemStyle } from '@/lib/wheel-picker-style';
 
-export type ScrollWheelPickerSize = 'default' | 'compact' | 'workout';
+export type ScrollWheelPickerSize = 'default' | 'compact' | 'modal' | 'workout';
 
 interface WheelLayoutPreset {
   itemHeight: number;
   visibleHeight: number;
-  paddingRows: number;
-  highlightHeightClass: string;
   gradientHeightClass: string;
 }
 
@@ -20,22 +23,21 @@ const WHEEL_LAYOUT: Record<ScrollWheelPickerSize, WheelLayoutPreset> = {
   default: {
     itemHeight: 44,
     visibleHeight: 220,
-    paddingRows: 2,
-    highlightHeightClass: 'h-11',
     gradientHeightClass: 'h-20',
   },
   compact: {
     itemHeight: 30,
     visibleHeight: 118,
-    paddingRows: 1,
-    highlightHeightClass: 'h-8',
     gradientHeightClass: 'h-10',
+  },
+  modal: {
+    itemHeight: 26,
+    visibleHeight: 94,
+    gradientHeightClass: 'h-8',
   },
   workout: {
     itemHeight: 28,
     visibleHeight: 100,
-    paddingRows: 1,
-    highlightHeightClass: 'h-8',
     gradientHeightClass: 'h-9',
   },
 };
@@ -81,13 +83,14 @@ export function ScrollWheelPicker<T extends string | number>({
   const [scrollTop, setScrollTop] = useState(0);
   const layout = WHEEL_LAYOUT[size];
   const itemHeight = layout.itemHeight;
+  const edgePadding = wheelEdgePadding(layout.visibleHeight, itemHeight);
 
   const selectedIndex = Math.max(
     0,
     options.findIndex((option) => option.value === value),
   );
 
-  const padding = layout.paddingRows * itemHeight;
+  const padding = edgePadding;
   const centerIndexFloat = scrollTop / itemHeight;
 
   const snapToIndex = useCallback(
@@ -173,15 +176,20 @@ export function ScrollWheelPicker<T extends string | number>({
   }, []);
 
   return (
-    <div className="flex min-w-0 flex-col gap-1">
-      {showLabel ? <span className="text-sm font-medium">{label}</span> : null}
+    <div className="flex min-w-0 flex-col items-center gap-1">
+      {showLabel ? (
+        <span className="w-full text-center text-xs font-medium text-muted-foreground">
+          {label}
+        </span>
+      ) : null}
       <div
         className="relative isolate overflow-hidden rounded-xl border bg-muted/15"
         style={{ height: layout.visibleHeight }}
       >
         <div
           aria-hidden
-          className={`pointer-events-none absolute inset-x-3 top-1/2 z-10 ${layout.highlightHeightClass} -translate-y-1/2 rounded-lg border border-primary/30 bg-primary/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]`}
+          className="pointer-events-none absolute inset-x-3 top-1/2 z-10 -translate-y-1/2 rounded-lg border border-primary/30 bg-primary/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+          style={{ height: itemHeight }}
         />
         <div
           aria-hidden
@@ -211,11 +219,11 @@ export function ScrollWheelPicker<T extends string | number>({
             const distance = index - centerIndexFloat;
             const style = getWheelItemStyle(distance, size);
             const isSelected = option.value === value;
-            const useScaleTransform = size !== 'workout';
+            const useScaleTransform = size !== 'workout' && size !== 'modal';
             return (
               <button
                 key={String(option.value)}
-                className="flex w-full shrink-0 items-center justify-center overflow-hidden tabular-nums disabled:opacity-50 [scroll-snap-align:center]"
+                className="flex w-full shrink-0 items-center justify-center overflow-hidden tabular-nums leading-none disabled:opacity-50 [scroll-snap-align:center]"
                 disabled={disabled}
                 style={{
                   height: itemHeight,

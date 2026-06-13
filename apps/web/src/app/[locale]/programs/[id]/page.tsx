@@ -57,14 +57,22 @@ export default function ProgramDetailPage(): React.ReactElement {
     }
   }
 
+  function openDayEditor(dayIndex: number): void {
+    router.push(`/${locale}/programs/${programId}/edit?day=${String(dayIndex)}`);
+  }
+
+  function openNewDayEditor(): void {
+    router.push(`/${locale}/programs/${programId}/edit?day=new`);
+  }
+
   const headerActions =
     program !== null ? (
       <>
         <Button asChild>
           <Link href={`/${locale}/workouts/start`}>{t('startWorkoutFromProgram')}</Link>
         </Button>
-        <Button asChild variant="outline">
-          <Link href={`/${locale}/programs/${programId}/edit`}>{t('editProgram')}</Link>
+        <Button type="button" variant="outline" onClick={openNewDayEditor}>
+          {t('addDay')}
         </Button>
         <Button
           variant="ghost"
@@ -103,6 +111,7 @@ export default function ProgramDetailPage(): React.ReactElement {
             days={program.days}
             locale={locale}
             className={isDesktop ? 'grid grid-cols-1 gap-4 xl:grid-cols-2' : undefined}
+            onDayClick={openDayEditor}
           />
         ) : (
           <p className="text-sm text-muted-foreground">{error ?? t('loadingProgram')}</p>
@@ -113,8 +122,8 @@ export default function ProgramDetailPage(): React.ReactElement {
             <Button asChild>
               <Link href={`/${locale}/workouts/start`}>{t('startWorkoutFromProgram')}</Link>
             </Button>
-            <Button asChild variant="outline">
-              <Link href={`/${locale}/programs/${programId}/edit`}>{t('editProgram')}</Link>
+            <Button type="button" variant="outline" onClick={openNewDayEditor}>
+              {t('addDay')}
             </Button>
             <Button
               variant="outline"

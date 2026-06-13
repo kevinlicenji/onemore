@@ -1,6 +1,6 @@
 'use client';
 
-import type { WorkoutSessionDetail } from '@onemore/shared';
+import type { PersonalRecordSummary, WorkoutSessionDetail } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import { Home } from 'lucide-react';
 import Link from 'next/link';
@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { ExerciseNotesModal } from '@/components/exercise-notes-modal';
 import { ExerciseSearchCombobox } from '@/components/exercise-search-combobox';
+import { PrCelebration } from '@/components/pr-celebration';
 import { RestTimer } from '@/components/rest-timer';
 import { useAuth } from '@/components/auth-provider';
 import { useHorizontalSwipe } from '@/hooks/use-horizontal-swipe';
@@ -17,6 +18,7 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { getExerciseDisplayName } from '@/lib/exercise-display-name';
 import { formatWorkoutDuration, getWorkoutElapsedSeconds } from '@/lib/format-workout-duration';
 import { triggerHaptic } from '@/lib/haptic';
+import { shouldOfferAddSet } from '@/lib/workout-completion';
 import type { RestTimerContext, WorkoutExerciseDetail } from '@/lib/workout-exercise-set-state';
 
 import { GymExerciseSets } from './gym-exercise-sets';
@@ -36,6 +38,7 @@ export interface GymActiveWorkoutViewProps {
   substituteMode: boolean;
   notesModalOpen: boolean;
   notesSaving: boolean;
+  newPrs: PersonalRecordSummary[];
   exerciseProgressText: string;
   formatSetLabel: (setNumber: number) => string;
   labels: {
@@ -90,20 +93,24 @@ export interface GymActiveWorkoutViewProps {
   onExerciseIndexChange: (index: number) => void;
   onNotesModalClose: () => void;
   onNotesSave: (notes: string) => void;
+  onDismissPr: () => void;
 }
 
 const exercisePanelTransition = {
   enter: (direction: number) => ({
-    x: direction >= 0 ? 56 : -56,
+    x: direction >= 0 ? 72 : -72,
     opacity: 0,
+    filter: 'blur(4px)',
   }),
   center: {
     x: 0,
     opacity: 1,
+    filter: 'blur(0px)',
   },
   exit: (direction: number) => ({
-    x: direction >= 0 ? -56 : 56,
+    x: direction >= 0 ? -48 : 48,
     opacity: 0,
+    filter: 'blur(2px)',
   }),
 };
 
@@ -123,6 +130,7 @@ export function GymActiveWorkoutView({
   substituteMode,
   notesModalOpen,
   notesSaving,
+  newPrs,
   exerciseProgressText: _exerciseProgressText,
   formatSetLabel,
   labels,
@@ -141,6 +149,7 @@ export function GymActiveWorkoutView({
   onExerciseIndexChange,
   onNotesModalClose,
   onNotesSave,
+  onDismissPr,
 }: GymActiveWorkoutViewProps): React.ReactElement {
   const { profile } = useAuth();
   const reducedMotion = useReducedMotion();
@@ -162,7 +171,10 @@ export function GymActiveWorkoutView({
   }, [session.startedAt]);
   const motionTransition = reducedMotion
     ? { duration: 0 }
-    : { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] as const };
+    : { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const };
+  const exerciseMotionTransition = reducedMotion
+    ? { duration: 0 }
+    : { type: 'spring' as const, stiffness: 360, damping: 34, mass: 0.85 };
 
   const navigateExercise = useCallback(
     (nextIndex: number): void => {
@@ -206,12 +218,15 @@ export function GymActiveWorkoutView({
         {restTimerContext !== null ? (
           <motion.div
             key="rest"
-            animate={{ opacity: 1 }}
-            className="flex min-h-dvh flex-col pt-[env(safe-area-inset-top)]"
-            exit={reducedMotion ? undefined : { opacity: 0 }}
-            initial={reducedMotion ? undefined : { opacity: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative flex min-h-dvh flex-col pt-[env(safe-area-inset-top)]"
+            exit={reducedMotion ? undefined : { opacity: 0, scale: 0.98 }}
+            initial={reducedMotion ? undefined : { opacity: 0, scale: 1.02 }}
             transition={motionTransition}
           >
+            {newPrs.length > 0 ? (
+              <PrCelebration records={newPrs} variant="gym" onDismiss={onDismissPr} />
+            ) : null}
             <RestTimer
               label={labels.restLabel}
               motivationalLine={restMotivationalLine}
@@ -226,10 +241,10 @@ export function GymActiveWorkoutView({
         ) : (
           <motion.div
             key="workout"
-            animate={{ opacity: 1 }}
+            animate={{ opacity: 1, scale: 1 }}
             className="flex min-h-dvh flex-col pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-[env(safe-area-inset-top)]"
-            exit={reducedMotion ? undefined : { opacity: 0 }}
-            initial={reducedMotion ? undefined : { opacity: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0, scale: 0.98 }}
+            initial={reducedMotion ? undefined : { opacity: 0, scale: 1.01 }}
             transition={motionTransition}
             {...swipeHandlers}
           >
@@ -267,9 +282,8 @@ export function GymActiveWorkoutView({
                         abandon: labels.abandon,
                         addSet: labels.addSet,
                       }}
-                      showAddSet={
-                        !currentExercise.sets.some((set) => !set.isCompleted && !set.isSkipped)
-                      }
+                      showAddSet={shouldOfferAddSet(currentExercise)}
+                      showSkipExercise={currentExercise.status !== 'skipped'}
                       showSubstitute={session.sessionType === 'programmed'}
                       onAbandon={onAbandon}
                       onAddSet={onAddSet}
@@ -358,7 +372,7 @@ export function GymActiveWorkoutView({
                         custom={transitionDirection}
                         exit="exit"
                         initial="enter"
-                        transition={motionTransition}
+                        transition={exerciseMotionTransition}
                         variants={reducedMotion ? undefined : exercisePanelTransition}
                       >
                         <GymExerciseSets
@@ -470,7 +484,7 @@ export function GymActiveWorkoutView({
                 const allSetsDone = currentExercise.sets.every(
                   (set) => set.isCompleted || set.isSkipped,
                 );
-                if (!allSetsDone) {
+                if (!allSetsDone || !shouldOfferAddSet(currentExercise)) {
                   return null;
                 }
 

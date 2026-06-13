@@ -1,15 +1,15 @@
 'use client';
 
-import type { CreateProgramInput, DifficultyLevel, MuscleGroup } from '@onemore/shared';
+import type { CreateProgramInput, MuscleGroup } from '@onemore/shared';
 import {
   aggregateMuscleGroups,
   computeDayDifficulty,
-  defaultWorkoutDayLabel,
   localizeWorkoutDayLabel,
 } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import {
   AddProgramExerciseModal,
@@ -17,25 +17,14 @@ import {
 } from '@/components/add-program-exercise-modal';
 import { ProgramBuilderExerciseRow } from '@/components/program-builder-exercise-row';
 import { DifficultyLevelPicker } from '@/components/difficulty-level-picker';
+import { collectExerciseRowBounds, findDropIndexFromPointerY } from '@/lib/exercise-drag-overlay';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
+import { formatProgramExerciseSummary } from '@/lib/program-exercise-display';
 import { moveArrayItem } from '@/lib/move-array-item';
 
-export interface BuilderExercise {
-  exerciseLibraryId: string;
-  name: string;
-  primaryMuscles: MuscleGroup[];
-  targetSets: number;
-  targetReps: number;
-  restSeconds: number;
-  targetWeightKg: number | null;
-}
+import { emptyBuilderDay, type BuilderDay, type BuilderExercise } from './program-builder-types';
 
-export interface BuilderDay {
-  label: string;
-  exercises: BuilderExercise[];
-  difficultyLevel: DifficultyLevel;
-  difficultyManual: boolean;
-}
+export type { BuilderExercise, BuilderDay } from './program-builder-types';
 
 function syncAutoDifficulty(day: BuilderDay): BuilderDay {
   if (day.difficultyManual || day.exercises.length === 0) {
@@ -53,22 +42,27 @@ function syncAutoDifficulty(day: BuilderDay): BuilderDay {
   };
 }
 
+interface DragOverlayState {
+  fromIndex: number;
+  overIndex: number;
+  pointerX: number;
+  pointerY: number;
+  offsetY: number;
+  width: number;
+  height: number;
+  exercise: BuilderExercise;
+}
+
 interface ProgramBuilderProps {
   accessToken: string;
   locale: string;
   initialName?: string;
   initialDays?: BuilderDay[];
+  initialDayIndex?: number;
+  startWithNewDay?: boolean;
+  dayFocusMode?: boolean;
   submitLabel: string;
   onSubmit: (input: CreateProgramInput) => Promise<void>;
-}
-
-function emptyDay(index: number, locale: string): BuilderDay {
-  return {
-    label: defaultWorkoutDayLabel(index, locale),
-    exercises: [],
-    difficultyLevel: 2,
-    difficultyManual: false,
-  };
 }
 
 function dayMuscleLabel(day: BuilderDay, translate: (key: MuscleGroup) => string): string {
@@ -86,23 +80,53 @@ export function ProgramBuilder({
   locale,
   initialName = '',
   initialDays,
+  initialDayIndex = 0,
+  startWithNewDay = false,
+  dayFocusMode = false,
   submitLabel,
   onSubmit,
 }: ProgramBuilderProps): React.ReactElement {
   const t = useTranslations('Programs');
   const tMuscle = useTranslations('MuscleGroups');
+  const listRef = useRef<HTMLUListElement>(null);
   const [name, setName] = useState(initialName);
   const [days, setDays] = useState<BuilderDay[]>(
-    initialDays && initialDays.length > 0 ? initialDays : [emptyDay(0, locale)],
+    initialDays && initialDays.length > 0 ? initialDays : [emptyBuilderDay(0, locale)],
   );
-  const [dayIndex, setDayIndex] = useState(0);
+  const [dayIndex, setDayIndex] = useState(initialDayIndex);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
-  const [dragExerciseIndex, setDragExerciseIndex] = useState<number | null>(null);
+  const [dragOverlay, setDragOverlay] = useState<DragOverlayState | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [didSeedNewDay, setDidSeedNewDay] = useState(false);
+
+  useEffect(() => {
+    if (initialDays && initialDays.length > 0) {
+      setDays(initialDays);
+    }
+  }, [initialDays]);
+
+  useEffect(() => {
+    if (initialDayIndex >= 0 && initialDayIndex < days.length) {
+      setDayIndex(initialDayIndex);
+    }
+  }, [days.length, initialDayIndex]);
+
+  useEffect(() => {
+    if (!startWithNewDay || didSeedNewDay) {
+      return;
+    }
+    setDays((prev) => {
+      const next = [...prev, emptyBuilderDay(prev.length, locale)];
+      setDayIndex(next.length - 1);
+      return next;
+    });
+    setDidSeedNewDay(true);
+  }, [didSeedNewDay, locale, startWithNewDay]);
 
   const currentDay = days[dayIndex] ?? days[0];
+  const isDragging = dragOverlay !== null;
 
   function addExercise(draft: ProgramExerciseDraft): void {
     setDays((prev) =>
@@ -172,8 +196,12 @@ export function ProgramBuilder({
   }
 
   function addDay(): void {
-    setDays((prev) => [...prev, emptyDay(prev.length, locale)]);
-    setDayIndex(days.length);
+    setDays((prev) => {
+      const next = [...prev, emptyBuilderDay(prev.length, locale)];
+      setDayIndex(next.length - 1);
+      return next;
+    });
+    setEditingExerciseIndex(null);
   }
 
   function reorderExercise(fromIndex: number, toIndex: number): void {
@@ -205,14 +233,54 @@ export function ProgramBuilder({
       }
       return current;
     });
-    setDragExerciseIndex(toIndex);
   }
 
-  function handleDragEnter(exerciseIndex: number): void {
-    if (dragExerciseIndex === null || dragExerciseIndex === exerciseIndex) {
+  function updateDragOverIndex(clientX: number, clientY: number): void {
+    setDragOverlay((current) => {
+      if (!current || !listRef.current) {
+        return current;
+      }
+      const listRect = listRef.current.getBoundingClientRect();
+      const bounds = collectExerciseRowBounds(listRef.current);
+      const overIndex = findDropIndexFromPointerY(
+        bounds,
+        clientY - listRect.top,
+        currentDay?.exercises.length ?? 0,
+      );
+      return {
+        ...current,
+        pointerX: clientX,
+        pointerY: clientY,
+        overIndex,
+      };
+    });
+  }
+
+  function handleDragStart(index: number, rect: DOMRect): void {
+    const exercise = currentDay?.exercises[index];
+    if (!exercise) {
       return;
     }
-    reorderExercise(dragExerciseIndex, exerciseIndex);
+    setEditingExerciseIndex(null);
+    setDragOverlay({
+      fromIndex: index,
+      overIndex: index,
+      pointerX: rect.left + rect.width / 2,
+      pointerY: rect.top + rect.height / 2,
+      offsetY: rect.height / 2,
+      width: rect.width,
+      height: rect.height,
+      exercise,
+    });
+  }
+
+  function handleDragEnd(): void {
+    setDragOverlay((current) => {
+      if (current && current.fromIndex !== current.overIndex) {
+        reorderExercise(current.fromIndex, current.overIndex);
+      }
+      return null;
+    });
   }
 
   async function handleSave(): Promise<void> {
@@ -248,43 +316,74 @@ export function ProgramBuilder({
   const canSave =
     name.trim().length > 0 && days.some((day) => day.exercises.length > 0) && !loading;
 
+  const dragGhost =
+    dragOverlay && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className="pointer-events-none fixed z-[80] rounded-xl border-2 border-primary/50 bg-card px-3 py-3 shadow-2xl ring-2 ring-primary/20"
+            style={{
+              width: dragOverlay.width,
+              left: dragOverlay.pointerX - dragOverlay.width / 2,
+              top: dragOverlay.pointerY - dragOverlay.offsetY,
+              transform: 'scale(1.03)',
+            }}
+          >
+            <p className="text-pretty font-semibold leading-tight">{dragOverlay.exercise.name}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {formatProgramExerciseSummary(
+                dragOverlay.exercise.targetSets,
+                dragOverlay.exercise.targetReps,
+                dragOverlay.exercise.targetWeightKg,
+                dragOverlay.exercise.restSeconds,
+                t('failureReps'),
+              )}
+            </p>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <div className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1 text-sm">
-        {t('programName')}
-        <input
-          className="rounded-md border px-3 py-2"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-          }}
-          required
-        />
-      </label>
+      {!dayFocusMode ? (
+        <label className="flex flex-col gap-1 text-sm">
+          {t('programName')}
+          <input
+            className="rounded-md border px-3 py-2"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+            }}
+            required
+          />
+        </label>
+      ) : null}
 
-      <div className="flex flex-wrap gap-2">
-        {days.map((day, index) => {
-          const muscles = dayMuscleLabel(day, tMuscle);
-          return (
-            <Button
-              key={`${day.label}-${String(index)}`}
-              type="button"
-              size="sm"
-              variant={index === dayIndex ? 'default' : 'outline'}
-              onClick={() => {
-                setDayIndex(index);
-                setEditingExerciseIndex(null);
-              }}
-            >
-              {localizeWorkoutDayLabel(day.label, locale)}
-              {muscles ? ` — ${muscles}` : ''}
-            </Button>
-          );
-        })}
-        <Button type="button" size="sm" variant="ghost" onClick={addDay}>
-          {t('addDay')}
-        </Button>
-      </div>
+      {!dayFocusMode ? (
+        <div className="flex flex-wrap gap-2">
+          {days.map((day, index) => {
+            const muscles = dayMuscleLabel(day, tMuscle);
+            return (
+              <Button
+                key={`${day.label}-${String(index)}`}
+                type="button"
+                size="sm"
+                variant={index === dayIndex ? 'default' : 'outline'}
+                onClick={() => {
+                  setDayIndex(index);
+                  setEditingExerciseIndex(null);
+                }}
+              >
+                {localizeWorkoutDayLabel(day.label, locale)}
+                {muscles ? ` — ${muscles}` : ''}
+              </Button>
+            );
+          })}
+          <Button type="button" size="sm" variant="ghost" onClick={addDay}>
+            {t('addDay')}
+          </Button>
+        </div>
+      ) : null}
 
       <label className="flex flex-col gap-1 text-sm">
         {t('dayLabel')}
@@ -321,13 +420,21 @@ export function ProgramBuilder({
       ) : null}
 
       {(currentDay?.exercises.length ?? 0) > 0 && (
-        <ul className={`flex flex-col gap-3 ${dragExerciseIndex !== null ? 'touch-none' : ''}`}>
+        <ul
+          ref={listRef}
+          className={`relative flex flex-col gap-3 ${isDragging ? 'touch-none' : ''}`}
+        >
           {currentDay?.exercises.map((row, exerciseIndex) => (
             <ProgramBuilderExerciseRow
               key={`${row.exerciseLibraryId}-${String(exerciseIndex)}`}
               exercise={row}
               exerciseIndex={exerciseIndex}
-              isDragging={dragExerciseIndex === exerciseIndex}
+              isDragSource={dragOverlay?.fromIndex === exerciseIndex}
+              isDropTarget={
+                dragOverlay !== null &&
+                dragOverlay.overIndex === exerciseIndex &&
+                dragOverlay.fromIndex !== exerciseIndex
+              }
               isEditing={editingExerciseIndex === exerciseIndex}
               labels={{
                 failureReps: t('failureReps'),
@@ -338,13 +445,9 @@ export function ProgramBuilder({
                 targetWeight: t('targetWeight'),
                 restSeconds: t('restSeconds'),
               }}
-              onDragEnd={() => {
-                setDragExerciseIndex(null);
-              }}
-              onDragEnter={handleDragEnter}
-              onDragStart={(index) => {
-                setDragExerciseIndex(index);
-              }}
+              onDragEnd={handleDragEnd}
+              onDragMove={updateDragOverIndex}
+              onDragStart={handleDragStart}
               onDone={() => {
                 setEditingExerciseIndex(null);
               }}
@@ -408,6 +511,8 @@ export function ProgramBuilder({
       >
         {submitLabel}
       </Button>
+
+      {dragGhost}
     </div>
   );
 }

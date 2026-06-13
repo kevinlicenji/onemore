@@ -603,6 +603,8 @@
     "editProgram": "Edit program",
     "editProgramTitle": "Edit program",
     "editProgramHint": "Update exercises, sets and reps. Saving publishes a new version.",
+    "editDayTitle": "Edit day",
+    "editDayHint": "Update exercises, sets and reps for this training day.",
     "saveChanges": "Save changes",
     "backToProgram": "Back to program",
     "deleteProgram": "Delete program",

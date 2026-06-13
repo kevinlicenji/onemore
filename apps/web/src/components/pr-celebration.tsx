@@ -8,12 +8,13 @@ import { useEffect } from 'react';
 
 import { AnimatedDialog } from '@/components/motion/animated-dialog';
 import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
-import { GymPrConfetti } from '@/components/workout/gym-pr-confetti';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { formatPrValue } from '@/lib/format-pr-value';
 import { triggerHaptic } from '@/lib/haptic';
 
 type PrCelebrationVariant = 'default' | 'gym';
+
+const GYM_AUTO_DISMISS_MS = 2500;
 
 interface PrCelebrationProps {
   records: PersonalRecordSummary[];
@@ -38,103 +39,72 @@ export function PrCelebration({
     }
     if (variant === 'gym') {
       triggerHaptic('success');
+      const timer = window.setTimeout(() => {
+        onDismiss();
+      }, GYM_AUTO_DISMISS_MS);
+      return () => {
+        window.clearTimeout(timer);
+      };
     }
-  }, [records.length, variant]);
+  }, [onDismiss, records.length, variant]);
 
   if (records.length === 0) {
     return null;
   }
 
   if (variant === 'gym') {
+    const primaryRecord = records[0];
+    if (!primaryRecord) {
+      return null;
+    }
+
     return (
-      <AnimatedDialog
-        ariaLabelledby="pr-celebration-title"
-        className="relative flex h-full w-full max-w-none flex-1 flex-col justify-between rounded-none border-0 bg-transparent p-0 shadow-none"
-        overlayClassName="z-[70] flex h-full flex-col items-stretch justify-stretch bg-background/98 p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] backdrop-blur-sm"
+      <motion.div
+        animate={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: 0 }}
+        className="pointer-events-none fixed inset-x-0 top-0 z-[75] px-4 pt-[max(0.75rem,env(safe-area-inset-top))]"
+        exit={reducedMotion ? undefined : { opacity: 0, y: -16 }}
+        initial={reducedMotion ? undefined : { opacity: 0, y: -20 }}
+        transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
       >
-        <GymPrConfetti />
-
-        <div className="relative flex flex-1 flex-col justify-center px-6 py-8">
-          <motion.div
-            animate={reducedMotion ? { scale: 1, opacity: 1 } : { scale: [1, 1.08, 1], opacity: 1 }}
-            className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/15 text-green-600 ring-2 ring-green-500/25 dark:text-green-400"
-            initial={reducedMotion ? undefined : { scale: 0.6, opacity: 0 }}
-            transition={
-              reducedMotion
-                ? { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }
-                : {
-                    scale: { duration: 1.4, repeat: Infinity, ease: 'easeInOut' },
-                    opacity: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
-                  }
-            }
-          >
-            <svg
-              aria-hidden
-              className="h-10 w-10"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.75"
-              viewBox="0 0 24 24"
+        <div className="pointer-events-auto mx-auto w-full max-w-md overflow-hidden rounded-2xl border-2 border-green-500/35 bg-card/95 shadow-lg backdrop-blur-md">
+          <div className="flex items-start gap-3 px-4 py-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-600 dark:text-green-400">
+              <svg
+                aria-hidden
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.75"
+                viewBox="0 0 24 24"
+              >
+                <path d="M8 21h8" />
+                <path d="M12 17v4" />
+                <path d="M7 4h10l1 5H6l1-5Z" />
+                <path d="M6 9h12v2a6 6 0 0 1-12 0V9Z" />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-green-700 dark:text-green-300">
+                {t('prTitle')}
+              </p>
+              <p className="truncate text-sm font-medium">{primaryRecord.exerciseName}</p>
+              <p className="text-xs text-muted-foreground">
+                {t(`prType_${primaryRecord.prType}`)} · {formatPrValue(primaryRecord)}
+              </p>
+            </div>
+            <button
+              aria-label={t('prDismiss')}
+              className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              type="button"
+              onClick={onDismiss}
             >
-              <path d="M8 21h8" />
-              <path d="M12 17v4" />
-              <path d="M7 4h10l1 5H6l1-5Z" />
-              <path d="M6 9h12v2a6 6 0 0 1-12 0V9Z" />
-            </svg>
-          </motion.div>
-
-          <h2 id="pr-celebration-title" className="text-center text-3xl font-bold tracking-tight">
-            {t('prTitle')}
-          </h2>
-          <p className="mt-2 text-center text-base text-muted-foreground">{t('prSubtitle')}</p>
-
-          <StaggerGroup className="mt-8 flex flex-col gap-3">
-            {records.map((record) => (
-              <StaggerItem key={record.id}>
-                <motion.div
-                  animate={
-                    reducedMotion
-                      ? undefined
-                      : {
-                          boxShadow: [
-                            '0 0 0 0 hsl(142 60% 45% / 0)',
-                            '0 0 0 6px hsl(142 60% 45% / 0.12)',
-                            '0 0 0 0 hsl(142 60% 45% / 0)',
-                          ],
-                        }
-                  }
-                  className="rounded-2xl border-2 border-green-500/30 bg-card p-4 shadow-sm"
-                  transition={
-                    reducedMotion
-                      ? undefined
-                      : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
-                  }
-                >
-                  <p className="text-lg font-semibold">{record.exerciseName}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t(`prType_${record.prType}`)}
-                  </p>
-                  <p className="mt-2 text-2xl font-bold tabular-nums text-green-600 dark:text-green-400">
-                    {formatPrValue(record)}
-                  </p>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerGroup>
+              {t('prDismiss')}
+            </button>
+          </div>
         </div>
-
-        <div className="relative px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2">
-          <Button
-            className="min-h-14 w-full text-lg font-semibold"
-            type="button"
-            onClick={onDismiss}
-          >
-            {t('prDismiss')}
-          </Button>
-        </div>
-      </AnimatedDialog>
+      </motion.div>
     );
   }
 

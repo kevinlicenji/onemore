@@ -32,6 +32,12 @@ import {
   upsertWorkoutSetClient,
 } from '@/lib/offline/workout-client';
 import { POSTHOG_EVENTS, trackEvent } from '@/lib/analytics';
+import {
+  findNextActiveExerciseIndex,
+  isExerciseFullyResolved,
+  isWorkoutReadyToAutoFinish,
+  shouldOfferAddSet,
+} from '@/lib/workout-completion';
 
 export default function ActiveWorkoutPage(): React.ReactElement {
   const t = useTranslations('Workouts');
@@ -56,6 +62,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   const [notesSaving, setNotesSaving] = useState(false);
   const [activeSetId, setActiveSetId] = useState<string | null>(null);
   const setRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const autoFinishTriggeredRef = useRef(false);
   const { refreshPendingCount } = useSync();
   const isDesktop = useIsDesktop();
 
@@ -127,6 +134,20 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     const node = setRefs.current[activeSetId];
     node?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [activeSetId]);
+
+  function maybeAdvanceAfterExerciseDone(
+    updatedSession: WorkoutSessionDetail,
+    fromIndex: number,
+  ): void {
+    const exercise = updatedSession.exercises[fromIndex];
+    if (!exercise || !isExerciseFullyResolved(exercise) || shouldOfferAddSet(exercise)) {
+      return;
+    }
+    const nextIndex = findNextActiveExerciseIndex(updatedSession, fromIndex);
+    if (nextIndex >= 0) {
+      setExerciseIndex(nextIndex);
+    }
+  }
 
   async function handleCompleteSet(setId: string, setNumber: number): Promise<void> {
     if (!accessToken || !session || !currentExercise) {
@@ -220,6 +241,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
       );
       const nextSet = updatedExercise?.sets.find((item) => !item.isCompleted && !item.isSkipped);
       setActiveSetId(nextSet?.id ?? null);
+      maybeAdvanceAfterExerciseDone(result.session, exerciseIndex);
       await refreshPendingCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('setError'));
@@ -299,7 +321,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
   }
 
-  async function handleCompleteWorkout(): Promise<void> {
+  const handleCompleteWorkout = useCallback(async (): Promise<void> => {
     if (!accessToken || !session) {
       return;
     }
@@ -316,15 +338,25 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     } finally {
       setLoading(false);
     }
-  }
+  }, [accessToken, locale, newPrs, router, session, t]);
 
-  function advanceToNextExercise(): void {
-    if (!session) {
+  const tryAutoFinishWorkout = useCallback((): void => {
+    if (!session || loading || restTimerContext !== null) {
       return;
     }
-    const nextIndex = session.exercises.findIndex(
-      (exercise, index) => index > exerciseIndex && exercise.status !== 'skipped',
-    );
+    if (!isWorkoutReadyToAutoFinish(session)) {
+      autoFinishTriggeredRef.current = false;
+      return;
+    }
+    if (autoFinishTriggeredRef.current) {
+      return;
+    }
+    autoFinishTriggeredRef.current = true;
+    void handleCompleteWorkout();
+  }, [handleCompleteWorkout, loading, restTimerContext, session]);
+
+  function advanceToNextExercise(updatedSession: WorkoutSessionDetail): void {
+    const nextIndex = findNextActiveExerciseIndex(updatedSession, exerciseIndex);
     if (nextIndex >= 0) {
       setExerciseIndex(nextIndex);
     }
@@ -340,7 +372,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
       const updated = await skipWorkoutExerciseClient(accessToken, session.id, currentExercise.id);
       setSession(updated);
       setSubstituteMode(false);
-      advanceToNextExercise();
+      advanceToNextExercise(updated);
       await refreshPendingCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('skipExerciseError'));
@@ -426,6 +458,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
   }
 
+  useEffect(() => {
+    tryAutoFinishWorkout();
+  }, [tryAutoFinishWorkout]);
+
   if (!session || isDesktop === null) {
     return (
       <RequireAuth>
@@ -487,15 +523,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   if (!isDesktop) {
     return (
       <RequireAuth>
-        {newPrs.length > 0 && (
-          <PrCelebration
-            records={newPrs}
-            variant="gym"
-            onDismiss={() => {
-              setNewPrs([]);
-            }}
-          />
-        )}
         <GymActiveWorkoutView
           accessToken={accessToken}
           actualRestBySetId={actualRestBySetId}
@@ -507,6 +534,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           labels={gymLabels}
           loading={loading}
           locale={locale}
+          newPrs={newPrs}
           notesModalOpen={notesModalOpen}
           notesSaving={notesSaving}
           restTimerContext={restTimerContext}
@@ -520,6 +548,9 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           }}
           onCompleteSet={(setId, setNumber) => {
             void handleCompleteSet(setId, setNumber);
+          }}
+          onDismissPr={() => {
+            setNewPrs([]);
           }}
           onExerciseIndexChange={setExerciseIndex}
           onFinishWorkout={() => {
@@ -541,6 +572,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
               [setId]: actualRestSeconds,
             }));
             setRestTimerContext(null);
+            maybeAdvanceAfterExerciseDone(session, exerciseIndex);
           }}
           onSelectExerciseToAdd={(exerciseLibraryId) => {
             void handleAddExercise(exerciseLibraryId);
@@ -830,7 +862,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
             {!restTimerContext &&
               currentExercise.status !== 'skipped' &&
-              !currentExercise.sets.some((set) => !set.isCompleted && !set.isSkipped) && (
+              shouldOfferAddSet(currentExercise) && (
                 <Button
                   className="w-full"
                   disabled={loading}
