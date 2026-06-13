@@ -14,7 +14,6 @@ import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useMotivationalLine } from '@/hooks/use-motivational-line';
 import { fetchProgramTemplates } from '@/lib/api-auth';
-import { pickLocalizedText } from '@/lib/pick-localized-text';
 
 export default function ChooseProgramPage(): React.ReactElement {
   const t = useTranslations('Onboarding');

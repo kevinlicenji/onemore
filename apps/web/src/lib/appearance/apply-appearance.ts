@@ -1,7 +1,7 @@
 import type { ColorThemeId } from './color-themes';
 import { DEFAULT_COLOR_THEME_ID, normalizeColorThemeId } from './color-themes';
 import type { FontId } from './font-options';
-import { DEFAULT_FONT_ID, normalizeFontId } from './font-options';
+import { DEFAULT_FONT_ID } from './font-options';
 
 export const APPEARANCE_COLOR_ATTR = 'data-color-theme';
 export const APPEARANCE_FONT_ATTR = 'data-font';
