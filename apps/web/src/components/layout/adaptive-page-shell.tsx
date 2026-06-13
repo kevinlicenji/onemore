@@ -21,6 +21,7 @@ interface AdaptivePageShellProps {
   title: string;
   description?: string;
   actions?: ReactNode;
+  titleTrailing?: ReactNode;
   /** Mobile header action placement — stacked full-width CTAs by default. */
   actionsLayout?: 'inline' | 'stacked';
   backHref?: string;
@@ -39,6 +40,7 @@ export function AdaptivePageShell({
   title,
   description,
   actions,
+  titleTrailing,
   actionsLayout = 'stacked',
   backHref,
   backLabel,
@@ -65,7 +67,12 @@ export function AdaptivePageShell({
               {description ? <p className="text-muted-foreground">{description}</p> : null}
             </div>
           ) : (
-            <PageHeader title={title} description={description} actions={actions} />
+            <PageHeader
+              title={title}
+              description={description}
+              actions={actions}
+              titleTrailing={titleTrailing}
+            />
           )}
           {children}
         </PageEnter>
@@ -87,6 +94,7 @@ export function AdaptivePageShell({
         backLabel={backLabel}
         description={description}
         title={title}
+        titleTrailing={titleTrailing}
       />
       {onRefresh ? (
         <GymPullToRefresh

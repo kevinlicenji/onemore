@@ -320,18 +320,8 @@ export function ProgramBuilder({
         />
       ) : null}
 
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => {
-          setAddModalOpen(true);
-        }}
-      >
-        {t('addExercise')}
-      </Button>
-
       {(currentDay?.exercises.length ?? 0) > 0 && (
-        <ul className="flex flex-col gap-3">
+        <ul className={`flex flex-col gap-3 ${dragExerciseIndex !== null ? 'touch-none' : ''}`}>
           {currentDay?.exercises.map((row, exerciseIndex) => (
             <ProgramBuilderExerciseRow
               key={`${row.exerciseLibraryId}-${String(exerciseIndex)}`}
@@ -341,10 +331,8 @@ export function ProgramBuilder({
               isEditing={editingExerciseIndex === exerciseIndex}
               labels={{
                 failureReps: t('failureReps'),
-                editExercise: t('editExercise'),
                 removeExercise: t('removeExercise'),
                 doneEditing: t('doneEditing'),
-                reorderExercise: t('reorderExercise'),
                 targetSets: t('targetSets'),
                 targetReps: t('targetReps'),
                 targetWeight: t('targetWeight'),
@@ -373,6 +361,17 @@ export function ProgramBuilder({
           ))}
         </ul>
       )}
+
+      <Button
+        className="min-h-11"
+        type="button"
+        variant="outline"
+        onClick={() => {
+          setAddModalOpen(true);
+        }}
+      >
+        {t('addExercise')}
+      </Button>
 
       <AddProgramExerciseModal
         accessToken={accessToken}

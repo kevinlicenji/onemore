@@ -1,7 +1,7 @@
 'use client';
 
 import type { ProgramDetail } from '@onemore/shared';
-import { Badge, Button } from '@onemore/ui';
+import { Button } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -81,11 +81,13 @@ export default function ProgramDetailPage(): React.ReactElement {
 
   const description =
     program !== null
-      ? t('programDetailMeta', {
+      ? t('programDaysMeta', {
           days: program.days.length,
-          status: program.versionStatus ?? 'draft',
         })
       : undefined;
+
+  const titleTrailing =
+    program !== null ? <DifficultyStepsIcon level={program.difficultyLevel} /> : null;
 
   return (
     <RequireAuth>
@@ -93,16 +95,9 @@ export default function ProgramDetailPage(): React.ReactElement {
         title={program?.name ?? t('loadingProgram')}
         description={description}
         actions={isDesktop ? headerActions : undefined}
+        titleTrailing={titleTrailing}
         variant="wide"
       >
-        {program?.isActive ? <Badge variant="accent">{t('activeBadge')}</Badge> : null}
-
-        {program ? (
-          <div className="flex justify-end">
-            <DifficultyStepsIcon level={program.difficultyLevel} />
-          </div>
-        ) : null}
-
         {program ? (
           <ProgramDayList
             days={program.days}

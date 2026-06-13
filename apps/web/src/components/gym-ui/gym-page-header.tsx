@@ -17,6 +17,7 @@ interface GymPageHeaderProps {
   title: string;
   description?: string;
   actions?: ReactNode;
+  titleTrailing?: ReactNode;
   /** Stacked = full-width CTAs below copy; inline = compact slot beside the title. */
   actionsLayout?: GymPageHeaderActionsLayout;
   backHref?: string;
@@ -32,6 +33,7 @@ export function GymPageHeader({
   title,
   description,
   actions,
+  titleTrailing,
   actionsLayout = 'stacked',
   backHref,
   backLabel = 'Back',
@@ -64,8 +66,11 @@ export function GymPageHeader({
           <h1 className="min-w-0 flex-1 text-balance text-mobile-large-title tracking-tight">
             {title}
           </h1>
-          {showInlineActions ? (
-            <div className="flex shrink-0 items-center gap-2">{actions}</div>
+          {titleTrailing || showInlineActions ? (
+            <div className="flex shrink-0 items-center gap-2">
+              {titleTrailing}
+              {showInlineActions ? actions : null}
+            </div>
           ) : null}
         </div>
       </div>
