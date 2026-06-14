@@ -7,12 +7,11 @@ describe('AnalyticsService', () => {
   it('returns zero streak when no completed sessions exist', async () => {
     const prisma = {
       user: {
-        findUnique: vi.fn(() => Promise.resolve({ timezone: 'Europe/Rome' })),
+        findUnique: vi.fn(() =>
+          Promise.resolve({ timezone: 'Europe/Rome', trainingDaysPerWeek: 3 }),
+        ),
       },
       workoutSession: {
-        findMany: vi.fn(() => Promise.resolve([])),
-      },
-      personalRecord: {
         findMany: vi.fn(() => Promise.resolve([])),
       },
     };
@@ -27,14 +26,18 @@ describe('AnalyticsService', () => {
           exerciseCount: 0,
           programName: null,
           exercises: [],
+          days: [],
         }),
       ),
     };
 
+    const prDetection = new PrDetectionService();
+    vi.spyOn(prDetection, 'listForUser').mockResolvedValue([]);
+
     const service = new AnalyticsService(
       prisma as never,
       workoutsService as never,
-      new PrDetectionService(),
+      prDetection,
     );
 
     const dashboard = await service.getDashboard('user-1');
@@ -43,5 +46,9 @@ describe('AnalyticsService', () => {
     expect(dashboard.workoutsThisWeek).toBe(0);
     expect(dashboard.weeklySetsCompleted).toBe(0);
     expect(dashboard.lastWorkout).toBeNull();
+    expect(dashboard.weeklyConsistency.workoutsCompleted).toBe(0);
+    expect(dashboard.weeklyConsistency.weeklyTarget).toBe(3);
+    expect(dashboard.volumeComparison.thisWeekKg).toBe(0);
+    expect(dashboard.monthlyStats.personalRecordsCount).toBe(0);
   });
 });

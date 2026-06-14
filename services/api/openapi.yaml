@@ -199,7 +199,10 @@ paths:
             format: uuid
   /analytics/dashboard:
     get:
-      summary: Dashboard analytics — streak, weekly volume, next/last workout, recent PRs
+      summary: Dashboard analytics — streak, weekly consistency, volume, program CTA, monthly stats
+  /analytics/personal-records:
+    get:
+      summary: Personal records for offline dashboard hydration
   /users/me/export:
     post:
       summary: Request GDPR data export (async job, email when ready)

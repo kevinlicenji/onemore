@@ -13,6 +13,7 @@ import type {
   NextWorkoutPreview,
   OnboardingComplete,
   OnboardingUpdate,
+  PersonalRecordSummary,
   ProgramDetail,
   ProgramSummary,
   RequestDataExportResponse,
@@ -581,6 +582,24 @@ export async function fetchAnalyticsDashboard(accessToken: string): Promise<Anal
     throw await parseApiError(response, 'Failed to load analytics');
   }
   return response.json() as Promise<AnalyticsDashboard>;
+}
+
+export async function fetchPersonalRecords(
+  accessToken: string,
+  limit = 200,
+): Promise<PersonalRecordSummary[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/analytics/personal-records?limit=${String(limit)}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      credentials: 'include',
+    },
+  );
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load personal records');
+  }
+  const data = (await response.json()) as { items: PersonalRecordSummary[] };
+  return data.items;
 }
 
 export async function addWorkoutExercise(

@@ -9,6 +9,7 @@ import {
   hydrateOfflineCatalog,
   pullDelta,
 } from '@/lib/offline/sync-engine';
+import { hydrateDashboardData } from '@/lib/offline/hydrate-dashboard';
 
 interface SyncContextValue {
   pendingCount: number;
@@ -57,6 +58,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }): React
     void (async () => {
       try {
         await hydrateOfflineCatalog(accessToken, user.id);
+        await hydrateDashboardData(accessToken);
         await refreshPendingCount();
       } catch {
         await refreshPendingCount();

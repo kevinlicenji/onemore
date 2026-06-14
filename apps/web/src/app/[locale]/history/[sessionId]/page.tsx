@@ -13,6 +13,7 @@ import { StatGrid } from '@/components/layout/desktop/stat-grid';
 import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { deleteHistorySession, fetchHistorySessionDetail, updateHistorySet } from '@/lib/api-auth';
+import { notifyDashboardWorkoutDeleted, notifyDashboardWorkoutEdited } from '@/lib/offline/dashboard-store';
 import { computeWorkoutSessionStats } from '@/lib/workout-stats';
 
 function exerciseName(exercise: WorkoutSessionDetail['exercises'][number], locale: string): string {
@@ -68,6 +69,7 @@ export default function HistoryDetailPage(): React.ReactElement {
     try {
       const updated = await updateHistorySet(accessToken, sessionId, setId, { weightKg, reps });
       setSession(updated);
+      await notifyDashboardWorkoutEdited(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('editSetError'));
     } finally {
@@ -83,6 +85,7 @@ export default function HistoryDetailPage(): React.ReactElement {
     setError(null);
     try {
       await deleteHistorySession(accessToken, sessionId);
+      await notifyDashboardWorkoutDeleted(sessionId);
       window.location.href = `/${locale}/history`;
     } catch (err) {
       setError(err instanceof Error ? err.message : t('deleteSessionError'));

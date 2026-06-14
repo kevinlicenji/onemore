@@ -32,6 +32,7 @@ import {
   upsertWorkoutSetClient,
 } from '@/lib/offline/workout-client';
 import { POSTHOG_EVENTS, trackEvent } from '@/lib/analytics';
+import { persistPersonalRecords } from '@/lib/offline/dashboard-store';
 import { hasCompletedWorkingSet } from '@/lib/workout-session-utils';
 import {
   findNextActiveExerciseIndex,
@@ -183,6 +184,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
       if (result.personalRecords.length > 0) {
         setNewPrs(result.personalRecords);
+        await persistPersonalRecords(result.personalRecords);
         for (const record of result.personalRecords) {
           trackEvent(POSTHOG_EVENTS.PR_ACHIEVED, {
             pr_type: record.prType,

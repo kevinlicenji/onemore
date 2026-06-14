@@ -9,7 +9,15 @@ import type {
 import { API_BASE_URL } from '@/lib/api-config';
 import { generateClientUuid } from '@/lib/generate-client-uuid';
 
+import { emitDashboardInvalidation } from '@/lib/dashboard/dashboard-events';
+import { invalidateDashboardCache } from '@/lib/dashboard/dashboard-cache';
+
 import { offlineDb } from './db';
+import {
+  persistPersonalRecords,
+  sessionDetailToHistorySummary,
+  upsertCompletedSessionSummary,
+} from './dashboard-store';
 
 /**
  * @returns Whether the browser reports an online network state.
@@ -141,7 +149,16 @@ export async function pullDelta(accessToken: string, userId: string): Promise<vo
 
   if (delta.sessions.length > 0) {
     await offlineDb.sessions.bulkPut(delta.sessions);
+    const completedSummaries = delta.sessions
+      .filter((session) => session.status === 'completed' && session.completedAt)
+      .map((session) => sessionDetailToHistorySummary(session));
+    if (completedSummaries.length > 0) {
+      await offlineDb.completedSessions.bulkPut(completedSummaries);
+    }
   }
+
+  invalidateDashboardCache();
+  emitDashboardInvalidation('SYNC_COMPLETE');
 
   await offlineDb.syncMetadata.put({
     id: 'default',

@@ -83,6 +83,21 @@ export class PrDetectionService {
     userId: string,
     limit = 5,
   ): Promise<PersonalRecordSummary[]> {
+    return this.listForUser(prisma, userId, limit);
+  }
+
+  /**
+   * List personal records for dashboard hydration and analytics.
+   *
+   * @param prisma - Database client.
+   * @param userId - Owner user id.
+   * @param limit - Max rows.
+   */
+  async listForUser(
+    prisma: PrismaClient,
+    userId: string,
+    limit: number,
+  ): Promise<PersonalRecordSummary[]> {
     const records = await prisma.personalRecord.findMany({
       where: { userId },
       orderBy: { achievedAt: 'desc' },

@@ -1,6 +1,8 @@
 import type {
   ExerciseListItem,
+  HistorySessionSummary,
   NextWorkoutPreview,
+  PersonalRecordSummary,
   SyncMutation,
   WorkoutSessionDetail,
 } from '@onemore/shared';
@@ -9,6 +11,8 @@ import Dexie, { type Table } from 'dexie';
 export interface LocalExercise extends ExerciseListItem {
   updatedAt: string;
 }
+
+export interface LocalPersonalRecord extends PersonalRecordSummary {}
 
 export interface SyncQueueRow {
   id: string;
@@ -25,12 +29,14 @@ export interface SyncMetadataRow {
 }
 
 /**
- * IndexedDB schema for offline workout execution and sync queue.
+ * IndexedDB schema for offline workout execution, dashboard cache, and sync queue.
  */
 export class OneMoreOfflineDb extends Dexie {
   exercises!: Table<LocalExercise, string>;
   nextWorkout!: Table<NextWorkoutPreview & { id: 'default' }, string>;
   sessions!: Table<WorkoutSessionDetail, string>;
+  completedSessions!: Table<HistorySessionSummary, string>;
+  personalRecords!: Table<LocalPersonalRecord, string>;
   syncQueue!: Table<SyncQueueRow, string>;
   syncMetadata!: Table<SyncMetadataRow, string>;
 
@@ -43,6 +49,15 @@ export class OneMoreOfflineDb extends Dexie {
       exercises: 'id, slug, category, updatedAt',
       nextWorkout: 'id',
       sessions: 'id, status, startedAt',
+      syncQueue: 'id, createdAt',
+      syncMetadata: 'id',
+    });
+    this.version(2).stores({
+      exercises: 'id, slug, category, updatedAt',
+      nextWorkout: 'id',
+      sessions: 'id, status, startedAt',
+      completedSessions: 'id, completedAt, sessionType',
+      personalRecords: 'id, achievedAt, exerciseLibraryId',
       syncQueue: 'id, createdAt',
       syncMetadata: 'id',
     });

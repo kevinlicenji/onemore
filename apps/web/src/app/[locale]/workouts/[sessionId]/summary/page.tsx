@@ -10,6 +10,7 @@ import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
 import { RequireAuth } from '@/components/require-auth';
 import { GymWorkoutSummary } from '@/components/workout/gym-workout-summary';
 import { deleteHistorySession } from '@/lib/api-auth';
+import { notifyDashboardWorkoutDeleted } from '@/lib/offline/dashboard-store';
 import { getWorkoutSessionClient } from '@/lib/offline/workout-client';
 
 function readStoredPrs(sessionId: string): PersonalRecordSummary[] {
@@ -67,6 +68,7 @@ export default function WorkoutSummaryPage(): React.ReactElement {
     setDeleting(true);
     try {
       await deleteHistorySession(accessToken, sessionId);
+      await notifyDashboardWorkoutDeleted(sessionId);
       router.replace(`/${locale}/dashboard`);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('deleteSessionError'));

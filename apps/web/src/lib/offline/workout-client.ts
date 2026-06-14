@@ -25,9 +25,12 @@ import {
   upsertWorkoutSet,
 } from '@/lib/api-auth';
 
+import { emitDashboardInvalidation } from '@/lib/dashboard/dashboard-events';
+import { invalidateDashboardCache } from '@/lib/dashboard/dashboard-cache';
 import { generateClientUuid } from '@/lib/generate-client-uuid';
 import { isInvalidAccessTokenError, refreshAccessToken } from '@/lib/refresh-access-token';
 
+import { persistPersonalRecords, upsertCompletedSessionSummary } from './dashboard-store';
 import { offlineDb } from './db';
 import { purgeInProgressSessions, purgeLocalSession } from './session-cleanup';
 import { loadPreviousExecutionsMap, loadPreviousSetsMap } from './resolve-previous-set';
@@ -339,6 +342,7 @@ async function syncSetToServer(
 ): Promise<UpsertSetResponse> {
   const result = await upsertWorkoutSet(accessToken, sessionId, payload);
   await offlineDb.sessions.put(result.session);
+  await persistPersonalRecords(result.personalRecords);
   await syncIfOnline(accessToken);
   return result;
 }
@@ -523,6 +527,8 @@ export async function completeWorkoutSessionClient(
     try {
       const session = await completeWorkoutSession(accessToken, sessionId);
       await offlineDb.sessions.put(session);
+      await upsertCompletedSessionSummary(session);
+      invalidateAndEmitWorkoutSaved();
       await syncIfOnline(accessToken);
       return session;
     } catch (error) {
@@ -564,6 +570,8 @@ export async function completeWorkoutSessionClient(
   };
 
   await offlineDb.sessions.put(updatedSession);
+  await upsertCompletedSessionSummary(updatedSession);
+  invalidateAndEmitWorkoutSaved();
   await enqueueMutation({
     type: 'workout_session',
     op: 'upsert',
@@ -834,4 +842,9 @@ export async function updateWorkoutExerciseNotesClient(
   };
   await offlineDb.sessions.put(updated);
   return updated;
+}
+
+function invalidateAndEmitWorkoutSaved(): void {
+  invalidateDashboardCache();
+  emitDashboardInvalidation('WORKOUT_SAVED');
 }
