@@ -51,11 +51,9 @@ export class AdminTemplatesService {
         id: template.id,
         slug: template.name,
         displayName: meta.displayName?.en ?? template.name,
-        objective: template.objective as AdminTemplateListItem['objective'],
+        objective: template.objective,
         daysCount: latest?.workoutDays.length ?? 0,
-        latestVersionStatus: latest
-          ? (latest.status as AdminTemplateListItem['latestVersionStatus'])
-          : null,
+        latestVersionStatus: latest ? latest.status : null,
         latestVersionNumber: latest?.versionNumber ?? null,
         hasPublishedVersion,
         deletedAt: template.deletedAt?.toISOString() ?? null,
@@ -75,9 +73,9 @@ export class AdminTemplatesService {
       ...detail,
       slug: template.name,
       meta,
-      name: meta.displayName?.en ?? template.name,
+      name: meta.displayName.en || template.name,
       description: null,
-      guide: meta.guide ?? null,
+      guide: meta.guide,
       tagline: meta.tagline ?? null,
       isActive: false,
     };
@@ -94,7 +92,7 @@ export class AdminTemplatesService {
 
     const ownerUserId = await this.resolveTemplateOwnerId();
 
-    const programId = await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       const created = await tx.program.create({
         data: {
           ownerUserId,
@@ -116,7 +114,6 @@ export class AdminTemplatesService {
       });
 
       await this.createDaysAndExercises(tx, version.id, input.days);
-      return created.id;
     });
 
     return this.getBySlug(input.slug);
@@ -333,7 +330,7 @@ export class AdminTemplatesService {
       id: program.id,
       name: program.name,
       description: program.description,
-      objective: program.objective as ProgramDetail['objective'],
+      objective: program.objective,
       isTemplate: true,
       authorType: 'template',
       latestVersionStatus: latest.status as ProgramDetail['latestVersionStatus'],

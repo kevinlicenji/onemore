@@ -23,8 +23,13 @@ describe('requireRole', () => {
     middleware(req, {} as never, next);
 
     expect(next).toHaveBeenCalledOnce();
-    const error = next.mock.calls[0]?.[0];
+    const firstCall = next.mock.calls[0];
+    expect(firstCall).toBeDefined();
+    const error: unknown = firstCall?.[0];
     expect(error).toBeInstanceOf(HttpError);
-    expect((error as HttpError).statusCode).toBe(403);
+    if (!(error instanceof HttpError)) {
+      throw new Error('Expected HttpError');
+    }
+    expect(error.statusCode).toBe(403);
   });
 });

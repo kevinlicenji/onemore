@@ -91,9 +91,10 @@ describe('AdminExercisesService', () => {
     const result = await service.softDelete('ex-1');
 
     expect(result.deletedAt).toBe(deletedAt.toISOString());
-    expect(prisma.exerciseLibrary.update).toHaveBeenCalledWith({
-      where: { id: 'ex-1' },
-      data: { deletedAt: expect.any(Date) },
-    });
+    const updateCall = prisma.exerciseLibrary.update.mock.calls[0];
+    expect(updateCall).toBeDefined();
+    const updateArgs = updateCall?.[0] as { where: { id: string }; data: { deletedAt: Date } };
+    expect(updateArgs.where.id).toBe('ex-1');
+    expect(updateArgs.data.deletedAt).toBeInstanceOf(Date);
   });
 });
