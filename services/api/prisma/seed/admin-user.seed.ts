@@ -1,9 +1,8 @@
 import { PrismaClient } from '@prisma/client';
-
-import { PasswordService } from '../../src/modules/auth/password.service.js';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
-const passwordService = new PasswordService();
+const BCRYPT_ROUNDS = 12;
 
 const ADMIN_USERNAME = 'kevinlicenji00';
 const ADMIN_EMAIL = 'kevinlicenji00@onemore.app';
@@ -18,7 +17,7 @@ export async function seedAdminUser(): Promise<void> {
     return;
   }
 
-  const passwordHash = await passwordService.hash(password);
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   const now = new Date();
 
   await prisma.user.upsert({
