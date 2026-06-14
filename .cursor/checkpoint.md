@@ -1,30 +1,39 @@
 # OneMore — Project Checkpoint
 
-**Updated:** 2026-06-11  
+**Updated:** 2026-06-14  
 **Repository:** https://github.com/kevinlicenji/onemore  
-**Branch:** `feat/mvp1-hardening-beta` (PR pending)
+**Branch:** `main` (synced with `origin/main`)
 
 ---
 
 ## Latest state
 
-**Phase 8 — Hardening & beta** on `feat/mvp1-hardening-beta`:
+**Dashboard KPI redesign** — commit `b9c2b19` on `main`:
 
-- E2E: `athlete-journey.spec.ts` (register → onboarding → template → workout → offline sync)
-- A11y: touch-target spot-check + `docs/tests/wcag-workout-spot-check.md`
-- k6: `tests/load/health.js`, `authenticated-read.js`
-- Docker: `services/api/Dockerfile`, `apps/web/Dockerfile`, `docker/compose.prod.yml`
-- CI/CD: `.github/workflows/deploy.yml` (GHCR), `e2e-nightly.yml`, `load-nightly.yml`
-- Runbooks: deploy, restore, incident, GDPR export, sync
-- Beta checklist: `docs/infra/beta-launch-checklist.md`
+- **Home UI:** blocco Costanza (🔥 streak settimane + striscia L–D + `X / Target`), confronto volume settimanale, CTA scheda, PR e serie del mese
+- **Business logic:** allenamenti liberi contano nella striscia e nel target (può superare, es. `5/4`); target da scheda attiva o `trainingDaysPerWeek`
+- **Architettura client-first:** KPI calcolati da IndexedDB (`completedSessions`, `personalRecords`, `nextWorkout`); invalidazione su `WORKOUT_SAVED` / `DELETED` / `EDITED` / `SYNC_COMPLETE`; sync background via `pullDelta` + hydrate
+- **API:** `AnalyticsDashboard` esteso; `GET /analytics/personal-records` per hydrate offline; `computeDashboardKpis` condiviso in `@onemore/shared`
+- **Test:** `dashboard-kpis.test.ts`, `analytics.service.test.ts`, `dashboard-store.test.ts` — typecheck verde
 
-**Phase 7** merged in `main` (PR #8).
+**Recenti su `main` (prima del dashboard):**
+
+- `7603343` — workout UX polish, exercise search, settings tabs
+- `331e1fb` — ghost session fix, gym workout UX
+- `6036a50` — workout auto-finish, overlay exercise drag, per-day program edit
+
+**Phase 8 — Hardening & beta** (branch `feat/mvp1-hardening-beta`, PR pending):
+
+- E2E athlete journey, a11y spot-check, k6 load tests
+- Docker prod, CI/CD deploy, runbooks, beta checklist
 
 ---
 
 ## Next step
 
-Merge Phase 8 PR → configure VPS/staging → beta cohort → tag **`v0.1.0`**.
+1. **Test manuale dashboard** — workout libero → cerchietto verde + counter; multi-device sync
+2. **Deploy su VPS** — pull `main` + rebuild Docker
+3. Merge Phase 8 PR → staging → beta cohort → tag **`v0.1.0`**
 
 ---
 
