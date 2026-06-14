@@ -177,7 +177,7 @@ export async function hydrateOfflineCatalog(accessToken: string, userId: string)
   }
 
   const [exercisesResponse, previewResponse, activeResponse] = await Promise.all([
-    fetch(`${API_BASE_URL}/api/v1/exercises?limit=${EXERCISE_CATALOG_LIMIT}`, {
+    fetch(`${API_BASE_URL}/api/v1/exercises?limit=${String(EXERCISE_CATALOG_LIMIT)}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
       credentials: 'include',
     }),
