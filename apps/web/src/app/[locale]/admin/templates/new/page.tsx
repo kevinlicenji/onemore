@@ -16,7 +16,6 @@ import { useAuth } from '@/components/auth-provider';
 import { AdminTemplateMetaForm } from '@/components/admin-template-meta-form';
 import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
-import type { BuilderDay } from '@/components/program-builder-types';
 import { ProgramBuilder } from '@/components/program-builder';
 import { RequireAdmin } from '@/components/require-admin';
 import { ThemedTextInput } from '@/components/themed-text-input';

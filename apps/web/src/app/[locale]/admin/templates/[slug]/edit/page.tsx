@@ -52,7 +52,7 @@ export default function AdminEditTemplatePage(): React.ReactElement {
     void fetchAdminTemplateDetail(accessToken, slug)
       .then((detail) => {
         setInitialName(detail.name);
-        setObjective((detail.objective as TrainingGoal | null) ?? 'mass');
+        setObjective(detail.objective ?? 'mass');
         setMeta(detail.meta);
         setInitialDays(
           detail.days.map((day) => ({
