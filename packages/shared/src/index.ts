@@ -13,6 +13,8 @@ export * from './lib/workout-day-label.js';
 export * from './lib/aggregate-muscle-groups.js';
 export * from './lib/iso-week.js';
 export * from './lib/dashboard-kpis.js';
+export * from './lib/rest-bpm.js';
+export * from './lib/performance-e1rm.js';
 export * from './lib/aggregate-program-difficulty.js';
 export * from './lib/compute-day-difficulty.js';
 export * from './constants/template-meta.js';

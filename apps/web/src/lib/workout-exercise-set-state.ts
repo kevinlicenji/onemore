@@ -8,6 +8,7 @@ export type WorkoutSetDetail = WorkoutExerciseDetail['sets'][number];
 export interface RestTimerContext {
   setId: string;
   seconds: number;
+  rpe?: number | null;
 }
 
 export interface ExerciseSetViewState {

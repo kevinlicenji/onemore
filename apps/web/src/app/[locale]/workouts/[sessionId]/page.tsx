@@ -13,12 +13,21 @@ import { ExerciseNotesModal } from '@/components/exercise-notes-modal';
 import { ExerciseSearchCombobox } from '@/components/exercise-search-combobox';
 import { MetricInput } from '@/components/metric-input';
 import { PrCelebration } from '@/components/pr-celebration';
-import { RestTimer } from '@/components/rest-timer';
+import { CardioRestTimer } from '@/components/workout/cardio-rest-timer';
+import { SetPerformanceBadge } from '@/components/workout/set-performance-badge';
 import { RequireAuth } from '@/components/require-auth';
 import { useSync } from '@/components/sync-provider';
 import { GymActiveWorkoutView } from '@/components/workout/gym-active-workout-view';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
-import { buildExerciseSetViewState, isExtraSet } from '@/lib/workout-exercise-set-state';
+import {
+  buildExerciseSetViewState,
+  isExtraSet,
+  type RestTimerContext,
+} from '@/lib/workout-exercise-set-state';
+import {
+  evaluateSetPerformanceFeedback,
+  type SetPerformanceFeedback,
+} from '@/lib/performance-feedback';
 import { formatLoggedSetLine, formatSetPrescriptionLine } from '@/lib/workout-set-display';
 import {
   abandonWorkoutSessionClient,
@@ -51,11 +60,11 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
   const [session, setSession] = useState<WorkoutSessionDetail | null>(null);
   const [exerciseIndex, setExerciseIndex] = useState(0);
-  const [restTimerContext, setRestTimerContext] = useState<{
-    setId: string;
-    seconds: number;
-  } | null>(null);
+  const [restTimerContext, setRestTimerContext] = useState<RestTimerContext | null>(null);
   const [actualRestBySetId, setActualRestBySetId] = useState<Record<string, number>>({});
+  const [performanceFeedbackBySetId, setPerformanceFeedbackBySetId] = useState<
+    Record<string, SetPerformanceFeedback>
+  >({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newPrs, setNewPrs] = useState<PersonalRecordSummary[]>([]);
@@ -194,6 +203,22 @@ export default function ActiveWorkoutPage(): React.ReactElement {
         }
       }
       await refreshPendingCount();
+
+      if (!set.isWarmup && set.weightKg !== null && set.reps !== null) {
+        const feedback = await evaluateSetPerformanceFeedback(
+          set.weightKg,
+          set.reps,
+          currentExercise.exerciseLibraryId,
+          session.id,
+        );
+        if (feedback) {
+          setPerformanceFeedbackBySetId((prev) => ({
+            ...prev,
+            [setId]: feedback,
+          }));
+        }
+      }
+
       setRestTimerContext({
         setId,
         seconds: currentExercise.prescription.restSeconds,
@@ -565,6 +590,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           notesModalOpen={notesModalOpen}
           notesSaving={notesSaving}
           restTimerContext={restTimerContext}
+          performanceFeedbackBySetId={performanceFeedbackBySetId}
           session={session}
           substituteMode={substituteMode}
           onAbandon={() => {
@@ -638,9 +664,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
         </div>
 
         {restTimerContext !== null && (
-          <RestTimer
-            label={t('restLabel')}
+          <CardioRestTimer
+            locale={locale}
             nextSetLabel={t('nextSet')}
+            rpe={restTimerContext.rpe}
             seconds={restTimerContext.seconds}
             onNextSet={(actualRestSeconds) => {
               setActualRestBySetId((prev) => ({
@@ -725,63 +752,69 @@ export default function ActiveWorkoutPage(): React.ReactElement {
 
               return (
                 <div className="flex flex-col gap-3">
-                  {completedSets.map((set) => (
-                    <div
-                      key={set.id}
-                      className="flex items-center gap-3 rounded-lg bg-muted/35 px-3 py-2.5 text-sm"
-                    >
-                      {set.isCompleted ? (
-                        <svg
-                          aria-hidden
-                          className="h-5 w-5 shrink-0 text-green-600"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2.5"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                          <path d="m8 12.5 2.5 2.5L16 9.5" />
-                        </svg>
-                      ) : (
-                        <svg
-                          aria-hidden
-                          className="h-5 w-5 shrink-0 text-muted-foreground"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M8 12h8" />
-                        </svg>
-                      )}
-                      <span className="font-medium text-foreground/80">
-                        {t('setLabel', { number: set.setNumber })}
-                      </span>
-                      {set.isSkipped ? (
-                        <span className="ml-auto flex items-center">
-                          <span
+                  {completedSets.map((set) => {
+                    const feedback = performanceFeedbackBySetId[set.id];
+                    return (
+                      <div
+                        key={set.id}
+                        className="flex items-center gap-3 rounded-lg bg-muted/35 px-3 py-2.5 text-sm"
+                      >
+                        {set.isCompleted ? (
+                          <svg
                             aria-hidden
-                            className="h-0.5 w-8 rounded-full bg-muted-foreground/70"
-                          />
-                          <span className="sr-only">{t('setSkippedLabel')}</span>
+                            className="h-5 w-5 shrink-0 text-green-600"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2.5"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                            <path d="m8 12.5 2.5 2.5L16 9.5" />
+                          </svg>
+                        ) : (
+                          <svg
+                            aria-hidden
+                            className="h-5 w-5 shrink-0 text-muted-foreground"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M8 12h8" />
+                          </svg>
+                        )}
+                        <span className="font-medium text-foreground/80">
+                          {t('setLabel', { number: set.setNumber })}
                         </span>
-                      ) : (
-                        <span className="ml-auto text-muted-foreground">
-                          {formatLoggedSetLine(
-                            set.reps,
-                            set.weightKg,
-                            setState.getDisplayedRestSeconds(set.id),
-                            prescription.targetReps,
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                        {set.isSkipped ? (
+                          <span className="ml-auto flex items-center">
+                            <span
+                              aria-hidden
+                              className="h-0.5 w-8 rounded-full bg-muted-foreground/70"
+                            />
+                            <span className="sr-only">{t('setSkippedLabel')}</span>
+                          </span>
+                        ) : (
+                          <>
+                            {feedback ? <SetPerformanceBadge feedback={feedback} /> : null}
+                            <span className="ml-auto text-muted-foreground">
+                              {formatLoggedSetLine(
+                                set.reps,
+                                set.weightKg,
+                                setState.getDisplayedRestSeconds(set.id),
+                                prescription.targetReps,
+                              )}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
 
                   {completedSets.length > 0 && (activeSet !== null || isResting) && (
                     <div aria-hidden className="flex items-center py-1">

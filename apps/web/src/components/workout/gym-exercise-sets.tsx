@@ -17,10 +17,13 @@ import {
   formatSetPrescriptionLine,
   formatSetTargetInline,
 } from '@/lib/workout-set-display';
+import { SetPerformanceBadge } from '@/components/workout/set-performance-badge';
+import type { SetPerformanceFeedback } from '@/lib/performance-feedback';
 
 interface GymExerciseSetsProps {
   exercise: WorkoutExerciseDetail;
   restTimerContext: RestTimerContext | null;
+  performanceFeedbackBySetId: Record<string, SetPerformanceFeedback>;
   actualRestBySetId: Record<string, number>;
   loading: boolean;
   labels: {
@@ -50,6 +53,7 @@ const activeSetTransition = {
 export function GymExerciseSets({
   exercise,
   restTimerContext,
+  performanceFeedbackBySetId,
   actualRestBySetId,
   loading,
   labels,
@@ -77,31 +81,37 @@ export function GymExerciseSets({
     <div className="flex flex-col gap-4">
       {setState.completedSets.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          {setState.completedSets.map((set) => (
-            <div
-              key={set.id}
-              className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 text-sm"
-            >
-              {set.isCompleted ? (
-                <GymCompletedCheck />
-              ) : (
-                <span className="h-4 w-4 shrink-0 text-muted-foreground">—</span>
-              )}
-              <span className="font-medium">{formatSetLabel(set.setNumber)}</span>
-              {set.isSkipped ? (
-                <span className="sr-only">{labels.setSkippedLabel}</span>
-              ) : (
-                <span className="ml-auto text-muted-foreground">
-                  {formatLoggedSetLine(
-                    set.reps,
-                    set.weightKg,
-                    setState.getDisplayedRestSeconds(set.id),
-                    prescription.targetReps,
-                  )}
-                </span>
-              )}
-            </div>
-          ))}
+          {setState.completedSets.map((set) => {
+            const feedback = performanceFeedbackBySetId[set.id];
+            return (
+              <div
+                key={set.id}
+                className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2 text-sm"
+              >
+                {set.isCompleted ? (
+                  <GymCompletedCheck />
+                ) : (
+                  <span className="h-4 w-4 shrink-0 text-muted-foreground">—</span>
+                )}
+                <span className="font-medium">{formatSetLabel(set.setNumber)}</span>
+                {set.isSkipped ? (
+                  <span className="sr-only">{labels.setSkippedLabel}</span>
+                ) : (
+                  <>
+                    {feedback ? <SetPerformanceBadge feedback={feedback} /> : null}
+                    <span className="ml-auto text-muted-foreground">
+                      {formatLoggedSetLine(
+                        set.reps,
+                        set.weightKg,
+                        setState.getDisplayedRestSeconds(set.id),
+                        prescription.targetReps,
+                      )}
+                    </span>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

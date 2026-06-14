@@ -9,10 +9,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { ExerciseNotesModal } from '@/components/exercise-notes-modal';
 import { ExerciseSearchCombobox } from '@/components/exercise-search-combobox';
 import { PrCelebration } from '@/components/pr-celebration';
-import { RestTimer } from '@/components/rest-timer';
-import { useAuth } from '@/components/auth-provider';
+import { CardioRestTimer } from '@/components/workout/cardio-rest-timer';
 import { useHorizontalSwipe } from '@/hooks/use-horizontal-swipe';
-import { useMotivationalLine } from '@/hooks/use-motivational-line';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { getExerciseDisplayName } from '@/lib/exercise-display-name';
 import { formatRelativeDaysAgo } from '@/lib/format-relative-days';
@@ -21,6 +19,7 @@ import { triggerHaptic } from '@/lib/haptic';
 import { shouldOfferAddSet } from '@/lib/workout-completion';
 import { formatLastExecutionLine, formatSetTargetInline } from '@/lib/workout-set-display';
 import type { RestTimerContext, WorkoutExerciseDetail } from '@/lib/workout-exercise-set-state';
+import type { SetPerformanceFeedback } from '@/lib/performance-feedback';
 
 import { GymExerciseSets } from './gym-exercise-sets';
 import { GymExerciseProgress } from './gym-exercise-progress';
@@ -33,6 +32,7 @@ export interface GymActiveWorkoutViewProps {
   currentExercise: WorkoutExerciseDetail | null;
   exerciseIndex: number;
   restTimerContext: RestTimerContext | null;
+  performanceFeedbackBySetId: Record<string, SetPerformanceFeedback>;
   actualRestBySetId: Record<string, number>;
   loading: boolean;
   error: string | null;
@@ -131,6 +131,7 @@ export function GymActiveWorkoutView({
   currentExercise,
   exerciseIndex,
   restTimerContext,
+  performanceFeedbackBySetId,
   actualRestBySetId,
   loading,
   error,
@@ -159,11 +160,7 @@ export function GymActiveWorkoutView({
   onNotesSave,
   onDismissPr,
 }: GymActiveWorkoutViewProps): React.ReactElement {
-  const { profile } = useAuth();
   const reducedMotion = useReducedMotion();
-  const restMotivationalLine = useMotivationalLine('rest', profile, {
-    difficultyLevel: session.workoutDayDifficultyLevel ?? 2,
-  });
   const [transitionDirection, setTransitionDirection] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(() =>
     getWorkoutElapsedSeconds(session.startedAt),
@@ -235,12 +232,11 @@ export function GymActiveWorkoutView({
             {newPrs.length > 0 ? (
               <PrCelebration records={newPrs} variant="gym" onDismiss={onDismissPr} />
             ) : null}
-            <RestTimer
-              label={labels.restLabel}
-              motivationalLine={restMotivationalLine}
+            <CardioRestTimer
+              locale={locale}
               nextSetLabel={labels.nextSet}
+              rpe={restTimerContext.rpe}
               seconds={restTimerContext.seconds}
-              variant="gym"
               onNextSet={(actualRestSeconds) => {
                 handleRestComplete(restTimerContext.setId, actualRestSeconds);
               }}
@@ -467,6 +463,7 @@ export function GymActiveWorkoutView({
                             previousSetLabel: labels.previousSetLabel,
                           }}
                           loading={loading}
+                          performanceFeedbackBySetId={performanceFeedbackBySetId}
                           restTimerContext={restTimerContext}
                           onSkipSet={onSkipSet}
                           onUpdateSetValue={onUpdateSetValue}
