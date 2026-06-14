@@ -236,8 +236,22 @@ paths:
   /admin/exercises/{id}:
     patch:
       summary: Update a global catalog exercise (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
     delete:
       summary: Soft-delete a global catalog exercise (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
   /admin/templates:
     get:
       summary: List catalog templates with version status (admin)
@@ -246,19 +260,62 @@ paths:
   /admin/templates/{slug}:
     get:
       summary: Load editable template detail (admin)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
     patch:
       summary: Save template draft changes (admin)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
     delete:
       summary: Soft-delete a catalog template (admin)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
   /admin/templates/{slug}/duplicate:
     post:
       summary: Duplicate a template under a new slug (admin)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
   /admin/templates/{slug}/publish:
     post:
       summary: Publish the latest draft template version (admin)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
   /admin/users/{userId}/admin:
     patch:
       summary: Grant or revoke admin role for a user (admin)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
   /admin/users/by-username/{username}:
     get:
       summary: Find user by username for admin management (admin)
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
