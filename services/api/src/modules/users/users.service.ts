@@ -129,6 +129,7 @@ export class UsersService {
     preferredSessionMinutes: number | null;
     preferredMuscleGroups: string[];
     isCoach: boolean;
+    isAdmin: boolean;
     mfaEnabled: boolean;
     settings: unknown;
     createdAt: Date;
@@ -157,6 +158,7 @@ export class UsersService {
       preferredSessionMinutes: user.preferredSessionMinutes,
       preferredMuscleGroups: user.preferredMuscleGroups.filter((muscle) => muscle.length > 0),
       isCoach: user.isCoach,
+      isAdmin: user.isAdmin,
       mfaEnabled: user.mfaEnabled,
       settings,
       createdAt: user.createdAt.toISOString(),

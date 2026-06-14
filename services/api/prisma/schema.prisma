@@ -149,6 +149,7 @@ model User {
   preferredSessionMinutes Int?                @map("preferred_session_minutes")
   preferredMuscleGroups   String[]            @default([]) @map("preferred_muscle_groups")
   isCoach                 Boolean             @default(false) @map("is_coach")
+  isAdmin                 Boolean             @default(false) @map("is_admin")
   mfaEnabled              Boolean             @default(false) @map("mfa_enabled")
   totpSecretEncrypted     Bytes?              @map("totp_secret_encrypted")
   settings                Json                @default("{}")

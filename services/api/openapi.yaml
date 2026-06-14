@@ -228,3 +228,37 @@ paths:
   /notifications/push/unsubscribe:
     post:
       summary: Remove push subscription endpoint
+  /admin/exercises:
+    get:
+      summary: List all system exercises (admin)
+    post:
+      summary: Create a global catalog exercise (admin)
+  /admin/exercises/{id}:
+    patch:
+      summary: Update a global catalog exercise (admin)
+    delete:
+      summary: Soft-delete a global catalog exercise (admin)
+  /admin/templates:
+    get:
+      summary: List catalog templates with version status (admin)
+    post:
+      summary: Create a draft catalog template (admin)
+  /admin/templates/{slug}:
+    get:
+      summary: Load editable template detail (admin)
+    patch:
+      summary: Save template draft changes (admin)
+    delete:
+      summary: Soft-delete a catalog template (admin)
+  /admin/templates/{slug}/duplicate:
+    post:
+      summary: Duplicate a template under a new slug (admin)
+  /admin/templates/{slug}/publish:
+    post:
+      summary: Publish the latest draft template version (admin)
+  /admin/users/{userId}/admin:
+    patch:
+      summary: Grant or revoke admin role for a user (admin)
+  /admin/users/by-username/{username}:
+    get:
+      summary: Find user by username for admin management (admin)

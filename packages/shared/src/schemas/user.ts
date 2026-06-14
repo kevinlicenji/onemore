@@ -38,6 +38,7 @@ export const userProfileSchema = z.object({
   preferredSessionMinutes: z.number().int().nullable(),
   preferredMuscleGroups: z.array(muscleGroupSchema),
   isCoach: z.boolean(),
+  isAdmin: z.boolean(),
   mfaEnabled: z.boolean(),
   settings: userSettingsSchema,
   createdAt: z.string().datetime(),
