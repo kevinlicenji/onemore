@@ -44,7 +44,9 @@ export class AdminTemplatesService {
     return templates.map((template) => {
       const latest = template.versions[0] ?? null;
       const meta = this.parseTemplateMeta(template.description);
-      const hasPublishedVersion = template.versions.some((version) => version.status === 'published');
+      const hasPublishedVersion = template.versions.some(
+        (version) => version.status === 'published',
+      );
       return {
         id: template.id,
         slug: template.name,
@@ -86,7 +88,9 @@ export class AdminTemplatesService {
    */
   async create(input: AdminCreateTemplate): Promise<AdminTemplateDetail> {
     await this.assertSlugAvailable(input.slug);
-    await this.validateExerciseIds(input.days.flatMap((day) => day.exercises.map((e) => e.exerciseLibraryId)));
+    await this.validateExerciseIds(
+      input.days.flatMap((day) => day.exercises.map((e) => e.exerciseLibraryId)),
+    );
 
     const ownerUserId = await this.resolveTemplateOwnerId();
 
@@ -195,7 +199,9 @@ export class AdminTemplatesService {
       })),
     }));
 
-    await this.validateExerciseIds(days.flatMap((day) => day.exercises.map((e) => e.exerciseLibraryId)));
+    await this.validateExerciseIds(
+      days.flatMap((day) => day.exercises.map((e) => e.exerciseLibraryId)),
+    );
 
     await this.prisma.$transaction(async (tx) => {
       const created = await tx.program.create({
@@ -370,7 +376,9 @@ export class AdminTemplatesService {
   }
 
   private async resolveTemplateOwnerId(): Promise<string> {
-    const systemUser = await this.prisma.user.findUnique({ where: { email: 'system@onemore.app' } });
+    const systemUser = await this.prisma.user.findUnique({
+      where: { email: 'system@onemore.app' },
+    });
     if (systemUser) {
       return systemUser.id;
     }

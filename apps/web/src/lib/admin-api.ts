@@ -201,7 +201,9 @@ export async function findAdminUserByUsername(
   if (!response.ok) {
     throw await parseApiError(response, 'Failed to find user');
   }
-  const body = (await response.json()) as { user: { id: string; username: string | null; isAdmin: boolean } };
+  const body = (await response.json()) as {
+    user: { id: string; username: string | null; isAdmin: boolean };
+  };
   return body.user;
 }
 
@@ -219,15 +221,15 @@ export async function setUserAdmin(
   if (!response.ok) {
     throw await parseApiError(response, 'Failed to update admin status');
   }
-  const body = (await response.json()) as { user: { id: string; username: string | null; isAdmin: boolean } };
+  const body = (await response.json()) as {
+    user: { id: string; username: string | null; isAdmin: boolean };
+  };
   return body.user;
 }
 
 /**
  * Map program builder output to admin template days payload.
  */
-export function mapBuilderDaysToAdminDays(
-  input: CreateProgramInput,
-): AdminCreateTemplate['days'] {
+export function mapBuilderDaysToAdminDays(input: CreateProgramInput): AdminCreateTemplate['days'] {
   return input.days;
 }

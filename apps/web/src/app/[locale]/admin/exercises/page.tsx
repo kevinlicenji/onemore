@@ -322,9 +322,7 @@ export default function AdminExercisesPage(): React.ReactElement {
                 key={exercise.id}
                 showChevron={false}
                 subtitle={
-                  exercise.deletedAt
-                    ? t('hiddenBadge')
-                    : `${exercise.slug} · ${exercise.category}`
+                  exercise.deletedAt ? t('hiddenBadge') : `${exercise.slug} · ${exercise.category}`
                 }
                 title={exerciseLabel(exercise, locale)}
                 trailing={
