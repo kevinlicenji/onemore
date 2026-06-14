@@ -32,7 +32,7 @@ export function useDashboardKpis(locale: string): UseDashboardKpisResult {
     }
 
     return loadDashboardKpisFromLocal({
-      timezone: profile.timezone ?? 'Europe/Rome',
+      timezone: profile.timezone,
       locale,
       trainingDaysPerWeek: profile.trainingDaysPerWeek,
     });

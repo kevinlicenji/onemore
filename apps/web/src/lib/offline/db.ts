@@ -12,7 +12,7 @@ export interface LocalExercise extends ExerciseListItem {
   updatedAt: string;
 }
 
-export interface LocalPersonalRecord extends PersonalRecordSummary {}
+export type LocalPersonalRecord = PersonalRecordSummary;
 
 export interface SyncQueueRow {
   id: string;

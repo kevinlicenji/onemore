@@ -13,11 +13,7 @@ import { emitDashboardInvalidation } from '@/lib/dashboard/dashboard-events';
 import { invalidateDashboardCache } from '@/lib/dashboard/dashboard-cache';
 
 import { offlineDb } from './db';
-import {
-  persistPersonalRecords,
-  sessionDetailToHistorySummary,
-  upsertCompletedSessionSummary,
-} from './dashboard-store';
+import { sessionDetailToHistorySummary } from './dashboard-store';
 
 /**
  * @returns Whether the browser reports an online network state.
