@@ -44,22 +44,28 @@ export class AnalyticsService {
       },
     });
 
-    const sessionInputs: DashboardSessionInput[] = sessions
-      .filter((session) => session.completedAt)
-      .map((session) => {
-        const completedSets = session.exerciseExecutions.flatMap((execution) =>
-          execution.setLogs.filter((set) => set.isCompleted && !set.isWarmup),
-        );
-        return {
+    const sessionInputs: DashboardSessionInput[] = sessions.flatMap((session) => {
+      const completedAt = session.completedAt;
+      if (!completedAt) {
+        return [];
+      }
+
+      const completedSets = session.exerciseExecutions.flatMap((execution) =>
+        execution.setLogs.filter((set) => set.isCompleted && !set.isWarmup),
+      );
+
+      return [
+        {
           id: session.id,
-          completedAt: session.completedAt!.toISOString(),
+          completedAt: completedAt.toISOString(),
           sessionType: session.sessionType,
           workoutDayId: session.workoutDayId,
           workoutDayLabel: session.workoutDay?.label ?? null,
           totalSets: completedSets.length,
           totalVolumeKg: computeSessionVolumeKg(session),
-        };
-      });
+        },
+      ];
+    });
 
     const [nextWorkout, personalRecords] = await Promise.all([
       this.workoutsService.getNextWorkoutPreview(userId),
