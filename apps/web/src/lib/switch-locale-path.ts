@@ -13,8 +13,8 @@ export function switchLocalePath(pathname: string, nextLocale: SupportedLocale):
     return `/${nextLocale}`;
   }
 
-  const [firstSegment] = segments;
-  if ((SUPPORTED_LOCALES as readonly string[]).includes(firstSegment)) {
+  const firstSegment = segments[0];
+  if (firstSegment !== undefined && (SUPPORTED_LOCALES as readonly string[]).includes(firstSegment)) {
     segments[0] = nextLocale;
     return `/${segments.join('/')}`;
   }

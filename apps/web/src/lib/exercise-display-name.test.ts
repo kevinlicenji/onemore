@@ -1,3 +1,4 @@
+import type { ExerciseListItem } from '@onemore/shared';
 import { describe, expect, it } from 'vitest';
 
 import { getExerciseDisplayName, sortExercisesByDisplayName } from './exercise-display-name';
@@ -16,13 +17,13 @@ describe('getExerciseDisplayName', () => {
 
 describe('sortExercisesByDisplayName', () => {
   it('sorts exercises alphabetically by localized display name', () => {
-    const exercises = [
+    const exercises: ExerciseListItem[] = [
       {
         id: '2',
         slug: 'squat',
         names: { en: 'Squat', it: 'Squat' },
         category: 'legs',
-        primaryMuscles: ['quadriceps'] as const,
+        primaryMuscles: ['quadriceps'],
         secondaryMuscles: [],
         equipment: 'barbell',
         isBodyweight: false,
@@ -33,7 +34,7 @@ describe('sortExercisesByDisplayName', () => {
         slug: 'bench-press',
         names: { en: 'Bench Press', it: 'Panca piana' },
         category: 'chest',
-        primaryMuscles: ['chest'] as const,
+        primaryMuscles: ['chest'],
         secondaryMuscles: [],
         equipment: 'barbell',
         isBodyweight: false,
