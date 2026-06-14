@@ -14,7 +14,10 @@ export function switchLocalePath(pathname: string, nextLocale: SupportedLocale):
   }
 
   const firstSegment = segments[0];
-  if (firstSegment !== undefined && (SUPPORTED_LOCALES as readonly string[]).includes(firstSegment)) {
+  if (
+    firstSegment !== undefined &&
+    (SUPPORTED_LOCALES as readonly string[]).includes(firstSegment)
+  ) {
     segments[0] = nextLocale;
     return `/${segments.join('/')}`;
   }
