@@ -20,7 +20,7 @@ import {
   startWorkoutSessionClient,
 } from '@/lib/offline/workout-client';
 
-const COUNTDOWN_SECONDS = 10;
+const COUNTDOWN_SECONDS = 5;
 
 export default function WorkoutPreparePage(): React.ReactElement {
   const t = useTranslations('Workouts');
@@ -154,6 +154,18 @@ export default function WorkoutPreparePage(): React.ReactElement {
           </motion.div>
 
           {error ? <p className="mt-6 text-sm text-destructive">{error}</p> : null}
+
+          <Button
+            className="mt-8 min-h-11"
+            disabled={starting}
+            type="button"
+            variant="outline"
+            onClick={() => {
+              void startWorkout();
+            }}
+          >
+            {t('prepareSkip')}
+          </Button>
         </div>
 
         <div className="flex justify-center pb-2">
