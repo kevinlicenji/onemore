@@ -29,6 +29,10 @@ import { generateClientUuid } from '@/lib/generate-client-uuid';
 import { isInvalidAccessTokenError, refreshAccessToken } from '@/lib/refresh-access-token';
 
 import { offlineDb } from './db';
+import {
+  purgeInProgressSessions,
+  purgeLocalSession,
+} from './session-cleanup';
 import { loadPreviousSetsMap } from './resolve-previous-set';
 import { enqueueMutation, flushSyncQueue, isBrowserOnline } from './sync-engine';
 
@@ -194,31 +198,36 @@ function countCompletedSets(session: WorkoutSessionDetail): number {
   );
 }
 
+function isSessionNotFoundError(error: unknown): boolean {
+  return error instanceof Error && /not found/i.test(error.message);
+}
+
 export async function getActiveWorkoutSessionClient(
   accessToken: string,
 ): Promise<WorkoutSessionDetail | null> {
-  const local = await offlineDb.sessions.where('status').equals('in_progress').first();
-
   if (!isBrowserOnline()) {
-    return local ?? null;
+    return (await offlineDb.sessions.where('status').equals('in_progress').first()) ?? null;
   }
 
   const remote = await fetchActiveWorkoutSession(accessToken);
 
-  if (local && remote) {
-    const preferred = countCompletedSets(local) >= countCompletedSets(remote) ? local : remote;
-    await offlineDb.sessions.put(preferred);
-    return preferred;
+  if (!remote) {
+    await purgeInProgressSessions();
+    return null;
   }
 
-  if (local) {
-    return local;
+  const locals = await offlineDb.sessions.where('status').equals('in_progress').toArray();
+  for (const stale of locals) {
+    if (stale.id !== remote.id) {
+      await purgeLocalSession(stale.id);
+    }
   }
 
-  if (remote) {
-    await offlineDb.sessions.put(remote);
-  }
-  return remote;
+  const local = locals.find((row) => row.id === remote.id);
+  const preferred =
+    local && countCompletedSets(local) > countCompletedSets(remote) ? local : remote;
+  await offlineDb.sessions.put(preferred);
+  return preferred;
 }
 
 export async function startWorkoutSessionClient(
@@ -506,11 +515,32 @@ export async function completeWorkoutSessionClient(
   accessToken: string,
   sessionId: string,
 ): Promise<WorkoutSessionDetail> {
+  const cached = await offlineDb.sessions.get(sessionId);
+
   if (isBrowserOnline()) {
-    const session = await completeWorkoutSession(accessToken, sessionId);
-    await offlineDb.sessions.put(session);
-    await syncIfOnline(accessToken);
-    return session;
+    try {
+      const session = await completeWorkoutSession(accessToken, sessionId);
+      await offlineDb.sessions.put(session);
+      await syncIfOnline(accessToken);
+      return session;
+    } catch (error) {
+      if (isSessionNotFoundError(error)) {
+        await purgeLocalSession(sessionId);
+        if (cached) {
+          const completedAt = new Date().toISOString();
+          return {
+            ...cached,
+            status: 'completed',
+            completedAt,
+            durationSeconds: Math.max(
+              0,
+              Math.floor((Date.parse(completedAt) - Date.parse(cached.startedAt)) / 1000),
+            ),
+          };
+        }
+      }
+      throw error;
+    }
   }
 
   const session = await offlineDb.sessions.get(sessionId);
@@ -555,11 +585,39 @@ export async function abandonWorkoutSessionClient(
   accessToken: string,
   sessionId: string,
 ): Promise<WorkoutSessionDetail> {
+  const cached = await offlineDb.sessions.get(sessionId);
+
   if (isBrowserOnline()) {
-    const session = await abandonWorkoutSession(accessToken, sessionId);
-    await offlineDb.sessions.put(session);
-    await syncIfOnline(accessToken);
-    return session;
+    try {
+      const session = await abandonWorkoutSession(accessToken, sessionId);
+      await offlineDb.sessions.put(session);
+      await syncIfOnline(accessToken);
+      return session;
+    } catch (error) {
+      if (isSessionNotFoundError(error)) {
+        await purgeLocalSession(sessionId);
+        await syncIfOnline(accessToken);
+        const completedAt = new Date().toISOString();
+        if (cached) {
+          return { ...cached, status: 'abandoned', completedAt };
+        }
+        return {
+          id: sessionId,
+          status: 'abandoned',
+          sessionType: 'free',
+          programAssignmentId: null,
+          workoutDayId: null,
+          workoutDayLabel: null,
+          workoutDayDifficultyLevel: null,
+          startedAt: completedAt,
+          completedAt,
+          durationSeconds: null,
+          privateNotes: null,
+          exercises: [],
+        };
+      }
+      throw error;
+    }
   }
 
   const session = await offlineDb.sessions.get(sessionId);

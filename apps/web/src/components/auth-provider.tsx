@@ -15,6 +15,7 @@ import { fetchUserProfile } from '@/lib/api-auth';
 import { API_BASE_URL } from '@/lib/api-config';
 import { identifyUser } from '@/lib/analytics';
 import { allowInjectedE2eSession, E2E_SESSION_STORAGE_KEY } from '@/lib/e2e-bypass';
+import { clearOfflineWorkoutCache } from '@/lib/offline/session-cleanup';
 import { refreshAccessToken } from '@/lib/refresh-access-token';
 
 export interface AuthUser {
@@ -74,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const accessTokenRef = useRef<string | null>(null);
+  const previousUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     accessTokenRef.current = accessToken;
@@ -98,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     setAccessToken(null);
     setUser(null);
     setProfileState(null);
+    void clearOfflineWorkoutCache();
   }, []);
 
   const loadProfile = useCallback(async (): Promise<UserProfile | null> => {
@@ -128,6 +131,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     }
     return true;
   }, [clearSession, setSession, setProfile]);
+
+  useEffect(() => {
+    const nextUserId = user?.id ?? null;
+    if (previousUserIdRef.current !== null && nextUserId !== previousUserIdRef.current) {
+      void clearOfflineWorkoutCache();
+    }
+    previousUserIdRef.current = nextUserId;
+  }, [user?.id]);
 
   useEffect(() => {
     const bypass = allowInjectedE2eSession();

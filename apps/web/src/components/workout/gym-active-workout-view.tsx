@@ -298,9 +298,18 @@ export function GymActiveWorkoutView({
 
               {currentExercise && (
                 <>
-                  <h1 className="mt-2 text-2xl font-bold leading-tight">
-                    {getExerciseDisplayName(currentExercise.exercise, locale)}
-                  </h1>
+                  <AnimatePresence mode="wait">
+                    <motion.h1
+                      key={currentExercise.id}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 text-2xl font-bold leading-tight"
+                      exit={reducedMotion ? undefined : { opacity: 0, y: -6 }}
+                      initial={reducedMotion ? undefined : { opacity: 0, y: 8 }}
+                      transition={motionTransition}
+                    >
+                      {getExerciseDisplayName(currentExercise.exercise, locale)}
+                    </motion.h1>
+                  </AnimatePresence>
                   <GymExerciseProgress
                     completedIndexes={session.exercises
                       .map((exercise, index) => (exercise.status === 'completed' ? index : -1))
@@ -458,56 +467,72 @@ export function GymActiveWorkoutView({
               {error && <p className="text-sm text-destructive">{error}</p>}
             </div>
 
-            {currentExercise &&
-              currentExercise.status !== 'skipped' &&
-              (() => {
-                const activeSet = currentExercise.sets.find(
-                  (set) => !set.isCompleted && !set.isSkipped,
-                );
-                if (activeSet) {
+            <AnimatePresence mode="wait">
+              {currentExercise &&
+                currentExercise.status !== 'skipped' &&
+                (() => {
+                  const activeSet = currentExercise.sets.find(
+                    (set) => !set.isCompleted && !set.isSkipped,
+                  );
+                  if (activeSet) {
+                    return (
+                      <motion.div
+                        key={`complete-${activeSet.id}`}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[max(1rem,env(safe-area-inset-bottom))]"
+                        exit={reducedMotion ? undefined : { opacity: 0, y: 16 }}
+                        initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+                        transition={motionTransition}
+                      >
+                        <Button
+                          className="min-h-14 w-full text-lg font-semibold"
+                          disabled={loading}
+                          type="button"
+                          onClick={() => {
+                            handleCompleteSet(activeSet.id, activeSet.setNumber);
+                          }}
+                        >
+                          {labels.completeSetGym}
+                        </Button>
+                      </motion.div>
+                    );
+                  }
+
+                  const allSetsDone = currentExercise.sets.every(
+                    (set) => set.isCompleted || set.isSkipped,
+                  );
+                  if (!allSetsDone || !shouldOfferAddSet(currentExercise)) {
+                    return null;
+                  }
+
                   return (
-                    <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                    <motion.div
+                      key="add-set"
+                      animate={{ opacity: 1, y: 0 }}
+                      className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[max(1rem,env(safe-area-inset-bottom))]"
+                      exit={reducedMotion ? undefined : { opacity: 0, y: 16 }}
+                      initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+                      transition={motionTransition}
+                    >
+                      <p className="mb-3 text-center text-sm font-medium text-muted-foreground">
+                        {labels.addSetPrompt}
+                      </p>
                       <Button
                         className="min-h-14 w-full text-lg font-semibold"
                         disabled={loading}
                         type="button"
+                        variant="outline"
                         onClick={() => {
-                          handleCompleteSet(activeSet.id, activeSet.setNumber);
+                          triggerHaptic('light');
+                          onAddSet();
                         }}
                       >
-                        {labels.completeSetGym}
+                        {labels.addSet}
                       </Button>
-                    </div>
+                    </motion.div>
                   );
-                }
-
-                const allSetsDone = currentExercise.sets.every(
-                  (set) => set.isCompleted || set.isSkipped,
-                );
-                if (!allSetsDone || !shouldOfferAddSet(currentExercise)) {
-                  return null;
-                }
-
-                return (
-                  <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[max(1rem,env(safe-area-inset-bottom))]">
-                    <p className="mb-3 text-center text-sm font-medium text-muted-foreground">
-                      {labels.addSetPrompt}
-                    </p>
-                    <Button
-                      className="min-h-14 w-full text-lg font-semibold"
-                      disabled={loading}
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        triggerHaptic('light');
-                        onAddSet();
-                      }}
-                    >
-                      {labels.addSet}
-                    </Button>
-                  </div>
-                );
-              })()}
+                })()}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>

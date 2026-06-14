@@ -5,48 +5,15 @@ export interface WheelItemStyle {
   fontWeight: number;
 }
 
-const COMPACT_FONT_SCALE = 0.82;
-
 /**
  * Visual style for a wheel item based on distance from the scroll center.
  */
-export function getWheelItemStyle(
-  distanceFromCenter: number,
-  size: 'default' | 'compact' | 'modal' | 'workout' = 'default',
-): WheelItemStyle {
+export function getWheelItemStyle(distanceFromCenter: number): WheelItemStyle {
   const distance = Math.abs(distanceFromCenter);
-  const base = {
+  return {
     scale: Math.max(0.65, 1.12 - distance * 0.18),
     opacity: Math.max(0.18, 1 - distance * 0.38),
     fontSizeRem: distance < 0.35 ? 1.65 : distance < 1.2 ? 1.05 : 0.82,
     fontWeight: distance < 0.35 ? 700 : distance < 1.2 ? 500 : 400,
-  };
-
-  if (size === 'workout') {
-    const fontScale = 0.74;
-    return {
-      scale: 1,
-      opacity: Math.max(0.22, 1 - distance * 0.42),
-      fontSizeRem: (distance < 0.35 ? 1.22 : distance < 1.2 ? 0.95 : 0.78) * fontScale,
-      fontWeight: distance < 0.35 ? 700 : distance < 1.2 ? 500 : 400,
-    };
-  }
-
-  if (size === 'default') {
-    return base;
-  }
-
-  if (size === 'modal') {
-    return {
-      scale: 1,
-      opacity: Math.max(0.22, 1 - distance * 0.4),
-      fontSizeRem: (distance < 0.35 ? 1.05 : distance < 1.2 ? 0.88 : 0.72) * 0.78,
-      fontWeight: distance < 0.35 ? 700 : distance < 1.2 ? 500 : 400,
-    };
-  }
-
-  return {
-    ...base,
-    fontSizeRem: base.fontSizeRem * COMPACT_FONT_SCALE,
   };
 }

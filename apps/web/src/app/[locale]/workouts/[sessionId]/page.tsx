@@ -34,8 +34,8 @@ import {
 import { POSTHOG_EVENTS, trackEvent } from '@/lib/analytics';
 import {
   findNextActiveExerciseIndex,
-  isExerciseFullyResolved,
   isWorkoutReadyToAutoFinish,
+  shouldAutoAdvanceFromExercise,
   shouldOfferAddSet,
 } from '@/lib/workout-completion';
 
@@ -140,7 +140,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     fromIndex: number,
   ): void {
     const exercise = updatedSession.exercises[fromIndex];
-    if (!exercise || !isExerciseFullyResolved(exercise) || shouldOfferAddSet(exercise)) {
+    if (!exercise || !shouldAutoAdvanceFromExercise(exercise)) {
       return;
     }
     const nextIndex = findNextActiveExerciseIndex(updatedSession, fromIndex);

@@ -198,7 +198,6 @@ export function AddProgramExerciseModal({
               kind="sets"
               label={labels.targetSets}
               value={targetSets}
-              wheelSize="modal"
               onChange={(value) => {
                 setTargetSets(value ?? 1);
               }}
@@ -208,7 +207,6 @@ export function AddProgramExerciseModal({
               kind="repsPrescription"
               label={labels.targetReps}
               value={targetReps}
-              wheelSize="modal"
               onChange={(value) => {
                 setTargetReps(value ?? 8);
               }}
@@ -217,14 +215,12 @@ export function AddProgramExerciseModal({
               kind="weight"
               label={labels.targetWeight}
               value={targetWeightKg}
-              wheelSize="modal"
               onChange={setTargetWeightKg}
             />
             <MetricInput
               kind="rest"
               label={labels.restSeconds}
               value={restSeconds}
-              wheelSize="modal"
               onChange={(value) => {
                 setRestSeconds(value ?? 0);
               }}

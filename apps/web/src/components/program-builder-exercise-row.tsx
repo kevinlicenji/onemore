@@ -120,7 +120,6 @@ export function ProgramBuilderExerciseRow({
             label={labels.targetSets}
             showLabel={false}
             value={exercise.targetSets}
-            wheelSize="compact"
             onChange={(value) => {
               onUpdate('targetSets', value ?? 1);
             }}
@@ -131,7 +130,6 @@ export function ProgramBuilderExerciseRow({
             label={labels.targetReps}
             showLabel={false}
             value={exercise.targetReps}
-            wheelSize="compact"
             onChange={(value) => {
               onUpdate('targetReps', value ?? 8);
             }}
@@ -141,7 +139,6 @@ export function ProgramBuilderExerciseRow({
             label={labels.targetWeight}
             showLabel={false}
             value={exercise.targetWeightKg}
-            wheelSize="compact"
             onChange={(value) => {
               onUpdate('targetWeightKg', value);
             }}
@@ -151,7 +148,6 @@ export function ProgramBuilderExerciseRow({
             label={labels.restSeconds}
             showLabel={false}
             value={exercise.restSeconds}
-            wheelSize="compact"
             onChange={(value) => {
               onUpdate('restSeconds', value ?? 0);
             }}

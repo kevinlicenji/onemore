@@ -139,7 +139,7 @@ export function MetricInput({
   }
 
   if (useWheel) {
-    const resolvedWheelSize = wheelSize ?? (size === 'gym' ? 'workout' : 'default');
+    const resolvedWheelSize = wheelSize ?? 'default';
     return (
       <ScrollWheelPicker
         disabled={disabled}

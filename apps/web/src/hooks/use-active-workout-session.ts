@@ -17,7 +17,7 @@ interface UseActiveWorkoutSessionResult {
  * @returns Active session and a manual refresh helper.
  */
 export function useActiveWorkoutSession(): UseActiveWorkoutSessionResult {
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const [session, setSession] = useState<WorkoutSessionDetail | null>(null);
 
   const refresh = useCallback(async (): Promise<void> => {
@@ -35,7 +35,7 @@ export function useActiveWorkoutSession(): UseActiveWorkoutSessionResult {
 
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+  }, [refresh, user?.id]);
 
   useEffect(() => {
     function handleFocus(): void {

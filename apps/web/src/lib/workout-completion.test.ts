@@ -7,6 +7,7 @@ import {
   isExerciseFullyResolved,
   isWorkoutFullyResolved,
   isWorkoutReadyToAutoFinish,
+  shouldAutoAdvanceFromExercise,
   shouldOfferAddSet,
 } from './workout-completion';
 
@@ -92,14 +93,47 @@ describe('shouldOfferAddSet', () => {
     expect(shouldOfferAddSet(exercise)).toBe(false);
   });
 
-  it('returns true when at least one set was completed', () => {
+  it('returns true when the last set was completed', () => {
+    const exercise = makeExercise({
+      sets: [
+        makeSet({ id: 's1', setNumber: 1, isCompleted: true, reps: 8, weightKg: 60 }),
+        makeSet({ id: 's2', setNumber: 2, isCompleted: true, reps: 8, weightKg: 60 }),
+      ],
+    });
+    expect(shouldOfferAddSet(exercise)).toBe(true);
+  });
+
+  it('returns false when the last set was skipped', () => {
+    const exercise = makeExercise({
+      sets: [
+        makeSet({ id: 's1', setNumber: 1, isCompleted: true, reps: 8, weightKg: 60 }),
+        makeSet({ id: 's2', setNumber: 2, isCompleted: true, reps: 8, weightKg: 60 }),
+        makeSet({ id: 's3', setNumber: 3, isSkipped: true }),
+      ],
+    });
+    expect(shouldOfferAddSet(exercise)).toBe(false);
+  });
+});
+
+describe('shouldAutoAdvanceFromExercise', () => {
+  it('returns true when every set is completed or skipped', () => {
     const exercise = makeExercise({
       sets: [
         makeSet({ id: 's1', setNumber: 1, isCompleted: true, reps: 8, weightKg: 60 }),
         makeSet({ id: 's2', setNumber: 2, isSkipped: true }),
       ],
     });
-    expect(shouldOfferAddSet(exercise)).toBe(true);
+    expect(shouldAutoAdvanceFromExercise(exercise)).toBe(true);
+  });
+
+  it('returns false while a set is still pending', () => {
+    const exercise = makeExercise({
+      sets: [
+        makeSet({ id: 's1', setNumber: 1, isCompleted: true, reps: 8, weightKg: 60 }),
+        makeSet({ id: 's2', setNumber: 2 }),
+      ],
+    });
+    expect(shouldAutoAdvanceFromExercise(exercise)).toBe(false);
   });
 });
 

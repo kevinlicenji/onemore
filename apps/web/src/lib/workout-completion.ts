@@ -10,8 +10,19 @@ export function isExerciseFullyResolved(exercise: WorkoutExerciseDetail): boolea
 }
 
 /**
- * Offer "add set" only when the athlete logged at least one completed set.
- * All-skipped exercises should advance instead of prompting for extra work.
+ * Returns the last set row in sort order (highest set number).
+ */
+export function getLastExerciseSet(
+  exercise: WorkoutExerciseDetail,
+): WorkoutExerciseDetail['sets'][number] | null {
+  if (exercise.sets.length === 0) {
+    return null;
+  }
+  return exercise.sets[exercise.sets.length - 1] ?? null;
+}
+
+/**
+ * Offer "add set" only when the athlete completed at least one set and did not skip the last one.
  */
 export function shouldOfferAddSet(exercise: WorkoutExerciseDetail): boolean {
   if (exercise.status === 'skipped') {
@@ -20,7 +31,18 @@ export function shouldOfferAddSet(exercise: WorkoutExerciseDetail): boolean {
   if (!isExerciseFullyResolved(exercise)) {
     return false;
   }
-  return exercise.sets.some((set) => set.isCompleted);
+  if (!exercise.sets.some((set) => set.isCompleted)) {
+    return false;
+  }
+  const lastSet = getLastExerciseSet(exercise);
+  return lastSet !== null && !lastSet.isSkipped;
+}
+
+/**
+ * Auto-advance once every set on the exercise is resolved.
+ */
+export function shouldAutoAdvanceFromExercise(exercise: WorkoutExerciseDetail): boolean {
+  return isExerciseFullyResolved(exercise);
 }
 
 /**
