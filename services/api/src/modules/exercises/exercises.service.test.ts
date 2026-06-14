@@ -41,14 +41,39 @@ function createMockPrisma() {
 }
 
 describe('ExercisesService', () => {
-  it('lists catalog exercises for a user', async () => {
+  it('lists catalog exercises for a user in alphabetical order', async () => {
     const prisma = createMockPrisma();
+    prisma.exerciseLibrary.findMany.mockResolvedValueOnce([
+      {
+        id: 'ex-2',
+        slug: 'squat',
+        names: { en: 'Squat' },
+        category: 'legs',
+        primaryMuscles: ['quadriceps'],
+        secondaryMuscles: [],
+        equipment: 'barbell',
+        isBodyweight: false,
+        ownerUserId: null,
+        deletedAt: null,
+      },
+      {
+        id: 'ex-1',
+        slug: 'bench-press',
+        names: { en: 'Bench Press' },
+        category: 'chest',
+        primaryMuscles: ['chest'],
+        secondaryMuscles: [],
+        equipment: 'barbell',
+        isBodyweight: false,
+        ownerUserId: null,
+        deletedAt: null,
+      },
+    ]);
     const service = new ExercisesService(prisma as never);
 
     const result = await service.list('user-1', { limit: 10 });
 
-    expect(result.length).toBe(1);
-    expect(result[0]?.slug).toBe('bench-press');
+    expect(result.map((item) => item.names.en)).toEqual(['Bench Press', 'Squat']);
     expect(prisma.exerciseLibrary.findMany).toHaveBeenCalled();
   });
 
@@ -75,6 +100,43 @@ describe('ExercisesService', () => {
     const calls = prisma.exerciseLibrary.findMany.mock.calls as unknown as Array<[ListArgs]>;
     const listArgs = calls[0]?.[0];
     expect(listArgs?.where?.primaryMuscles).toEqual({ string_contains: '"hamstrings"' });
+  });
+
+  it('searches exercises with substring match and alphabetical order', async () => {
+    const prisma = createMockPrisma();
+    prisma.$queryRaw.mockResolvedValueOnce([
+      {
+        id: 'ex-1',
+        slug: 'hip-abductor-machine',
+        names: { en: 'Hip Abductor Machine' },
+        category: 'legs',
+        primary_muscles: ['glutes'],
+        secondary_muscles: [],
+        equipment: 'machine',
+        is_bodyweight: false,
+        owner_user_id: null,
+      },
+      {
+        id: 'ex-2',
+        slug: 'hip-thrust-machine',
+        names: { en: 'Hip Thrust Machine' },
+        category: 'legs',
+        primary_muscles: ['glutes'],
+        secondary_muscles: [],
+        equipment: 'machine',
+        is_bodyweight: false,
+        owner_user_id: null,
+      },
+    ]);
+    const service = new ExercisesService(prisma as never);
+
+    const result = await service.search('user-1', { q: 'Thru', limit: 10 });
+
+    expect(result.map((item) => item.names.en)).toEqual([
+      'Hip Abductor Machine',
+      'Hip Thrust Machine',
+    ]);
+    expect(prisma.$queryRaw).toHaveBeenCalled();
   });
 
   it('creates a custom exercise', async () => {

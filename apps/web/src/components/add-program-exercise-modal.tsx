@@ -1,13 +1,14 @@
 'use client';
 
 import type { ExerciseListItem } from '@onemore/shared';
+import { EXERCISE_CATALOG_LIMIT } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import { useEffect, useState } from 'react';
 
 import { GymAdaptiveOverlay } from '@/components/gym-ui/gym-adaptive-overlay';
 import { GymSearchField } from '@/components/gym-ui/gym-search-field';
 import { MetricInput } from '@/components/metric-input';
-import { getExerciseDisplayName } from '@/lib/exercise-display-name';
+import { getExerciseDisplayName, sortExercisesByDisplayName } from '@/lib/exercise-display-name';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
 import { fetchExercises } from '@/lib/api-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
@@ -85,10 +86,10 @@ export function AddProgramExerciseModal({
       () => {
         void fetchExercises(accessToken, {
           ...(trimmed.length > 0 ? { q: trimmed } : {}),
-          limit: 50,
+          limit: EXERCISE_CATALOG_LIMIT,
         })
           .then((items) => {
-            setResults(items);
+            setResults(sortExercisesByDisplayName(items, locale));
           })
           .catch(() => {
             setResults([]);
@@ -103,7 +104,7 @@ export function AddProgramExerciseModal({
     return () => {
       window.clearTimeout(handle);
     };
-  }, [accessToken, open, search]);
+  }, [accessToken, locale, open, search]);
 
   if (!open) {
     return null;

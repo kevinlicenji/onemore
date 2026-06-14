@@ -57,7 +57,7 @@ export function CardioRestTimer({
   const peakBpm = useMemo(() => computePeakBpm(rpe), [rpe]);
   const displayRemaining = Math.max(0, remaining);
   const currentBpm = computeRecoveryBpm(peakBpm, displayRemaining, plannedSecondsRef.current);
-  const pulseDuration = computePulseDurationSeconds(currentBpm);
+  const pulseDuration = useMemo(() => computePulseDurationSeconds(peakBpm), [peakBpm]);
 
   useEffect(() => {
     onNextSetRef.current = onNextSet;
@@ -127,12 +127,24 @@ export function CardioRestTimer({
     <div className="flex min-h-[calc(100dvh-env(safe-area-inset-top)-4rem)] flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="flex flex-1 flex-col items-center justify-center text-center">
         <motion.div
-          animate={reducedMotion ? undefined : { scale: [1, 1.14, 1, 1.08, 1] }}
+          animate={
+            reducedMotion
+              ? undefined
+              : {
+                  scale: [1, 1.1, 1.04, 1.08, 1],
+                  opacity: [0.92, 1, 0.96, 1, 0.92],
+                }
+          }
           className="relative flex h-40 w-40 items-center justify-center"
           transition={
             reducedMotion
               ? { duration: 0 }
-              : { duration: pulseDuration, repeat: Infinity, ease: 'easeInOut' }
+              : {
+                  duration: pulseDuration,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  times: [0, 0.14, 0.28, 0.42, 1],
+                }
           }
         >
           <Heart aria-hidden className="h-28 w-28 fill-primary text-primary" strokeWidth={1.5} />

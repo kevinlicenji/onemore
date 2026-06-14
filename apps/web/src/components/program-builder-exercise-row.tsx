@@ -118,7 +118,6 @@ export function ProgramBuilderExerciseRow({
           <MetricInput
             kind="sets"
             label={labels.targetSets}
-            showLabel={false}
             value={exercise.targetSets}
             onChange={(value) => {
               onUpdate('targetSets', value ?? 1);
@@ -128,7 +127,6 @@ export function ProgramBuilderExerciseRow({
             failureLabel={labels.failureReps}
             kind="repsPrescription"
             label={labels.targetReps}
-            showLabel={false}
             value={exercise.targetReps}
             onChange={(value) => {
               onUpdate('targetReps', value ?? 8);
@@ -137,7 +135,6 @@ export function ProgramBuilderExerciseRow({
           <MetricInput
             kind="weight"
             label={labels.targetWeight}
-            showLabel={false}
             value={exercise.targetWeightKg}
             onChange={(value) => {
               onUpdate('targetWeightKg', value);
@@ -146,7 +143,6 @@ export function ProgramBuilderExerciseRow({
           <MetricInput
             kind="rest"
             label={labels.restSeconds}
-            showLabel={false}
             value={exercise.restSeconds}
             onChange={(value) => {
               onUpdate('restSeconds', value ?? 0);

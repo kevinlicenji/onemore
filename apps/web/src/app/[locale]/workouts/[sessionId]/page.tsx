@@ -36,11 +36,11 @@ import {
   completeWorkoutSessionClient,
   getWorkoutSessionClient,
   skipWorkoutExerciseClient,
-  substituteWorkoutExerciseClient,
   updateWorkoutExerciseNotesClient,
   upsertWorkoutSetClient,
 } from '@/lib/offline/workout-client';
 import { POSTHOG_EVENTS, trackEvent } from '@/lib/analytics';
+import { canCompleteWorkoutSet } from '@/lib/can-complete-workout-set';
 import { persistPersonalRecords } from '@/lib/offline/dashboard-store';
 import { hasCompletedWorkingSet } from '@/lib/workout-session-utils';
 import {
@@ -68,7 +68,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newPrs, setNewPrs] = useState<PersonalRecordSummary[]>([]);
-  const [substituteMode, setSubstituteMode] = useState(false);
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [notesSaving, setNotesSaving] = useState(false);
   const [activeSetId, setActiveSetId] = useState<string | null>(null);
@@ -134,7 +133,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   }, [currentExercise, restTimerContext]);
 
   useEffect(() => {
-    setSubstituteMode(false);
     setNotesModalOpen(false);
   }, [exerciseIndex]);
 
@@ -166,6 +164,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
     const set = currentExercise.sets.find((item) => item.id === setId);
     if (!set) {
+      return;
+    }
+    if (!canCompleteWorkoutSet(set.reps)) {
+      setError(t('repsRequiredToComplete'));
       return;
     }
 
@@ -399,47 +401,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     try {
       const updated = await skipWorkoutExerciseClient(accessToken, session.id, currentExercise.id);
       setSession(updated);
-      setSubstituteMode(false);
       advanceToNextExercise(updated);
       await refreshPendingCount();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('skipExerciseError'));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSubstitute(exerciseLibraryId: string): Promise<void> {
-    if (!accessToken || !session || !currentExercise) {
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const updated = await substituteWorkoutExerciseClient(
-        accessToken,
-        session.id,
-        currentExercise.id,
-        exerciseLibraryId,
-      );
-      setSession(updated);
-      setSubstituteMode(false);
-      const newIndex = updated.exercises.findIndex(
-        (exercise) =>
-          exercise.substitutedFromExerciseId === currentExercise.exerciseLibraryId ||
-          (exercise.exerciseLibraryId === exerciseLibraryId && exercise.status === 'pending'),
-      );
-      if (newIndex >= 0) {
-        setExerciseIndex(newIndex);
-      }
-      await refreshPendingCount();
-      trackEvent(POSTHOG_EVENTS.EXERCISE_SUBSTITUTED, {
-        session_id: session.id,
-        from_id: currentExercise.exerciseLibraryId,
-        to_id: exerciseLibraryId,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('substituteError'));
     } finally {
       setLoading(false);
     }
@@ -546,7 +511,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     addSetPrompt: t('addSetPrompt'),
     exerciseActionsMenu: t('exerciseActionsMenu'),
     menuNotes: t('menuNotes'),
-    substituteExercise: t('substituteExercise'),
     skipExercise: t('skipExercise'),
     skipSet: t('skipSetShort'),
     finishWorkout: t('finishWorkout'),
@@ -569,7 +533,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     lastExecutionToday: t('lastExecutionToday'),
     lastExecutionYesterday: t('lastExecutionYesterday'),
     formatDaysAgo: (count: number) => t('lastExecutionDaysAgo', { count }),
-    programTargetLabel: t('programTargetLabel'),
   };
 
   if (!isDesktop) {
@@ -592,7 +555,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           restTimerContext={restTimerContext}
           performanceFeedbackBySetId={performanceFeedbackBySetId}
           session={session}
-          substituteMode={substituteMode}
           onAbandon={() => {
             void handleAbandon();
           }}
@@ -619,9 +581,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
             void handleExerciseNotesSave(notes);
           }}
           onOpenNotes={openNotesModal}
-          onOpenSubstitute={() => {
-            setSubstituteMode(true);
-          }}
           onRestComplete={(setId, actualRestSeconds) => {
             setActualRestBySetId((prev) => ({
               ...prev,
@@ -632,9 +591,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           }}
           onSelectExerciseToAdd={(exerciseLibraryId) => {
             void handleAddExercise(exerciseLibraryId);
-          }}
-          onSelectSubstitute={(exerciseLibraryId) => {
-            void handleSubstitute(exerciseLibraryId);
           }}
           onSkipExercise={() => {
             void handleSkipExercise();
@@ -687,6 +643,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
             noResultsLabel={t('searchNoResults')}
             placeholder={t('searchExercises')}
             searchingLabel={t('searchingExercises')}
+            showMuscleFilter={false}
             onSelect={(exercise) => {
               void handleAddExercise(exercise.id);
             }}
@@ -717,16 +674,11 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                   labels={{
                     menu: t('exerciseActionsMenu'),
                     notes: t('menuNotes'),
-                    substitute: t('substituteExercise'),
                     skip: t('skipExercise'),
                   }}
-                  showSubstitute={session.sessionType === 'programmed'}
                   onNotes={openNotesModal}
                   onSkip={() => {
                     void handleSkipExercise();
-                  }}
-                  onSubstitute={() => {
-                    setSubstituteMode(true);
                   }}
                 />
               )}
@@ -884,7 +836,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                         </Button>
                         <Button
                           className="min-h-11"
-                          disabled={loading}
+                          disabled={loading || !canCompleteWorkoutSet(activeSet.reps)}
                           type="button"
                           onClick={() => {
                             void handleCompleteSet(activeSet.id, activeSet.setNumber);
@@ -938,22 +890,6 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                   {t('addSet')}
                 </Button>
               )}
-
-            {substituteMode && currentExercise.status !== 'skipped' && accessToken && (
-              <div className="rounded-lg border p-3">
-                <ExerciseSearchCombobox
-                  accessToken={accessToken}
-                  disabled={loading}
-                  locale={locale}
-                  noResultsLabel={t('searchNoResults')}
-                  placeholder={t('searchExercises')}
-                  searchingLabel={t('searchingExercises')}
-                  onSelect={(exercise) => {
-                    void handleSubstitute(exercise.id);
-                  }}
-                />
-              </div>
-            )}
 
             {currentExercise.athleteNotes && (
               <div className="flex items-start gap-2">
@@ -1034,6 +970,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
               noResultsLabel={t('searchNoResults')}
               placeholder={t('searchExercises')}
               searchingLabel={t('searchingExercises')}
+              showMuscleFilter={false}
               onSelect={(exercise) => {
                 void handleAddExercise(exercise.id);
               }}

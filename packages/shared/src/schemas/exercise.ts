@@ -41,7 +41,7 @@ export const exerciseSearchQuerySchema = z.object({
     .transform((value) => (value === undefined ? undefined : value === 'true')),
   equipmentGroup: exerciseEquipmentGroupSchema.optional(),
   muscle: muscleGroupSchema.optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(25),
+  limit: z.coerce.number().int().min(1).max(250).default(25),
 });
 
 export const createCustomExerciseSchema = z.object({

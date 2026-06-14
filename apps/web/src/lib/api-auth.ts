@@ -30,6 +30,7 @@ import type {
   UserProfile,
   WorkoutSessionDetail,
 } from '@onemore/shared';
+import { EXERCISE_CATALOG_LIMIT } from '@onemore/shared';
 
 import { API_BASE_URL } from '@/lib/api-config';
 
@@ -145,7 +146,7 @@ export async function fetchExercises(
   filters: ExerciseQueryFilters = {},
 ): Promise<ExerciseListItem[]> {
   const params = new URLSearchParams({
-    limit: String(filters.limit ?? 100),
+    limit: String(filters.limit ?? EXERCISE_CATALOG_LIMIT),
   });
   if (filters.q) {
     params.set('q', filters.q);
@@ -183,7 +184,7 @@ export async function searchExercises(
   filters: Omit<ExerciseQueryFilters, 'q'> = {},
 ): Promise<ExerciseListItem[]> {
   const trimmed = query.trim();
-  const limit = filters.limit ?? 20;
+  const limit = filters.limit ?? EXERCISE_CATALOG_LIMIT;
   if (trimmed.length >= 1) {
     return fetchExercises(accessToken, { ...filters, q: trimmed, limit });
   }

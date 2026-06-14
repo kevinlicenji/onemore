@@ -7,13 +7,10 @@ interface ExerciseActionsMenuProps {
   labels: {
     menu: string;
     notes: string;
-    substitute: string;
     skip: string;
   };
-  showSubstitute: boolean;
   disabled?: boolean;
   onNotes: () => void;
-  onSubstitute: () => void;
   onSkip: () => void;
 }
 
@@ -22,10 +19,8 @@ interface ExerciseActionsMenuProps {
  */
 export function ExerciseActionsMenu({
   labels,
-  showSubstitute,
   disabled = false,
   onNotes,
-  onSubstitute,
   onSkip,
 }: ExerciseActionsMenuProps): React.ReactElement {
   const [open, setOpen] = useState(false);
@@ -81,18 +76,6 @@ export function ExerciseActionsMenu({
           >
             {labels.notes}
           </button>
-          {showSubstitute && (
-            <button
-              className="block w-full px-3 py-2 text-left text-sm hover:bg-muted/60"
-              role="menuitem"
-              type="button"
-              onClick={() => {
-                handleAction(onSubstitute);
-              }}
-            >
-              {labels.substitute}
-            </button>
-          )}
           <button
             className="block w-full px-3 py-2 text-left text-sm hover:bg-muted/60"
             role="menuitem"

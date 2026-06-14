@@ -41,11 +41,12 @@ export class ExercisesService {
 
     const exercises = await this.prisma.exerciseLibrary.findMany({
       where: this.buildWhere(userId, query),
-      orderBy: [{ category: 'asc' }, { slug: 'asc' }],
       take: query.limit,
     });
 
-    return exercises.map((exercise) => this.toListItem(exercise, userId));
+    return exercises
+      .map((exercise) => this.toListItem(exercise, userId))
+      .sort((left, right) => this.compareExerciseNames(left.names.en, right.names.en));
   }
 
   /**
@@ -214,6 +215,10 @@ export class ExercisesService {
     }
 
     return PrismaNamespace.join(parts, ' ');
+  }
+
+  private compareExerciseNames(left: string, right: string): number {
+    return left.localeCompare(right, 'en', { sensitivity: 'base' });
   }
 
   private toListItem(

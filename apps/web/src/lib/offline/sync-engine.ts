@@ -5,6 +5,7 @@ import type {
   SyncMutation,
   WorkoutSessionDetail,
 } from '@onemore/shared';
+import { EXERCISE_CATALOG_LIMIT } from '@onemore/shared';
 
 import { API_BASE_URL } from '@/lib/api-config';
 import { generateClientUuid } from '@/lib/generate-client-uuid';
@@ -176,7 +177,7 @@ export async function hydrateOfflineCatalog(accessToken: string, userId: string)
   }
 
   const [exercisesResponse, previewResponse, activeResponse] = await Promise.all([
-    fetch(`${API_BASE_URL}/api/v1/exercises?limit=100`, {
+    fetch(`${API_BASE_URL}/api/v1/exercises?limit=${EXERCISE_CATALOG_LIMIT}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
       credentials: 'include',
     }),

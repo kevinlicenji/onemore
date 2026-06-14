@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { ColorThemePicker } from '@/components/appearance/color-theme-picker';
 import { FontPicker } from '@/components/appearance/font-picker';
+import { LocaleSwitcher } from '@/components/locale-switcher';
 import { useAuth } from '@/components/auth-provider';
 import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
@@ -230,6 +231,7 @@ export default function SettingsPage(): React.ReactElement {
 
   const appearancePickers = (
     <div className="flex flex-col gap-4">
+      <LocaleSwitcher />
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium">{t('colorThemeLabel')}</span>
         <ColorThemePicker />

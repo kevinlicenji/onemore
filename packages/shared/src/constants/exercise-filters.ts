@@ -1,6 +1,9 @@
 import type { EquipmentType } from './equipment-types.js';
 import type { ExerciseCategory } from './exercise-categories.js';
 
+/** Upper bound for exercise browse/search list endpoints (catalog + custom headroom). */
+export const EXERCISE_CATALOG_LIMIT = 250;
+
 export type ExerciseEquipmentGroup =
   | 'machines'
   | 'bodyweight'

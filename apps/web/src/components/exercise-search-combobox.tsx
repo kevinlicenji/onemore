@@ -1,6 +1,7 @@
 'use client';
 
 import type { ExerciseListItem, MuscleGroup } from '@onemore/shared';
+import { EXERCISE_CATALOG_LIMIT } from '@onemore/shared';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { MuscleGroupFilter } from '@/components/muscle-group-filter';
@@ -10,7 +11,6 @@ import { searchExercisesClient } from '@/lib/offline/workout-client';
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 1;
-const BROWSE_LIMIT = 24;
 
 interface ExerciseSearchComboboxProps {
   accessToken: string;
@@ -64,7 +64,8 @@ export function ExerciseSearchCombobox({
     const handle = window.setTimeout(() => {
       void searchExercisesClient(accessToken, trimmed, {
         ...(muscle ? { muscle } : {}),
-        limit: 20,
+        limit: EXERCISE_CATALOG_LIMIT,
+        locale,
       })
         .then((exercises) => {
           if (searchRequestRef.current !== requestId) {
@@ -91,7 +92,7 @@ export function ExerciseSearchCombobox({
     return () => {
       window.clearTimeout(handle);
     };
-  }, [accessToken, muscle, noResultsLabel, query]);
+  }, [accessToken, locale, muscle, noResultsLabel, query]);
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent): void {
@@ -112,7 +113,8 @@ export function ExerciseSearchCombobox({
     try {
       const exercises = await searchExercisesClient(accessToken, '', {
         ...(muscle ? { muscle } : {}),
-        limit: BROWSE_LIMIT,
+        limit: EXERCISE_CATALOG_LIMIT,
+        locale,
       });
       setResults(exercises);
       setIsOpen(true);

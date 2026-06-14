@@ -28,11 +28,10 @@ export async function hydrateCompletedSessions(accessToken: string): Promise<voi
     cursor = response.nextCursor;
   }
 
-  if (allItems.length === 0) {
-    return;
+  await offlineDb.completedSessions.clear();
+  if (allItems.length > 0) {
+    await offlineDb.completedSessions.bulkPut(allItems);
   }
-
-  await offlineDb.completedSessions.bulkPut(allItems);
 }
 
 /**
@@ -42,10 +41,7 @@ export async function hydrateCompletedSessions(accessToken: string): Promise<voi
  */
 export async function hydratePersonalRecords(accessToken: string): Promise<void> {
   const records = await fetchPersonalRecords(accessToken, 200);
-  if (records.length === 0) {
-    return;
-  }
-  await offlineDb.personalRecords.bulkPut(records);
+  await replacePersonalRecords(records);
 }
 
 /**

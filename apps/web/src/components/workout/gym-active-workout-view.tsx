@@ -2,7 +2,7 @@
 
 import type { PersonalRecordSummary, WorkoutSessionDetail } from '@onemore/shared';
 import { Button } from '@onemore/ui';
-import { ArrowLeftRight, Home } from 'lucide-react';
+import { Home } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -12,12 +12,13 @@ import { PrCelebration } from '@/components/pr-celebration';
 import { CardioRestTimer } from '@/components/workout/cardio-rest-timer';
 import { useHorizontalSwipe } from '@/hooks/use-horizontal-swipe';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { canCompleteWorkoutSet } from '@/lib/can-complete-workout-set';
 import { getExerciseDisplayName } from '@/lib/exercise-display-name';
 import { formatRelativeDaysAgo } from '@/lib/format-relative-days';
 import { formatWorkoutDuration, getWorkoutElapsedSeconds } from '@/lib/format-workout-duration';
 import { triggerHaptic } from '@/lib/haptic';
 import { shouldOfferAddSet } from '@/lib/workout-completion';
-import { formatLastExecutionLine, formatSetTargetInline } from '@/lib/workout-set-display';
+import { formatLastExecutionLine } from '@/lib/workout-set-display';
 import type { RestTimerContext, WorkoutExerciseDetail } from '@/lib/workout-exercise-set-state';
 import type { SetPerformanceFeedback } from '@/lib/performance-feedback';
 
@@ -36,7 +37,6 @@ export interface GymActiveWorkoutViewProps {
   actualRestBySetId: Record<string, number>;
   loading: boolean;
   error: string | null;
-  substituteMode: boolean;
   notesModalOpen: boolean;
   notesSaving: boolean;
   newPrs: PersonalRecordSummary[];
@@ -59,7 +59,6 @@ export interface GymActiveWorkoutViewProps {
     addSetPrompt: string;
     exerciseActionsMenu: string;
     menuNotes: string;
-    substituteExercise: string;
     skipExercise: string;
     skipSet: string;
     finishWorkout: string;
@@ -82,18 +81,15 @@ export interface GymActiveWorkoutViewProps {
     lastExecutionToday: string;
     lastExecutionYesterday: string;
     formatDaysAgo: (count: number) => string;
-    programTargetLabel: string;
   };
   onRestComplete: (setId: string, actualRestSeconds: number) => void;
   onSelectExerciseToAdd: (exerciseLibraryId: string) => void;
-  onSelectSubstitute: (exerciseLibraryId: string) => void;
   onCompleteSet: (setId: string, setNumber: number) => void;
   onSkipSet: (setId: string, setNumber: number) => void;
   onUpdateSetValue: (setId: string, field: 'weightKg' | 'reps', value: number | null) => void;
   onAddSet: () => void;
   onSkipExercise: () => void;
   onOpenNotes: () => void;
-  onOpenSubstitute: () => void;
   onFinishWorkout: () => void;
   onAbandon: () => void;
   onExitWorkout: () => void;
@@ -135,7 +131,6 @@ export function GymActiveWorkoutView({
   actualRestBySetId,
   loading,
   error,
-  substituteMode,
   notesModalOpen,
   notesSaving,
   newPrs,
@@ -144,14 +139,12 @@ export function GymActiveWorkoutView({
   labels,
   onRestComplete,
   onSelectExerciseToAdd,
-  onSelectSubstitute,
   onCompleteSet,
   onSkipSet,
   onUpdateSetValue,
   onAddSet,
   onSkipExercise,
   onOpenNotes,
-  onOpenSubstitute,
   onFinishWorkout,
   onAbandon,
   onExitWorkout,
@@ -197,7 +190,7 @@ export function GymActiveWorkoutView({
   );
 
   const swipeHandlers = useHorizontalSwipe({
-    enabled: !loading && !substituteMode && restTimerContext === null,
+    enabled: !loading && restTimerContext === null,
     onSwipe: (direction) => {
       if (direction === 'left') {
         navigateExercise(exerciseIndex + 1);
@@ -208,6 +201,10 @@ export function GymActiveWorkoutView({
   });
 
   function handleCompleteSet(setId: string, setNumber: number): void {
+    const activeSet = currentExercise?.sets.find((set) => set.id === setId);
+    if (!activeSet || !canCompleteWorkoutSet(activeSet.reps)) {
+      return;
+    }
     triggerHaptic('success');
     onCompleteSet(setId, setNumber);
   }
@@ -314,63 +311,34 @@ export function GymActiveWorkoutView({
                         {getExerciseDisplayName(currentExercise.exercise, locale)}
                       </motion.h1>
                     </AnimatePresence>
-                    {session.sessionType === 'programmed' &&
-                    currentExercise.status !== 'skipped' ? (
-                      <Button
-                        aria-label={labels.substituteExercise}
-                        className="mt-0.5 min-h-10 min-w-10 shrink-0 px-0"
-                        disabled={loading}
-                        size="sm"
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          triggerHaptic('light');
-                          onOpenSubstitute();
-                        }}
-                      >
-                        <ArrowLeftRight aria-hidden className="h-4 w-4" />
-                      </Button>
-                    ) : null}
                   </div>
 
-                  {currentExercise.status !== 'skipped' ? (
-                    <div className="mt-2 space-y-1.5 rounded-xl border border-foreground/15 bg-muted/30 px-3 py-2 text-sm">
-                      <p className="font-medium text-foreground">
-                        <span className="text-muted-foreground">{labels.programTargetLabel}: </span>
-                        {formatSetTargetInline(
-                          currentExercise.prescription.targetSets,
-                          currentExercise.prescription.targetReps,
-                          currentExercise.prescription.targetWeightKg,
-                          currentExercise.prescription.restSeconds,
+                  {currentExercise.status !== 'skipped' && currentExercise.previousExecution ? (
+                    <div className="mt-2 rounded-xl border border-foreground/15 bg-muted/30 px-3 py-2 text-sm">
+                      <p className="text-foreground">
+                        <span className="font-semibold">{labels.lastExecutionLabel}: </span>
+                        {formatLastExecutionLine(
+                          currentExercise.previousExecution.setsCount,
+                          currentExercise.previousExecution.reps,
+                          currentExercise.previousExecution.weightKg,
                           labels.failureReps,
                         )}
+                        {currentExercise.previousExecution.completedAt ? (
+                          <span className="text-muted-foreground">
+                            {' '}
+                            ·{' '}
+                            {formatRelativeDaysAgo(
+                              currentExercise.previousExecution.completedAt,
+                              locale,
+                              {
+                                today: labels.lastExecutionToday,
+                                yesterday: labels.lastExecutionYesterday,
+                                daysAgo: labels.formatDaysAgo,
+                              },
+                            )}
+                          </span>
+                        ) : null}
                       </p>
-                      {currentExercise.previousExecution ? (
-                        <p className="text-foreground">
-                          <span className="font-semibold">{labels.lastExecutionLabel}: </span>
-                          {formatLastExecutionLine(
-                            currentExercise.previousExecution.setsCount,
-                            currentExercise.previousExecution.reps,
-                            currentExercise.previousExecution.weightKg,
-                            labels.failureReps,
-                          )}
-                          {currentExercise.previousExecution.completedAt ? (
-                            <span className="text-muted-foreground">
-                              {' '}
-                              ·{' '}
-                              {formatRelativeDaysAgo(
-                                currentExercise.previousExecution.completedAt,
-                                locale,
-                                {
-                                  today: labels.lastExecutionToday,
-                                  yesterday: labels.lastExecutionYesterday,
-                                  daysAgo: labels.formatDaysAgo,
-                                },
-                              )}
-                            </span>
-                          ) : null}
-                        </p>
-                      ) : null}
                     </div>
                   ) : null}
 
@@ -425,6 +393,7 @@ export function GymActiveWorkoutView({
                   noResultsLabel={labels.searchNoResults}
                   placeholder={labels.searchExercises}
                   searchingLabel={labels.searchingExercises}
+                  showMuscleFilter={false}
                   onSelect={(exercise) => {
                     onSelectExerciseToAdd(exercise.id);
                   }}
@@ -472,21 +441,6 @@ export function GymActiveWorkoutView({
                     </AnimatePresence>
                   )}
 
-                  {substituteMode && currentExercise.status !== 'skipped' && accessToken && (
-                    <div className="rounded-xl border p-3" data-no-swipe>
-                      <ExerciseSearchCombobox
-                        accessToken={accessToken}
-                        disabled={loading}
-                        locale={locale}
-                        noResultsLabel={labels.searchNoResults}
-                        placeholder={labels.searchExercises}
-                        searchingLabel={labels.searchingExercises}
-                        onSelect={(exercise) => {
-                          onSelectSubstitute(exercise.id);
-                        }}
-                      />
-                    </div>
-                  )}
 
                   {currentExercise.athleteNotes && (
                     <button
@@ -522,6 +476,7 @@ export function GymActiveWorkoutView({
                     noResultsLabel={labels.searchNoResults}
                     placeholder={labels.searchExercises}
                     searchingLabel={labels.searchingExercises}
+                    showMuscleFilter={false}
                     onSelect={(exercise) => {
                       onSelectExerciseToAdd(exercise.id);
                     }}
@@ -551,7 +506,7 @@ export function GymActiveWorkoutView({
                       >
                         <Button
                           className="min-h-14 w-full text-lg font-semibold"
-                          disabled={loading}
+                          disabled={loading || !canCompleteWorkoutSet(activeSet.reps)}
                           type="button"
                           onClick={() => {
                             handleCompleteSet(activeSet.id, activeSet.setNumber);

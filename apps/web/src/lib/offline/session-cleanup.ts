@@ -25,4 +25,6 @@ export async function clearOfflineWorkoutCache(): Promise<void> {
   await offlineDb.sessions.clear();
   await offlineDb.syncQueue.clear();
   await offlineDb.nextWorkout.clear();
+  await offlineDb.completedSessions.clear();
+  await offlineDb.personalRecords.clear();
 }

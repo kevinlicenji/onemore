@@ -16,6 +16,7 @@ import { API_BASE_URL } from '@/lib/api-config';
 import { identifyUser } from '@/lib/analytics';
 import { allowInjectedE2eSession, E2E_SESSION_STORAGE_KEY } from '@/lib/e2e-bypass';
 import { clearOfflineWorkoutCache } from '@/lib/offline/session-cleanup';
+import { invalidateDashboardCache } from '@/lib/dashboard/dashboard-cache';
 import { refreshAccessToken } from '@/lib/refresh-access-token';
 
 export interface AuthUser {
@@ -100,6 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     setAccessToken(null);
     setUser(null);
     setProfileState(null);
+    invalidateDashboardCache();
     void clearOfflineWorkoutCache();
   }, []);
 

@@ -12,3 +12,17 @@ export function getExerciseDisplayName(
   }
   return exercise.names.en;
 }
+
+/**
+ * Sort exercises alphabetically by localized display name.
+ */
+export function sortExercisesByDisplayName(
+  exercises: ExerciseListItem[],
+  locale: string,
+): ExerciseListItem[] {
+  return [...exercises].sort((left, right) =>
+    getExerciseDisplayName(left, locale).localeCompare(getExerciseDisplayName(right, locale), locale, {
+      sensitivity: 'base',
+    }),
+  );
+}

@@ -7,6 +7,7 @@ import type {
   UpsertSetResponse,
   WorkoutSessionDetail,
 } from '@onemore/shared';
+import { EXERCISE_CATALOG_LIMIT } from '@onemore/shared';
 
 import {
   abandonWorkoutSession,
@@ -27,6 +28,7 @@ import {
 
 import { emitDashboardInvalidation } from '@/lib/dashboard/dashboard-events';
 import { invalidateDashboardCache } from '@/lib/dashboard/dashboard-cache';
+import { sortExercisesByDisplayName } from '@/lib/exercise-display-name';
 import { generateClientUuid } from '@/lib/generate-client-uuid';
 import { isInvalidAccessTokenError, refreshAccessToken } from '@/lib/refresh-access-token';
 
@@ -665,26 +667,30 @@ export async function abandonWorkoutSessionClient(
 export async function searchExercisesClient(
   accessToken: string,
   query: string,
-  filters: { muscle?: string; limit?: number } = {},
+  filters: { muscle?: string; limit?: number; locale?: string } = {},
 ): Promise<ExerciseListItem[]> {
+  const limit = filters.limit ?? EXERCISE_CATALOG_LIMIT;
+  const locale = filters.locale ?? 'en';
+
   if (isBrowserOnline()) {
-    return searchExercises(accessToken, query, filters);
+    const exercises = await searchExercises(accessToken, query, { muscle: filters.muscle, limit });
+    return sortExercisesByDisplayName(exercises, locale);
   }
 
   const term = query.trim().toLowerCase();
   const all = await offlineDb.exercises.toArray();
-  return all
-    .filter((exercise) => {
-      const matchesText =
-        term.length === 0 ||
-        exercise.names.en.toLowerCase().includes(term) ||
-        (exercise.names.it?.toLowerCase().includes(term) ?? false) ||
-        exercise.slug.toLowerCase().includes(term);
-      const matchesMuscle =
-        !filters.muscle || exercise.primaryMuscles.includes(filters.muscle as never);
-      return matchesText && matchesMuscle;
-    })
-    .slice(0, filters.limit ?? 20);
+  const filtered = all.filter((exercise) => {
+    const matchesText =
+      term.length === 0 ||
+      exercise.names.en.toLowerCase().includes(term) ||
+      (exercise.names.it?.toLowerCase().includes(term) ?? false) ||
+      exercise.slug.toLowerCase().includes(term);
+    const matchesMuscle =
+      !filters.muscle || exercise.primaryMuscles.includes(filters.muscle as never);
+    return matchesText && matchesMuscle;
+  });
+
+  return sortExercisesByDisplayName(filtered.slice(0, limit), locale);
 }
 
 export async function addWorkoutExerciseSetClient(
