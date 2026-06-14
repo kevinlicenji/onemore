@@ -2,6 +2,18 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ExercisesService } from './exercises.service.js';
 
+interface ExerciseSearchRow {
+  id: string;
+  slug: string;
+  names: { en: string };
+  category: string;
+  primary_muscles: string[];
+  secondary_muscles: string[];
+  equipment: string;
+  is_bodyweight: boolean;
+  owner_user_id: string | null;
+}
+
 function createMockPrisma() {
   const exercises = [
     {
@@ -36,7 +48,7 @@ function createMockPrisma() {
         }),
       ),
     },
-    $queryRaw: vi.fn(() => Promise.resolve([])),
+    $queryRaw: vi.fn((): Promise<ExerciseSearchRow[]> => Promise.resolve([])),
   };
 }
 
