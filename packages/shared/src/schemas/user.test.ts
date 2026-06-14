@@ -25,6 +25,7 @@ describe('userProfileSchema', () => {
     preferredSessionMinutes: 60,
     preferredMuscleGroups: ['chest'],
     isCoach: false,
+    isAdmin: false,
     mfaEnabled: false,
     settings: {
       units: 'metric' as const,

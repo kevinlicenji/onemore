@@ -18,10 +18,14 @@ import { HistoryService } from '../modules/history/history.service.js';
 import { PrDetectionService } from '../modules/progress/pr-detection.service.js';
 import { SyncService } from '../modules/sync/sync.service.js';
 import { WorkoutsService } from '../modules/workouts/workouts.service.js';
+import { AdminExercisesService } from '../modules/admin/admin-exercises.service.js';
+import { AdminTemplatesService } from '../modules/admin/admin-templates.service.js';
+import { AdminUsersService } from '../modules/admin/admin-users.service.js';
 import type { UsersService } from '../modules/users/users.service.js';
 import { createAuthenticateMiddleware } from '../middleware/authenticate.js';
 import type { Queue } from 'bullmq';
 import { createAuthRouter } from './auth.routes.js';
+import { createAdminRouter } from './admin.routes.js';
 import { createExercisesRouter } from './exercises.routes.js';
 import { createOnboardingRouter } from './onboarding.routes.js';
 import { createProgramsRouter } from './programs.routes.js';
@@ -103,6 +107,16 @@ export function createV1Router(deps: V1RouterDeps): Router {
   router.use('/analytics', authenticate, createAnalyticsRouter(analyticsService));
 
   router.use('/notifications', authenticate, createNotificationsRouter(pushService));
+
+  router.use(
+    '/admin',
+    authenticate,
+    createAdminRouter({
+      adminExercisesService: new AdminExercisesService(prisma),
+      adminTemplatesService: new AdminTemplatesService(prisma),
+      adminUsersService: new AdminUsersService(prisma),
+    }),
+  );
 
   return router;
 }

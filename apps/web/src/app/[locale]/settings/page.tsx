@@ -12,6 +12,7 @@ import { ColorThemePicker } from '@/components/appearance/color-theme-picker';
 import { FontPicker } from '@/components/appearance/font-picker';
 import { LocaleSwitcher } from '@/components/locale-switcher';
 import { useAuth } from '@/components/auth-provider';
+import { useIsAdmin } from '@/hooks/use-is-admin';
 import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
 import { GymListRow } from '@/components/gym-ui/gym-list-row';
@@ -37,6 +38,7 @@ type SettingsSection = 'profile' | 'appearance' | 'motivation' | 'notifications'
 export default function SettingsPage(): React.ReactElement {
   const t = useTranslations('Settings');
   const { accessToken, clearSession, profile, setProfile } = useAuth();
+  const isAdmin = useIsAdmin();
   const router = useRouter();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
@@ -379,6 +381,13 @@ export default function SettingsPage(): React.ReactElement {
 
   const accountSection = isDesktop ? (
     <div>
+      {isAdmin ? (
+        <div className="mb-4">
+          <Button asChild variant="outline">
+            <Link href={`/${locale}/admin`}>{t('adminConsole')}</Link>
+          </Button>
+        </div>
+      ) : null}
       {exportJob ? (
         <p className="text-sm text-muted-foreground">
           {t('exportStatus', { status: exportJob.status })}
@@ -419,6 +428,9 @@ export default function SettingsPage(): React.ReactElement {
     </div>
   ) : (
     <GymListGroup>
+      {isAdmin ? (
+        <GymListRow href={`/${locale}/admin`} title={t('adminConsole')} />
+      ) : null}
       {exportJob ? (
         <li className="border-b border-gym-separator px-4 py-3 text-sm text-muted-foreground">
           {t('exportStatus', { status: exportJob.status })}

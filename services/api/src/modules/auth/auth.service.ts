@@ -1,4 +1,5 @@
 import {
+  buildUserRoles,
   formatDisplayName,
   isEmailLoginIdentifier,
   normalizeLoginIdentifier,
@@ -359,8 +360,9 @@ export class AuthService {
     lastName: string | null;
     displayName: string | null;
     locale: string;
+    isAdmin?: boolean;
   }): Promise<AuthResult> {
-    const roles = ['athlete'];
+    const roles = buildUserRoles(user.isAdmin ?? false);
     const { token, expiresIn } = await this.tokenService.signAccessToken(user.id, roles);
     const refreshToken = generateSecureToken();
     const expiresAt = new Date(Date.now() + this.env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
