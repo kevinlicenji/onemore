@@ -29,10 +29,7 @@ import { generateClientUuid } from '@/lib/generate-client-uuid';
 import { isInvalidAccessTokenError, refreshAccessToken } from '@/lib/refresh-access-token';
 
 import { offlineDb } from './db';
-import {
-  purgeInProgressSessions,
-  purgeLocalSession,
-} from './session-cleanup';
+import { purgeInProgressSessions, purgeLocalSession } from './session-cleanup';
 import { loadPreviousSetsMap } from './resolve-previous-set';
 import { enqueueMutation, flushSyncQueue, isBrowserOnline } from './sync-engine';
 

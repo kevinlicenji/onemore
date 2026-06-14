@@ -33,9 +33,7 @@ import {
   startWorkoutSessionClient,
 } from '@/lib/offline/workout-client';
 
-type PendingStart =
-  | { type: 'free' }
-  | { type: 'programmed'; workoutDayId: string };
+type PendingStart = { type: 'free' } | { type: 'programmed'; workoutDayId: string };
 
 export default function StartWorkoutPage(): React.ReactElement {
   const t = useTranslations('Workouts');
