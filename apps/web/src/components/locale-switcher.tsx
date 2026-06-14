@@ -21,7 +21,8 @@ export function LocaleSwitcher(): React.ReactElement {
   const params = useParams();
   const pathname = usePathname();
   const currentLocale =
-    typeof params.locale === 'string' && (SUPPORTED_LOCALES as readonly string[]).includes(params.locale)
+    typeof params.locale === 'string' &&
+    (SUPPORTED_LOCALES as readonly string[]).includes(params.locale)
       ? (params.locale as SupportedLocale)
       : 'it';
 

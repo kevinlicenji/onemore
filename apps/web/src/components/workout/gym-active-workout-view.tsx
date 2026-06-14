@@ -441,7 +441,6 @@ export function GymActiveWorkoutView({
                     </AnimatePresence>
                   )}
 
-
                   {currentExercise.athleteNotes && (
                     <button
                       className="rounded-lg bg-muted/30 px-3 py-2 text-left text-sm italic text-muted-foreground"

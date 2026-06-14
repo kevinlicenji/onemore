@@ -21,8 +21,12 @@ export function sortExercisesByDisplayName(
   locale: string,
 ): ExerciseListItem[] {
   return [...exercises].sort((left, right) =>
-    getExerciseDisplayName(left, locale).localeCompare(getExerciseDisplayName(right, locale), locale, {
-      sensitivity: 'base',
-    }),
+    getExerciseDisplayName(left, locale).localeCompare(
+      getExerciseDisplayName(right, locale),
+      locale,
+      {
+        sensitivity: 'base',
+      },
+    ),
   );
 }
