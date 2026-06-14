@@ -1,8 +1,5 @@
 import type { AnalyticsDashboard } from '@onemore/shared';
-import {
-  computeDashboardKpis,
-  type DashboardSessionInput,
-} from '@onemore/shared';
+import { computeDashboardKpis, type DashboardSessionInput } from '@onemore/shared';
 import type { PrismaClient } from '@prisma/client';
 
 import type { PrDetectionService } from '../progress/pr-detection.service.js';

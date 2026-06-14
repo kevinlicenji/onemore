@@ -40,7 +40,9 @@ export function DashboardProgramCta({
                     last: navigation.lastCompletedDayLabel,
                     next: navigation.nextDayLabel ?? t('programNextFallback'),
                   })
-                : t('programFirstDay', { next: navigation.nextDayLabel ?? t('programNextFallback') })}
+                : t('programFirstDay', {
+                    next: navigation.nextDayLabel ?? t('programNextFallback'),
+                  })}
             </p>
           ) : (
             <p className="mt-1 text-base text-muted-foreground">{t('programNoActive')}</p>

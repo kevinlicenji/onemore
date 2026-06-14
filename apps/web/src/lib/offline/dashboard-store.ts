@@ -1,4 +1,8 @@
-import type { HistorySessionSummary, PersonalRecordSummary, WorkoutSessionDetail } from '@onemore/shared';
+import type {
+  HistorySessionSummary,
+  PersonalRecordSummary,
+  WorkoutSessionDetail,
+} from '@onemore/shared';
 import type { DashboardSessionInput } from '@onemore/shared';
 
 import { computeWorkoutSessionStats } from '@/lib/workout-stats';
@@ -59,9 +63,7 @@ export function historySummaryToDashboardInput(
  *
  * @param session - Completed workout session detail.
  */
-export async function upsertCompletedSessionSummary(
-  session: WorkoutSessionDetail,
-): Promise<void> {
+export async function upsertCompletedSessionSummary(session: WorkoutSessionDetail): Promise<void> {
   if (session.status !== 'completed' || !session.completedAt) {
     return;
   }

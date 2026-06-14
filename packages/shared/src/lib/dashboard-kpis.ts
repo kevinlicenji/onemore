@@ -136,14 +136,7 @@ function buildCurrentWeekDays(
  * @param context - Sessions, PRs, timezone, and program preview.
  */
 export function computeDashboardKpis(context: DashboardComputeContext): AnalyticsDashboard {
-  const {
-    timezone,
-    locale,
-    trainingDaysPerWeek,
-    nextWorkout,
-    sessions,
-    personalRecords,
-  } = context;
+  const { timezone, locale, trainingDaysPerWeek, nextWorkout, sessions, personalRecords } = context;
 
   const completedSessions = sessions
     .filter((session) => session.completedAt)
@@ -250,7 +243,12 @@ function formatDateKey(parts: { year: number; month: number; day: number }): str
   return `${String(parts.year)}-${month}-${day}`;
 }
 
-function addDaysUtc(year: number, month: number, day: number, offset: number): {
+function addDaysUtc(
+  year: number,
+  month: number,
+  day: number,
+  offset: number,
+): {
   year: number;
   month: number;
   day: number;

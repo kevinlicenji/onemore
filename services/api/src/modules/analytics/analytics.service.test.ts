@@ -34,11 +34,7 @@ describe('AnalyticsService', () => {
     const prDetection = new PrDetectionService();
     vi.spyOn(prDetection, 'listForUser').mockResolvedValue([]);
 
-    const service = new AnalyticsService(
-      prisma as never,
-      workoutsService as never,
-      prDetection,
-    );
+    const service = new AnalyticsService(prisma as never, workoutsService as never, prDetection);
 
     const dashboard = await service.getDashboard('user-1');
 

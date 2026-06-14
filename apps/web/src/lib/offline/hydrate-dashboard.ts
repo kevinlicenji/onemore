@@ -54,10 +54,7 @@ export async function hydratePersonalRecords(accessToken: string): Promise<void>
  * @param accessToken - Bearer access token.
  */
 export async function hydrateDashboardData(accessToken: string): Promise<void> {
-  await Promise.all([
-    hydrateCompletedSessions(accessToken),
-    hydratePersonalRecords(accessToken),
-  ]);
+  await Promise.all([hydrateCompletedSessions(accessToken), hydratePersonalRecords(accessToken)]);
 }
 
 /**

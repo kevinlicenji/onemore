@@ -13,7 +13,10 @@ import { StatGrid } from '@/components/layout/desktop/stat-grid';
 import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { deleteHistorySession, fetchHistorySessionDetail, updateHistorySet } from '@/lib/api-auth';
-import { notifyDashboardWorkoutDeleted, notifyDashboardWorkoutEdited } from '@/lib/offline/dashboard-store';
+import {
+  notifyDashboardWorkoutDeleted,
+  notifyDashboardWorkoutEdited,
+} from '@/lib/offline/dashboard-store';
 import { computeWorkoutSessionStats } from '@/lib/workout-stats';
 
 function exerciseName(exercise: WorkoutSessionDetail['exercises'][number], locale: string): string {

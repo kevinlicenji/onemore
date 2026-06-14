@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  computeDashboardKpis,
-  computeStreakWeeks,
-  resolveWeeklyTarget,
-} from './dashboard-kpis.js';
+import { computeDashboardKpis, computeStreakWeeks, resolveWeeklyTarget } from './dashboard-kpis.js';
 import type { NextWorkoutPreview } from '../schemas/workout.js';
 
 const emptyNextWorkout: NextWorkoutPreview = {
@@ -25,10 +21,38 @@ describe('resolveWeeklyTarget', () => {
         ...emptyNextWorkout,
         hasActiveAssignment: true,
         days: [
-          { workoutDayId: 'a', label: 'A', difficultyLevel: 1, exerciseCount: 1, muscleGroups: [], exercises: [] },
-          { workoutDayId: 'b', label: 'B', difficultyLevel: 1, exerciseCount: 1, muscleGroups: [], exercises: [] },
-          { workoutDayId: 'c', label: 'C', difficultyLevel: 1, exerciseCount: 1, muscleGroups: [], exercises: [] },
-          { workoutDayId: 'd', label: 'D', difficultyLevel: 1, exerciseCount: 1, muscleGroups: [], exercises: [] },
+          {
+            workoutDayId: 'a',
+            label: 'A',
+            difficultyLevel: 1,
+            exerciseCount: 1,
+            muscleGroups: [],
+            exercises: [],
+          },
+          {
+            workoutDayId: 'b',
+            label: 'B',
+            difficultyLevel: 1,
+            exerciseCount: 1,
+            muscleGroups: [],
+            exercises: [],
+          },
+          {
+            workoutDayId: 'c',
+            label: 'C',
+            difficultyLevel: 1,
+            exerciseCount: 1,
+            muscleGroups: [],
+            exercises: [],
+          },
+          {
+            workoutDayId: 'd',
+            label: 'D',
+            difficultyLevel: 1,
+            exerciseCount: 1,
+            muscleGroups: [],
+            exercises: [],
+          },
         ],
       },
       3,

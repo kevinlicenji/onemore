@@ -118,10 +118,7 @@ export default function DashboardPage(): React.ReactElement {
                     count={dashboard.monthlyStats.personalRecordsCount}
                     mobile
                   />
-                  <DashboardMonthlySets
-                    count={dashboard.monthlyStats.completedSetsCount}
-                    mobile
-                  />
+                  <DashboardMonthlySets count={dashboard.monthlyStats.completedSetsCount} mobile />
                 </GymStatGrid>
               </>
             )}
