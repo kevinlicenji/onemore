@@ -1,13 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatPreviousSetLine } from './workout-set-display';
+import { formatLastExecutionLine, formatSetTargetInline } from './workout-set-display';
 
-describe('formatPreviousSetLine', () => {
-  it('formats weight and reps', () => {
-    expect(formatPreviousSetLine(80, 10, 'Failure')).toBe('80 kg × 10');
+describe('formatSetTargetInline', () => {
+  it('formats sets, reps, weight and rest', () => {
+    expect(formatSetTargetInline(5, 15, 70, 90, 'Failure')).toBe("5 x 15 x 70kg (90')");
+  });
+});
+
+describe('formatLastExecutionLine', () => {
+  it('formats last execution summary', () => {
+    expect(formatLastExecutionLine(3, 10, 70, 'Failure')).toBe('3 x 10 x 70kg');
   });
 
-  it('returns null when both values are missing', () => {
-    expect(formatPreviousSetLine(null, null, 'Failure')).toBeNull();
+  it('returns null when sets count is zero', () => {
+    expect(formatLastExecutionLine(0, 10, 70, 'Failure')).toBeNull();
   });
 });

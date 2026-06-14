@@ -118,9 +118,17 @@ export default function StartWorkoutPage(): React.ReactElement {
     }
   }
 
+  function navigateToPrepare(workoutDayId: string): void {
+    router.push(`/${locale}/workouts/prepare?dayId=${encodeURIComponent(workoutDayId)}`);
+  }
+
   function requestStart(pending: PendingStart): void {
     if (activeSession) {
       setPendingStart(pending);
+      return;
+    }
+    if (pending.type === 'programmed') {
+      navigateToPrepare(pending.workoutDayId);
       return;
     }
     void launchStart(pending);
@@ -140,7 +148,13 @@ export default function StartWorkoutPage(): React.ReactElement {
       }
       setActiveSession(null);
       await refreshPendingCount();
-      await launchStart(pendingStart);
+      const pending = pendingStart;
+      setPendingStart(null);
+      if (pending.type === 'programmed') {
+        navigateToPrepare(pending.workoutDayId);
+        return;
+      }
+      await launchStart(pending);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('startError'));
     } finally {

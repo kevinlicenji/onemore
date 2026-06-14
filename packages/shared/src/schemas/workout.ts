@@ -98,6 +98,15 @@ export const workoutExerciseSchema = z.object({
       reps: z.number().int().nullable(),
     })
     .nullable(),
+  previousExecution: z
+    .object({
+      setsCount: z.number().int(),
+      reps: z.number().int().nullable(),
+      weightKg: z.number().nullable(),
+      completedAt: z.string().datetime().nullable(),
+    })
+    .nullable()
+    .optional(),
 });
 
 export const workoutSessionDetailSchema = z.object({

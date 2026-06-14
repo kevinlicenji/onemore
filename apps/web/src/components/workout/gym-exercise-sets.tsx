@@ -14,8 +14,8 @@ import {
 } from '@/lib/workout-exercise-set-state';
 import {
   formatLoggedSetLine,
-  formatPreviousSetLine,
   formatSetPrescriptionLine,
+  formatSetTargetInline,
 } from '@/lib/workout-set-display';
 
 interface GymExerciseSetsProps {
@@ -69,11 +69,6 @@ export function GymExerciseSets({
     },
   });
   const { prescription } = exercise;
-  const previousSetLine = formatPreviousSetLine(
-    exercise.previousSet?.weightKg ?? null,
-    exercise.previousSet?.reps ?? null,
-    labels.failureReps,
-  );
   const motionTransition = reducedMotion
     ? { duration: 0 }
     : { type: 'spring' as const, stiffness: 420, damping: 32, mass: 0.75 };
@@ -120,19 +115,25 @@ export function GymExerciseSets({
             initial={reducedMotion ? undefined : activeSetTransition.initial}
             transition={motionTransition}
           >
-            {previousSetLine ? (
-              <p className="mb-3 rounded-xl bg-gym-tint/80 px-3 py-2 text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{labels.previousSetLabel}</span>
-                {' · '}
-                {previousSetLine}
-              </p>
-            ) : null}
             <div className="flex items-start justify-between gap-2">
-              <p className="text-lg font-semibold">
-                {formatSetLabel(setState.activeSet.setNumber)}
-              </p>
+              <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <p className="text-lg font-semibold">
+                  {formatSetLabel(setState.activeSet.setNumber)}
+                </p>
+                {!isExtraSet(setState.activeSet.setNumber, prescription.targetSets) ? (
+                  <p className="text-sm font-semibold text-primary">
+                    {formatSetTargetInline(
+                      prescription.targetSets,
+                      prescription.targetReps,
+                      prescription.targetWeightKg,
+                      prescription.restSeconds,
+                      labels.failureReps,
+                    )}
+                  </p>
+                ) : null}
+              </div>
               <Button
-                className="min-h-8 shrink-0 px-2 text-xs"
+                className="min-h-8 shrink-0 px-2 text-xs underline decoration-1 underline-offset-4"
                 disabled={loading}
                 type="button"
                 variant="ghost"
@@ -147,16 +148,6 @@ export function GymExerciseSets({
                 {labels.skipSet}
               </Button>
             </div>
-            {!isExtraSet(setState.activeSet.setNumber, prescription.targetSets) && (
-              <p className="mt-1 text-sm text-muted-foreground">
-                {formatSetPrescriptionLine(
-                  prescription.targetReps,
-                  prescription.targetWeightKg,
-                  prescription.restSeconds,
-                  labels.failureReps,
-                )}
-              </p>
-            )}
 
             <div
               className={cn(

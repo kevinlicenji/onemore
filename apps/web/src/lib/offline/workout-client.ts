@@ -30,7 +30,7 @@ import { isInvalidAccessTokenError, refreshAccessToken } from '@/lib/refresh-acc
 
 import { offlineDb } from './db';
 import { purgeInProgressSessions, purgeLocalSession } from './session-cleanup';
-import { loadPreviousSetsMap } from './resolve-previous-set';
+import { loadPreviousExecutionsMap, loadPreviousSetsMap } from './resolve-previous-set';
 import { enqueueMutation, flushSyncQueue, isBrowserOnline } from './sync-engine';
 
 export interface WorkoutClientAuthOptions {
@@ -58,6 +58,10 @@ async function buildLocalProgrammedSession(
     preview.days.find((day) => day.workoutDayId === selectedDayId) ?? preview.days[0] ?? null;
   const dayExercises = selectedDay?.exercises ?? preview.exercises;
   const previousByExercise = await loadPreviousSetsMap(
+    dayExercises.map((item) => item.exerciseLibraryId),
+    input.id,
+  );
+  const previousExecutions = await loadPreviousExecutionsMap(
     dayExercises.map((item) => item.exerciseLibraryId),
     input.id,
   );
@@ -91,6 +95,7 @@ async function buildLocalProgrammedSession(
         },
         exercise: item.exercise,
         previousSet: previousByExercise.get(item.exerciseLibraryId) ?? null,
+        previousExecution: previousExecutions.get(item.exerciseLibraryId) ?? null,
         sets: Array.from({ length: item.targetSets }, (_, setIndex) => ({
           id: generateClientUuid(),
           setNumber: setIndex + 1,

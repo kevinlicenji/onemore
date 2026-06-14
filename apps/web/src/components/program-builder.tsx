@@ -16,6 +16,7 @@ import {
   type ProgramExerciseDraft,
 } from '@/components/add-program-exercise-modal';
 import { ProgramBuilderExerciseRow } from '@/components/program-builder-exercise-row';
+import { ThemedTextInput } from '@/components/themed-text-input';
 import { DifficultyLevelPicker } from '@/components/difficulty-level-picker';
 import { collectExerciseRowBounds, findDropIndexFromPointerY } from '@/lib/exercise-drag-overlay';
 import { formatMuscleGroupsForLocale } from '@/lib/muscle-group-labels';
@@ -348,8 +349,7 @@ export function ProgramBuilder({
       {!dayFocusMode ? (
         <label className="flex flex-col gap-1 text-sm">
           {t('programName')}
-          <input
-            className="rounded-md border px-3 py-2"
+          <ThemedTextInput
             value={name}
             onChange={(e) => {
               setName(e.target.value);
@@ -387,8 +387,7 @@ export function ProgramBuilder({
 
       <label className="flex flex-col gap-1 text-sm">
         {t('dayLabel')}
-        <input
-          className="rounded-md border px-3 py-2"
+        <ThemedTextInput
           value={currentDay?.label ?? ''}
           onChange={(e) => {
             const nextLabel = e.target.value;

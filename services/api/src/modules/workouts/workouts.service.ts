@@ -23,6 +23,13 @@ interface PreviousSetValues {
   reps: number | null;
 }
 
+interface PreviousExecutionSummary {
+  setsCount: number;
+  reps: number | null;
+  weightKg: number | null;
+  completedAt: string | null;
+}
+
 /**
  * Workout session lifecycle: start, set logging, completion, and program rotation.
  */
@@ -198,12 +205,15 @@ export class WorkoutsService {
       throw new HttpError(404, 'Workout session not found', 'SESSION_NOT_FOUND');
     }
 
-    const previousByExercise = await this.loadPreviousSetValues(
-      userId,
-      session.exerciseExecutions.map((execution) => execution.exerciseLibraryId),
+    const exerciseLibraryIds = session.exerciseExecutions.map(
+      (execution) => execution.exerciseLibraryId,
     );
+    const [previousByExercise, previousExecutions] = await Promise.all([
+      this.loadPreviousSetValues(userId, exerciseLibraryIds),
+      this.loadPreviousExecutions(userId, exerciseLibraryIds),
+    ]);
 
-    return this.toSessionDetail(session, previousByExercise);
+    return this.toSessionDetail(session, previousByExercise, previousExecutions);
   }
 
   /**
@@ -949,6 +959,56 @@ export class WorkoutsService {
     return result;
   }
 
+  private async loadPreviousExecutions(
+    userId: string,
+    exerciseLibraryIds: string[],
+  ): Promise<Map<string, PreviousExecutionSummary>> {
+    const uniqueIds = [...new Set(exerciseLibraryIds)];
+    const result = new Map<string, PreviousExecutionSummary>();
+
+    await Promise.all(
+      uniqueIds.map(async (exerciseLibraryId) => {
+        const lastExecution = await this.prisma.exerciseExecution.findFirst({
+          where: {
+            exerciseLibraryId,
+            workoutSession: {
+              userId,
+              status: 'completed',
+            },
+          },
+          orderBy: {
+            workoutSession: { completedAt: 'desc' },
+          },
+          include: {
+            workoutSession: { select: { completedAt: true } },
+            setLogs: {
+              where: { isCompleted: true, isWarmup: false },
+              orderBy: { setNumber: 'desc' },
+            },
+          },
+        });
+
+        if (!lastExecution || lastExecution.setLogs.length === 0) {
+          return;
+        }
+
+        const lastSet = lastExecution.setLogs[0];
+        if (!lastSet) {
+          return;
+        }
+
+        result.set(exerciseLibraryId, {
+          setsCount: lastExecution.setLogs.length,
+          reps: lastSet.reps,
+          weightKg: lastSet.weightKg ? Number(lastSet.weightKg) : null,
+          completedAt: lastExecution.workoutSession.completedAt?.toISOString() ?? null,
+        });
+      }),
+    );
+
+    return result;
+  }
+
   private toSessionDetail(
     session: {
       id: string;
@@ -989,6 +1049,7 @@ export class WorkoutsService {
       }>;
     },
     previousByExercise: Map<string, PreviousSetValues>,
+    previousExecutions: Map<string, PreviousExecutionSummary> = new Map(),
   ): WorkoutSessionDetail {
     return {
       id: session.id,
@@ -1008,6 +1069,7 @@ export class WorkoutsService {
         const prescription = execution.prescriptionSnapshot as PrescriptionSnapshot;
         const names = execution.exerciseLibrary.names as { en: string; it?: string };
         const previousSet = previousByExercise.get(execution.exerciseLibraryId) ?? null;
+        const previousExecution = previousExecutions.get(execution.exerciseLibraryId) ?? null;
 
         return {
           id: execution.id,
@@ -1035,6 +1097,7 @@ export class WorkoutsService {
             clientTimestamp: set.clientTimestamp.toISOString(),
           })),
           previousSet,
+          previousExecution,
         };
       }),
     };

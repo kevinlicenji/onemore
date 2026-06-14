@@ -55,19 +55,29 @@ export class ExercisesService {
    * @param query - Search term and filters.
    */
   async search(userId: string, query: ExerciseSearchQuery): Promise<ExerciseListItem[]> {
-    const term = query.q;
+    const term = query.q?.trim();
     if (!term) {
       return [];
     }
+
+    const ilikePattern = `%${term}%`;
 
     const rows = await this.prisma.$queryRaw<ExerciseRow[]>`
       SELECT id, slug, names, category, primary_muscles, secondary_muscles, equipment, is_bodyweight, owner_user_id
       FROM exercise_library
       WHERE deleted_at IS NULL
         AND (owner_user_id IS NULL OR owner_user_id = ${userId}::uuid)
-        AND search_vector @@ plainto_tsquery('english', ${term})
+        AND (
+          search_vector @@ plainto_tsquery('english', ${term})
+          OR search_vector @@ plainto_tsquery('italian', ${term})
+          OR names->>'en' ILIKE ${ilikePattern}
+          OR COALESCE(names->>'it', '') ILIKE ${ilikePattern}
+        )
         ${this.buildSqlFilters(query)}
-      ORDER BY ts_rank(search_vector, plainto_tsquery('english', ${term})) DESC
+      ORDER BY GREATEST(
+        ts_rank(search_vector, plainto_tsquery('english', ${term})),
+        ts_rank(search_vector, plainto_tsquery('italian', ${term}))
+      ) DESC
       LIMIT ${query.limit}
     `;
 

@@ -32,6 +32,7 @@ import {
   upsertWorkoutSetClient,
 } from '@/lib/offline/workout-client';
 import { POSTHOG_EVENTS, trackEvent } from '@/lib/analytics';
+import { hasCompletedWorkingSet } from '@/lib/workout-session-utils';
 import {
   findNextActiveExerciseIndex,
   isWorkoutReadyToAutoFinish,
@@ -443,6 +444,25 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
   }
 
+  async function handleExitWorkout(): Promise<void> {
+    if (!accessToken || !session) {
+      router.push(`/${locale}/dashboard`);
+      return;
+    }
+    if (!hasCompletedWorkingSet(session)) {
+      setLoading(true);
+      try {
+        await abandonWorkoutSessionClient(accessToken, session.id);
+        await refreshPendingCount();
+      } catch {
+        // Navigate away even if abandon fails locally.
+      } finally {
+        setLoading(false);
+      }
+    }
+    router.push(`/${locale}/dashboard`);
+  }
+
   async function handleAbandon(): Promise<void> {
     if (!accessToken || !session) {
       return;
@@ -501,7 +521,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     menuNotes: t('menuNotes'),
     substituteExercise: t('substituteExercise'),
     skipExercise: t('skipExercise'),
-    skipSet: t('skipSet'),
+    skipSet: t('skipSetShort'),
     finishWorkout: t('finishWorkout'),
     abandon: t('abandon'),
     notesPlaceholder: t('notesPlaceholder'),
@@ -518,6 +538,11 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     elapsedLabel: t('elapsedLabel'),
     homeLabel: t('homeLabel'),
     previousSetLabel: t('previousSetLabel'),
+    lastExecutionLabel: t('lastExecutionLabel'),
+    lastExecutionToday: t('lastExecutionToday'),
+    lastExecutionYesterday: t('lastExecutionYesterday'),
+    formatDaysAgo: (count: number) => t('lastExecutionDaysAgo', { count }),
+    programTargetLabel: t('programTargetLabel'),
   };
 
   if (!isDesktop) {
@@ -553,6 +578,9 @@ export default function ActiveWorkoutPage(): React.ReactElement {
             setNewPrs([]);
           }}
           onExerciseIndexChange={setExerciseIndex}
+          onExitWorkout={() => {
+            void handleExitWorkout();
+          }}
           onFinishWorkout={() => {
             void handleCompleteWorkout();
           }}

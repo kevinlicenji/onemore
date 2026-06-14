@@ -2,8 +2,7 @@
 
 import type { PersonalRecordSummary, WorkoutSessionDetail } from '@onemore/shared';
 import { Button } from '@onemore/ui';
-import { Home } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowLeftRight, Home } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -16,9 +15,11 @@ import { useHorizontalSwipe } from '@/hooks/use-horizontal-swipe';
 import { useMotivationalLine } from '@/hooks/use-motivational-line';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { getExerciseDisplayName } from '@/lib/exercise-display-name';
+import { formatRelativeDaysAgo } from '@/lib/format-relative-days';
 import { formatWorkoutDuration, getWorkoutElapsedSeconds } from '@/lib/format-workout-duration';
 import { triggerHaptic } from '@/lib/haptic';
 import { shouldOfferAddSet } from '@/lib/workout-completion';
+import { formatLastExecutionLine, formatSetTargetInline } from '@/lib/workout-set-display';
 import type { RestTimerContext, WorkoutExerciseDetail } from '@/lib/workout-exercise-set-state';
 
 import { GymExerciseSets } from './gym-exercise-sets';
@@ -77,6 +78,11 @@ export interface GymActiveWorkoutViewProps {
     elapsedLabel: string;
     homeLabel: string;
     previousSetLabel: string;
+    lastExecutionLabel: string;
+    lastExecutionToday: string;
+    lastExecutionYesterday: string;
+    formatDaysAgo: (count: number) => string;
+    programTargetLabel: string;
   };
   onRestComplete: (setId: string, actualRestSeconds: number) => void;
   onSelectExerciseToAdd: (exerciseLibraryId: string) => void;
@@ -90,6 +96,7 @@ export interface GymActiveWorkoutViewProps {
   onOpenSubstitute: () => void;
   onFinishWorkout: () => void;
   onAbandon: () => void;
+  onExitWorkout: () => void;
   onExerciseIndexChange: (index: number) => void;
   onNotesModalClose: () => void;
   onNotesSave: (notes: string) => void;
@@ -146,6 +153,7 @@ export function GymActiveWorkoutView({
   onOpenSubstitute,
   onFinishWorkout,
   onAbandon,
+  onExitWorkout,
   onExerciseIndexChange,
   onNotesModalClose,
   onNotesSave,
@@ -261,14 +269,16 @@ export function GymActiveWorkoutView({
                 <div className="flex shrink-0 items-center gap-1.5">
                   <Button
                     aria-label={labels.homeLabel}
-                    asChild
                     className="min-h-11 min-w-11 px-0"
+                    disabled={loading}
                     size="sm"
+                    type="button"
                     variant="outline"
+                    onClick={() => {
+                      onExitWorkout();
+                    }}
                   >
-                    <Link href={`/${locale}/dashboard`}>
-                      <Home aria-hidden className="h-5 w-5" />
-                    </Link>
+                    <Home aria-hidden className="h-5 w-5" />
                   </Button>
                   {currentExercise ? (
                     <GymWorkoutMenu
@@ -276,7 +286,6 @@ export function GymActiveWorkoutView({
                       labels={{
                         menu: labels.exerciseActionsMenu,
                         notes: labels.menuNotes,
-                        substitute: labels.substituteExercise,
                         skipExercise: labels.skipExercise,
                         finishWorkout: labels.finishWorkout,
                         abandon: labels.abandon,
@@ -284,13 +293,11 @@ export function GymActiveWorkoutView({
                       }}
                       showAddSet={shouldOfferAddSet(currentExercise)}
                       showSkipExercise={currentExercise.status !== 'skipped'}
-                      showSubstitute={session.sessionType === 'programmed'}
                       onAbandon={onAbandon}
                       onAddSet={onAddSet}
                       onFinishWorkout={onFinishWorkout}
                       onNotes={onOpenNotes}
                       onSkipExercise={onSkipExercise}
-                      onSubstitute={onOpenSubstitute}
                     />
                   ) : null}
                 </div>
@@ -298,18 +305,79 @@ export function GymActiveWorkoutView({
 
               {currentExercise && (
                 <>
-                  <AnimatePresence mode="wait">
-                    <motion.h1
-                      key={currentExercise.id}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mt-2 text-2xl font-bold leading-tight"
-                      exit={reducedMotion ? undefined : { opacity: 0, y: -6 }}
-                      initial={reducedMotion ? undefined : { opacity: 0, y: 8 }}
-                      transition={motionTransition}
-                    >
-                      {getExerciseDisplayName(currentExercise.exercise, locale)}
-                    </motion.h1>
-                  </AnimatePresence>
+                  <div className="mt-2 flex items-start gap-2">
+                    <AnimatePresence mode="wait">
+                      <motion.h1
+                        key={currentExercise.id}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="min-w-0 flex-1 text-2xl font-bold leading-tight"
+                        exit={reducedMotion ? undefined : { opacity: 0, y: -6 }}
+                        initial={reducedMotion ? undefined : { opacity: 0, y: 8 }}
+                        transition={motionTransition}
+                      >
+                        {getExerciseDisplayName(currentExercise.exercise, locale)}
+                      </motion.h1>
+                    </AnimatePresence>
+                    {session.sessionType === 'programmed' &&
+                    currentExercise.status !== 'skipped' ? (
+                      <Button
+                        aria-label={labels.substituteExercise}
+                        className="mt-0.5 min-h-10 min-w-10 shrink-0 px-0"
+                        disabled={loading}
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          triggerHaptic('light');
+                          onOpenSubstitute();
+                        }}
+                      >
+                        <ArrowLeftRight aria-hidden className="h-4 w-4" />
+                      </Button>
+                    ) : null}
+                  </div>
+
+                  {currentExercise.status !== 'skipped' ? (
+                    <div className="mt-2 space-y-1.5 rounded-xl border border-foreground/15 bg-muted/30 px-3 py-2 text-sm">
+                      <p className="font-medium text-foreground">
+                        <span className="text-muted-foreground">{labels.programTargetLabel}: </span>
+                        {formatSetTargetInline(
+                          currentExercise.prescription.targetSets,
+                          currentExercise.prescription.targetReps,
+                          currentExercise.prescription.targetWeightKg,
+                          currentExercise.prescription.restSeconds,
+                          labels.failureReps,
+                        )}
+                      </p>
+                      {currentExercise.previousExecution ? (
+                        <p className="text-foreground">
+                          <span className="font-semibold">{labels.lastExecutionLabel}: </span>
+                          {formatLastExecutionLine(
+                            currentExercise.previousExecution.setsCount,
+                            currentExercise.previousExecution.reps,
+                            currentExercise.previousExecution.weightKg,
+                            labels.failureReps,
+                          )}
+                          {currentExercise.previousExecution.completedAt ? (
+                            <span className="text-muted-foreground">
+                              {' '}
+                              ·{' '}
+                              {formatRelativeDaysAgo(
+                                currentExercise.previousExecution.completedAt,
+                                locale,
+                                {
+                                  today: labels.lastExecutionToday,
+                                  yesterday: labels.lastExecutionYesterday,
+                                  daysAgo: labels.formatDaysAgo,
+                                },
+                              )}
+                            </span>
+                          ) : null}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+
                   <GymExerciseProgress
                     completedIndexes={session.exercises
                       .map((exercise, index) => (exercise.status === 'completed' ? index : -1))

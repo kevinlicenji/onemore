@@ -7,8 +7,22 @@ export interface PreviousSetValues {
   reps: number | null;
 }
 
+export interface PreviousExecutionSummary {
+  setsCount: number;
+  reps: number | null;
+  weightKg: number | null;
+  completedAt: string | null;
+}
+
 interface CompletedSetCandidate extends PreviousSetValues {
   clientTimestamp: string;
+}
+
+interface ExecutionCandidate {
+  setsCount: number;
+  reps: number | null;
+  weightKg: number | null;
+  completedAt: string;
 }
 
 /**
@@ -66,6 +80,85 @@ export function findPreviousSetInSessions(
     weightKg: best.weightKg,
     reps: best.reps,
   };
+}
+
+/**
+ * Finds the most recent completed execution summary for an exercise.
+ */
+export function findPreviousExecutionInSessions(
+  sessions: WorkoutSessionDetail[],
+  exerciseLibraryId: string,
+  options?: { excludeSessionId?: string },
+): PreviousExecutionSummary | null {
+  let best: ExecutionCandidate | null = null;
+
+  for (const session of sessions) {
+    if (session.status !== 'completed' || !session.completedAt) {
+      continue;
+    }
+    if (options?.excludeSessionId && session.id === options.excludeSessionId) {
+      continue;
+    }
+
+    for (const exercise of session.exercises) {
+      if (exercise.exerciseLibraryId !== exerciseLibraryId) {
+        continue;
+      }
+
+      const completedSets = exercise.sets.filter((set) => set.isCompleted && !set.isWarmup);
+      if (completedSets.length === 0) {
+        continue;
+      }
+
+      const lastSet = completedSets[completedSets.length - 1];
+      if (!lastSet) {
+        continue;
+      }
+
+      if (!best || session.completedAt > best.completedAt) {
+        best = {
+          setsCount: completedSets.length,
+          reps: lastSet.reps,
+          weightKg: lastSet.weightKg,
+          completedAt: session.completedAt,
+        };
+      }
+    }
+  }
+
+  if (!best) {
+    return null;
+  }
+
+  return {
+    setsCount: best.setsCount,
+    reps: best.reps,
+    weightKg: best.weightKg,
+    completedAt: best.completedAt,
+  };
+}
+
+/**
+ * Loads previous execution summaries from IndexedDB completed sessions.
+ */
+export async function loadPreviousExecutionsMap(
+  exerciseLibraryIds: string[],
+  excludeSessionId?: string,
+): Promise<Map<string, PreviousExecutionSummary>> {
+  const uniqueIds = [...new Set(exerciseLibraryIds)];
+  const completedSessions = await offlineDb.sessions.where('status').equals('completed').toArray();
+  const result = new Map<string, PreviousExecutionSummary>();
+
+  for (const exerciseLibraryId of uniqueIds) {
+    const previous = findPreviousExecutionInSessions(completedSessions, exerciseLibraryId, {
+      excludeSessionId,
+    });
+    if (previous) {
+      result.set(exerciseLibraryId, previous);
+    }
+  }
+
+  return result;
 }
 
 /**

@@ -9,18 +9,16 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
-import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
 import { GymListRow } from '@/components/gym-ui/gym-list-row';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
 import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
-import { ProgramActionsMenu } from '@/components/program-actions-menu';
 import { RequireAuth } from '@/components/require-auth';
 import { DifficultyStepsIcon } from '@/components/difficulty-steps-icon';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useMotivationalLine } from '@/hooks/use-motivational-line';
-import { activateProgram, deleteProgram, fetchPrograms } from '@/lib/api-auth';
+import { fetchPrograms } from '@/lib/api-auth';
 
 export default function ProgramsPage(): React.ReactElement {
   const t = useTranslations('Programs');
@@ -31,8 +29,6 @@ export default function ProgramsPage(): React.ReactElement {
   const [programs, setPrograms] = useState<ProgramSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionId, setActionId] = useState<string | null>(null);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const activeProgram = programs.find((program) => program.isActive);
   const programsDifficulty = activeProgram?.difficultyLevel ?? programs[0]?.difficultyLevel ?? 2;
   const motivationalLine = useMotivationalLine('programs', profile, {
@@ -57,44 +53,6 @@ export default function ProgramsPage(): React.ReactElement {
         setLoading(false);
       });
   }, [loadPrograms, t]);
-
-  async function handleActivate(programId: string): Promise<void> {
-    if (!accessToken) {
-      return;
-    }
-    setActionId(programId);
-    setError(null);
-    try {
-      await activateProgram(accessToken, programId);
-      await loadPrograms();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('activateError'));
-    } finally {
-      setActionId(null);
-    }
-  }
-
-  function requestDelete(programId: string): void {
-    setPendingDeleteId(programId);
-  }
-
-  async function confirmDelete(): Promise<void> {
-    if (!accessToken || pendingDeleteId === null) {
-      return;
-    }
-    const programId = pendingDeleteId;
-    setActionId(programId);
-    setError(null);
-    try {
-      await deleteProgram(accessToken, programId);
-      await loadPrograms();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('deleteError'));
-    } finally {
-      setActionId(null);
-      setPendingDeleteId(null);
-    }
-  }
 
   const showHeaderActions = isDesktop && programs.length > 0;
 
@@ -146,27 +104,10 @@ export default function ProgramsPage(): React.ReactElement {
 
   const draftPrograms = programs.filter((program) => !program.isActive);
 
-  function programActions(program: ProgramSummary): ReactElement {
+  function programDifficultyIcon(program: ProgramSummary): ReactElement {
     return (
-      <div className="flex shrink-0 items-center gap-1.5 pr-1">
+      <div className="flex shrink-0 items-center pr-1">
         <DifficultyStepsIcon level={program.difficultyLevel} size="sm" />
-        <ProgramActionsMenu
-          disabled={actionId !== null}
-          editHref={`/${locale}/programs/${program.id}/edit`}
-          labels={{
-            menu: t('programActionsMenu'),
-            edit: t('editProgram'),
-            setActive: t('setActive'),
-            delete: t('deleteProgram'),
-          }}
-          showSetActive={!program.isActive && program.latestVersionStatus === 'published'}
-          onDelete={() => {
-            requestDelete(program.id);
-          }}
-          onSetActive={() => {
-            void handleActivate(program.id);
-          }}
-        />
       </div>
     );
   }
@@ -184,7 +125,7 @@ export default function ProgramsPage(): React.ReactElement {
               href={`/${locale}/programs/${activeProgram.id}`}
               subtitle={t('programDaysMeta', { days: activeProgram.daysCount })}
               title={activeProgram.name}
-              trailing={programActions(activeProgram)}
+              trailing={programDifficultyIcon(activeProgram)}
             />
           </GymListGroup>
         </section>
@@ -202,7 +143,7 @@ export default function ProgramsPage(): React.ReactElement {
                 href={`/${locale}/programs/${program.id}`}
                 subtitle={t('programDaysMeta', { days: program.daysCount })}
                 title={program.name}
-                trailing={programActions(program)}
+                trailing={programDifficultyIcon(program)}
               />
             ))}
           </GymListGroup>
@@ -245,9 +186,8 @@ export default function ProgramsPage(): React.ReactElement {
                         {t('programDaysMeta', { days: activeProgram.daysCount })}
                       </p>
                     </Link>
-                    <div className="flex shrink-0 items-start gap-2">
+                    <div className="flex shrink-0 items-start">
                       <DifficultyStepsIcon level={activeProgram.difficultyLevel} />
-                      {programActions(activeProgram)}
                     </div>
                   </div>
                 </CardContent>
@@ -274,9 +214,8 @@ export default function ProgramsPage(): React.ReactElement {
                           {t('programDaysMeta', { days: program.daysCount })}
                         </p>
                       </Link>
-                      <div className="flex shrink-0 items-start gap-2">
+                      <div className="flex shrink-0 items-start">
                         <DifficultyStepsIcon level={program.difficultyLevel} />
-                        {programActions(program)}
                       </div>
                     </div>
                   </CardContent>
@@ -328,21 +267,6 @@ export default function ProgramsPage(): React.ReactElement {
             <StaggerItem>{mobileProgramList}</StaggerItem>
           </StaggerGroup>
         )}
-        <GymActionSheet
-          cancelLabel={t('cancel')}
-          confirmLabel={t('deleteProgram')}
-          destructive
-          loading={pendingDeleteId !== null && actionId === pendingDeleteId}
-          message={t('deleteConfirm')}
-          open={pendingDeleteId !== null}
-          title={t('deleteProgram')}
-          onCancel={() => {
-            setPendingDeleteId(null);
-          }}
-          onConfirm={() => {
-            void confirmDelete();
-          }}
-        />
       </AdaptivePageShell>
     </RequireAuth>
   );
