@@ -14,7 +14,10 @@ export class AdminUsersService {
   /**
    * Grant or revoke admin privileges for a user.
    */
-  async setAdmin(userId: string, isAdmin: boolean): Promise<{ id: string; username: string | null; isAdmin: boolean }> {
+  async setAdmin(
+    userId: string,
+    isAdmin: boolean,
+  ): Promise<{ id: string; username: string | null; isAdmin: boolean }> {
     const user = await this.prisma.user.findFirst({
       where: { id: userId, deletedAt: null },
     });
@@ -34,7 +37,9 @@ export class AdminUsersService {
   /**
    * Find a user by username for admin management.
    */
-  async findByUsername(username: string): Promise<{ id: string; username: string | null; isAdmin: boolean } | null> {
+  async findByUsername(
+    username: string,
+  ): Promise<{ id: string; username: string | null; isAdmin: boolean } | null> {
     const user = await this.prisma.user.findFirst({
       where: {
         username: { equals: username, mode: 'insensitive' },

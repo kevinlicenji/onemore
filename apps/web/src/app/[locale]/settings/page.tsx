@@ -428,9 +428,7 @@ export default function SettingsPage(): React.ReactElement {
     </div>
   ) : (
     <GymListGroup>
-      {isAdmin ? (
-        <GymListRow href={`/${locale}/admin`} title={t('adminConsole')} />
-      ) : null}
+      {isAdmin ? <GymListRow href={`/${locale}/admin`} title={t('adminConsole')} /> : null}
       {exportJob ? (
         <li className="border-b border-gym-separator px-4 py-3 text-sm text-muted-foreground">
           {t('exportStatus', { status: exportJob.status })}

@@ -1,6 +1,11 @@
 'use client';
 
-import type { AdminCreateTemplate, CreateProgramInput, TemplateMeta, TrainingGoal } from '@onemore/shared';
+import type {
+  AdminCreateTemplate,
+  CreateProgramInput,
+  TemplateMeta,
+  TrainingGoal,
+} from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
