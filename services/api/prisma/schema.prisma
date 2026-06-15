@@ -123,6 +123,14 @@ enum ConsentType {
   dpa_coach
 }
 
+enum SupplementUnit {
+  g
+  mg
+  capsule
+  scoop
+  drops
+}
+
 // --- Auth & identity ---
 
 model User {
@@ -173,6 +181,8 @@ model User {
   customExercises         ExerciseLibrary[]   @relation("CustomExercises")
   dataExportJobs          DataExportJob[]
   pushSubscriptions       PushSubscription[]
+  supplements             Supplement[]       @relation("UserSupplements")
+  supplementLogs          SupplementLog[]    @relation("UserSupplementLogs")
 
   @@index([deletedAt])
   @@index([onboardingCompletedAt])
@@ -593,6 +603,44 @@ model AuditLog {
   @@index([actorUserId, createdAt(sort: Desc)])
   @@index([resourceType, resourceId])
   @@map("audit_log")
+}
+
+// --- Supplements ---
+
+model Supplement {
+  id          String         @id @default(uuid()) @db.Uuid
+  name        Json
+  brand       String?
+  unit        SupplementUnit
+  userId      String?        @map("user_id") @db.Uuid
+  user        User?          @relation("UserSupplements", fields: [userId], references: [id], onDelete: Cascade)
+  calories    Float          @default(0)
+  protein     Float          @default(0)
+  carbs       Float          @default(0)
+  fat         Float          @default(0)
+  logs        SupplementLog[]
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("supplement")
+}
+
+model SupplementLog {
+  id            String      @id @default(uuid()) @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  user          User        @relation("UserSupplementLogs", fields: [userId], references: [id], onDelete: Cascade)
+  supplementId  String      @map("supplement_id") @db.Uuid
+  supplement    Supplement  @relation(fields: [supplementId], references: [id], onDelete: Cascade)
+  amount        Float
+  notes         String?
+  date          DateTime
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@index([userId, date(sort: Desc)])
+  @@index([supplementId])
+  @@map("supplement_log")
 }
 
 model SyncIdempotency {

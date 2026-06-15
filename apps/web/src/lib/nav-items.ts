@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Dumbbell, History, Home, LayoutList, Settings } from 'lucide-react';
+import { Dumbbell, History, Home, LayoutList, Pill, Settings } from 'lucide-react';
 
 export interface NavItem {
   href: string;
@@ -9,6 +9,7 @@ export interface NavItem {
     | 'navWorkout'
     | 'navHistory'
     | 'navExercises'
+    | 'navSupplements'
     | 'navSettings';
   icon: LucideIcon;
   match: (route: string) => boolean;
@@ -50,6 +51,12 @@ export function buildNavItems(locale: string): NavItem[] {
       match: (route) => route === 'exercises',
     },
     {
+      href: `/${locale}/supplements`,
+      labelKey: 'navSupplements',
+      icon: Pill,
+      match: (route) => route === 'supplements' || route.startsWith('supplements/'),
+    },
+    {
       href: `/${locale}/settings`,
       labelKey: 'navSettings',
       icon: Settings,
@@ -76,7 +83,7 @@ export interface GymPrimaryNavItem {
 
 export interface GymMoreNavItem {
   href: string;
-  labelKey: 'navExercises' | 'navSettings';
+  labelKey: 'navExercises' | 'navSupplements' | 'navSettings';
   icon: LucideIcon;
   match: (route: string) => boolean;
 }
@@ -126,6 +133,12 @@ export function buildGymMoreNavItems(locale: string): GymMoreNavItem[] {
       match: (route) => route === 'exercises',
     },
     {
+      href: `/${locale}/supplements`,
+      labelKey: 'navSupplements',
+      icon: Pill,
+      match: (route) => route === 'supplements' || route.startsWith('supplements/'),
+    },
+    {
       href: `/${locale}/settings`,
       labelKey: 'navSettings',
       icon: Settings,
@@ -135,7 +148,12 @@ export function buildGymMoreNavItems(locale: string): GymMoreNavItem[] {
 }
 
 export function isGymMoreRouteActive(route: string): boolean {
-  return route === 'exercises' || route === 'settings';
+  return (
+    route === 'exercises' ||
+    route === 'supplements' ||
+    route.startsWith('supplements/') ||
+    route === 'settings'
+  );
 }
 
 /**

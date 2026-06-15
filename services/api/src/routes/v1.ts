@@ -13,6 +13,7 @@ import { PrivacyService } from '../modules/gdpr/privacy.service.js';
 import { OnboardingService } from '../modules/onboarding/onboarding.service.js';
 import { PushService } from '../modules/notifications/push.service.js';
 import { ProgramsService } from '../modules/programs/programs.service.js';
+import { SupplementsService } from '../modules/supplements/supplements.service.js';
 import { AnalyticsService } from '../modules/analytics/analytics.service.js';
 import { HistoryService } from '../modules/history/history.service.js';
 import { PrDetectionService } from '../modules/progress/pr-detection.service.js';
@@ -35,6 +36,7 @@ import { createNotificationsRouter } from './notifications.routes.js';
 import { createSyncRouter } from './sync.routes.js';
 import { createWorkoutsRouter } from './workouts.routes.js';
 import { createUsersRouter } from './users.routes.js';
+import { createSupplementsRouter } from '../modules/supplements/supplements.router.js';
 
 export interface V1RouterDeps {
   env: Env;
@@ -55,6 +57,7 @@ export function createV1Router(deps: V1RouterDeps): Router {
   const onboardingService = new OnboardingService(prisma, deps.usersService);
   const exercisesService = new ExercisesService(prisma);
   const programsService = new ProgramsService(prisma);
+  const supplementsService = new SupplementsService(prisma);
   const prDetection = new PrDetectionService();
   const workoutsService = new WorkoutsService(prisma, prDetection);
   const syncService = new SyncService(prisma, workoutsService, prDetection);
@@ -95,6 +98,8 @@ export function createV1Router(deps: V1RouterDeps): Router {
   router.use('/onboarding', authenticate, createOnboardingRouter(onboardingService));
 
   router.use('/exercises', authenticate, createExercisesRouter(exercisesService));
+
+  router.use('/supplements', authenticate, createSupplementsRouter(supplementsService));
 
   router.use('/programs', authenticate, createProgramsRouter(programsService));
 

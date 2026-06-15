@@ -5,6 +5,8 @@ import type {
   AnalyticsDashboard,
   ChangePasswordBody,
   CreateCustomExercise,
+  CreateSupplementInput,
+  CreateSupplementLogInput,
   CreateProgramInput,
   DataExportJob,
   ExerciseListItem,
@@ -19,12 +21,19 @@ import type {
   RequestDataExportResponse,
   StartWorkoutSessionInput,
   SubstituteExerciseInput,
+  SupplementDetail,
+  SupplementListItem,
+  SupplementLogItem,
+  SupplementLogListResponse,
+  SupplementTrendItem,
   TemplateSummary,
+  TodaySupplementsResponse,
   UpdateWorkoutExerciseNotesInput,
   UpdateWorkoutSessionNotesInput,
   UpdateHistorySet,
   UpdateUserProfile,
   UpdateCustomExercise,
+  UpdateSupplementInput,
   UpsertSetLogInput,
   UpsertSetResponse,
   UserProfile,
@@ -33,6 +42,10 @@ import type {
 import { EXERCISE_CATALOG_LIMIT } from '@onemore/shared';
 
 import { API_BASE_URL } from '@/lib/api-config';
+
+function todayDateString(): string {
+  return new Date().toISOString().split('T')[0] ?? '';
+}
 
 interface ApiErrorBody {
   error?: { message?: string; code?: string };
@@ -601,6 +614,155 @@ export async function fetchPersonalRecords(
   }
   const data = (await response.json()) as { items: PersonalRecordSummary[] };
   return data.items;
+}
+
+export async function fetchSupplements(
+  accessToken: string,
+  locale?: string,
+): Promise<SupplementListItem[]> {
+  const headers: HeadersInit = { Authorization: `Bearer ${accessToken}` };
+  if (locale) {
+    headers['Accept-Language'] = locale;
+  }
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements`, {
+    headers,
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load supplements');
+  }
+  const data = (await response.json()) as { supplements: SupplementListItem[] };
+  return data.supplements;
+}
+
+export async function createSupplement(
+  accessToken: string,
+  payload: CreateSupplementInput,
+): Promise<SupplementDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to create supplement');
+  }
+  return response.json() as Promise<SupplementDetail>;
+}
+
+export async function updateSupplement(
+  accessToken: string,
+  supplementId: string,
+  payload: UpdateSupplementInput,
+): Promise<SupplementDetail> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements/${supplementId}`, {
+    method: 'PUT',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to update supplement');
+  }
+  return response.json() as Promise<SupplementDetail>;
+}
+
+export async function deleteSupplement(accessToken: string, supplementId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements/${supplementId}`, {
+    method: 'DELETE',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to delete supplement');
+  }
+}
+
+export async function fetchTodaySupplements(
+  accessToken: string,
+  locale?: string,
+): Promise<TodaySupplementsResponse> {
+  const today = todayDateString();
+  const params = new URLSearchParams({
+    from: today + 'T00:00:00.000Z',
+    to: today + 'T23:59:59.999Z',
+    limit: '50',
+  });
+  if (locale) params.set('locale', locale);
+  const response = await fetch(API_BASE_URL + '/api/v1/supplements/logs?' + params.toString(), {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load today supplements');
+  }
+  const data = (await response.json()) as SupplementLogListResponse;
+  return {
+    date: today,
+    logs: data.logs,
+    totalCount: data.logs.length,
+  };
+}
+
+export async function createSupplementLog(
+  accessToken: string,
+  payload: CreateSupplementLogInput,
+): Promise<SupplementLogItem> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements/logs`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to log supplement');
+  }
+  return response.json() as Promise<SupplementLogItem>;
+}
+
+export async function deleteSupplementLog(accessToken: string, logId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements/logs/${logId}`, {
+    method: 'DELETE',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to delete supplement log');
+  }
+}
+
+export async function repeatYesterdaySupplements(
+  accessToken: string,
+  date: string,
+): Promise<TodaySupplementsResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements/logs/repeat-yesterday`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify({ date }),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to repeat yesterday');
+  }
+  return response.json() as Promise<TodaySupplementsResponse>;
+}
+
+export async function fetchSupplementTrend(
+  accessToken: string,
+  days = 30,
+  locale?: string,
+): Promise<SupplementTrendItem[]> {
+  const params = new URLSearchParams({ days: String(days) });
+  if (locale) params.set('locale', locale);
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements/trend?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load supplement trend');
+  }
+  return response.json() as Promise<SupplementTrendItem[]>;
 }
 
 export async function addWorkoutExercise(
