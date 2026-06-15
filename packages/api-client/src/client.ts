@@ -95,6 +95,27 @@ export class ApiClient {
   }
 
   /**
+   * DELETE request to an API path.
+   *
+   * @param path - Path relative to base URL.
+   * @returns Parsed JSON body (or void for 204).
+   * @throws When the response is not OK.
+   */
+  async deleteJson<T = void>(path: string): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: 'DELETE',
+      headers: this.buildHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(`DELETE ${path} failed: ${String(response.status)}`);
+    }
+    if (response.status === 204) {
+      return undefined as T;
+    }
+    return response.json() as Promise<T>;
+  }
+
+  /**
    * Build request headers including optional Bearer token.
    *
    * @returns Headers for API requests.

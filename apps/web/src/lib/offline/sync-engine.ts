@@ -16,6 +16,31 @@ import { invalidateDashboardCache } from '@/lib/dashboard/dashboard-cache';
 import { offlineDb } from './db';
 import { sessionDetailToHistorySummary } from './dashboard-store';
 
+const MAX_SYNC_ATTEMPTS = 5;
+const BASE_BACKOFF_MS = 1000;
+const MAX_BACKOFF_MS = 30_000;
+
+/**
+ * Calculate exponential backoff delay with jitter.
+ *
+ * @param attempt - Current attempt number (0-indexed).
+ * @returns Delay in milliseconds.
+ */
+function calculateBackoff(attempt: number): number {
+  const exponentialDelay = Math.min(BASE_BACKOFF_MS * Math.pow(2, attempt), MAX_BACKOFF_MS);
+  const jitter = Math.random() * 0.3 * exponentialDelay;
+  return Math.floor(exponentialDelay + jitter);
+}
+
+/**
+ * Sleep for the specified duration.
+ *
+ * @param ms - Milliseconds to sleep.
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * @returns Whether the browser reports an online network state.
  */
@@ -45,7 +70,7 @@ export async function getPendingSyncCount(): Promise<number> {
 }
 
 /**
- * Push queued mutations to the sync batch endpoint.
+ * Push queued mutations to the sync batch endpoint with exponential backoff retry.
  *
  * @param accessToken - Bearer access token.
  */
@@ -59,47 +84,88 @@ export async function flushSyncQueue(accessToken: string): Promise<SyncBatchResp
     return null;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/sync/batch`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      'Idempotency-Key': generateClientUuid(),
-    },
-    credentials: 'include',
-    body: JSON.stringify({
-      clientSyncId: generateClientUuid(),
-      mutations: rows.map((row) => row.mutation),
-    }),
-  });
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    const rowsToUpdate = rows.map((row) => ({
-      ...row,
-      attempts: row.attempts + 1,
-    }));
-    await offlineDb.syncQueue.bulkPut(rowsToUpdate);
-    throw new Error(`Sync failed: ${String(response.status)}`);
+  for (const row of rows) {
+    if (row.attempts >= MAX_SYNC_ATTEMPTS) {
+      continue;
+    }
   }
 
-  const result = (await response.json()) as SyncBatchResponse;
-  const acknowledged = new Set(result.acknowledged);
+  const attemptRows = rows.filter((row) => row.attempts < MAX_SYNC_ATTEMPTS);
+  if (attemptRows.length === 0) {
+    return null;
+  }
 
-  const idsToRemove = rows
-    .filter((row) => acknowledged.has(row.mutation.payload.id))
-    .map((row) => row.id);
+  const maxAttempts = Math.max(...attemptRows.map((r) => r.attempts));
 
-  await offlineDb.syncQueue.bulkDelete(idsToRemove);
+  for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+    if (!isBrowserOnline()) {
+      return null;
+    }
 
-  const metadata = await offlineDb.syncMetadata.get('default');
-  await offlineDb.syncMetadata.put({
-    id: 'default',
-    userId: metadata?.userId ?? '',
-    lastSyncedAt: result.serverTime,
-    lastDeltaAt: metadata?.lastDeltaAt ?? null,
-  });
+    const currentRows = await offlineDb.syncQueue
+      .where('attempts')
+      .below(MAX_SYNC_ATTEMPTS)
+      .sortBy('createdAt');
 
-  return result;
+    if (currentRows.length === 0) {
+      return null;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/sync/batch`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': generateClientUuid(),
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        clientSyncId: generateClientUuid(),
+        mutations: currentRows.map((row) => row.mutation),
+      }),
+    });
+
+    if (!response.ok) {
+      lastError = new Error(`Sync failed: ${String(response.status)}`);
+
+      const rowsToUpdate = currentRows.map((row) => ({
+        ...row,
+        attempts: row.attempts + 1,
+      }));
+      await offlineDb.syncQueue.bulkPut(rowsToUpdate);
+
+      if (attempt < maxAttempts) {
+        const delay = calculateBackoff(attempt);
+        await sleep(delay);
+        continue;
+      }
+
+      throw lastError;
+    }
+
+    const result = (await response.json()) as SyncBatchResponse;
+    const acknowledged = new Set(result.acknowledged);
+
+    const idsToRemove = currentRows
+      .filter((row) => acknowledged.has(row.mutation.payload.id))
+      .map((row) => row.id);
+
+    await offlineDb.syncQueue.bulkDelete(idsToRemove);
+
+    const metadata = await offlineDb.syncMetadata.get('default');
+    await offlineDb.syncMetadata.put({
+      id: 'default',
+      userId: metadata?.userId ?? '',
+      lastSyncedAt: result.serverTime,
+      lastDeltaAt: metadata?.lastDeltaAt ?? null,
+    });
+
+    return result;
+  }
+
+  throw lastError ?? new Error('Sync failed after max attempts');
 }
 
 /**
