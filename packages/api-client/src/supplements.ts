@@ -27,9 +27,7 @@ export class SupplementsApi {
   }
 
   async getById(supplementId: string, locale?: string): Promise<SupplementDetail> {
-    return this.client.getJson<SupplementDetail>(
-      `/api/v1/supplements/${supplementId}`,
-    );
+    return this.client.getJson<SupplementDetail>(`/api/v1/supplements/${supplementId}`);
   }
 
   async create(payload: CreateSupplementInput): Promise<SupplementDetail> {
@@ -37,10 +35,7 @@ export class SupplementsApi {
   }
 
   async update(supplementId: string, payload: UpdateSupplementInput): Promise<SupplementDetail> {
-    return this.client.putJson<SupplementDetail>(
-      `/api/v1/supplements/${supplementId}`,
-      payload,
-    );
+    return this.client.putJson<SupplementDetail>(`/api/v1/supplements/${supplementId}`, payload);
   }
 
   async delete(supplementId: string): Promise<void> {
@@ -73,11 +68,11 @@ export class SupplementsApi {
     return this.client.postJson<SupplementLogItem>('/api/v1/supplements/logs', payload);
   }
 
-  async updateLog(logId: string, payload: Partial<CreateSupplementLogInput>): Promise<SupplementLogItem> {
-    return this.client.putJson<SupplementLogItem>(
-      `/api/v1/supplements/logs/${logId}`,
-      payload,
-    );
+  async updateLog(
+    logId: string,
+    payload: Partial<CreateSupplementLogInput>,
+  ): Promise<SupplementLogItem> {
+    return this.client.putJson<SupplementLogItem>(`/api/v1/supplements/logs/${logId}`, payload);
   }
 
   async deleteLog(logId: string): Promise<void> {

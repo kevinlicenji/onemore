@@ -148,7 +148,12 @@ export function buildGymMoreNavItems(locale: string): GymMoreNavItem[] {
 }
 
 export function isGymMoreRouteActive(route: string): boolean {
-  return route === 'exercises' || route === 'supplements' || route.startsWith('supplements/') || route === 'settings';
+  return (
+    route === 'exercises' ||
+    route === 'supplements' ||
+    route.startsWith('supplements/') ||
+    route === 'settings'
+  );
 }
 
 /**

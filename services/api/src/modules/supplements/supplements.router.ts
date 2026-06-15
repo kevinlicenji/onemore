@@ -76,7 +76,11 @@ export function createSupplementsRouter(supplementsService: SupplementsService):
       const authReq = req as AuthenticatedRequest;
       const locale = resolveLocale(authReq);
       const body = RepeatYesterdayInputSchema.parse(req.body);
-      const result = await supplementsService.repeatYesterday(authReq.userId ?? '', body.date, locale);
+      const result = await supplementsService.repeatYesterday(
+        authReq.userId ?? '',
+        body.date,
+        locale,
+      );
       res.status(201).json(result);
     }),
   );
@@ -131,7 +135,11 @@ export function createSupplementsRouter(supplementsService: SupplementsService):
       const authReq = req as AuthenticatedRequest;
       const locale = resolveLocale(authReq);
       const supplementId = requireRouteParam(req.params.supplementId, 'supplementId');
-      const supplement = await supplementsService.getById(authReq.userId ?? '', supplementId, locale);
+      const supplement = await supplementsService.getById(
+        authReq.userId ?? '',
+        supplementId,
+        locale,
+      );
       res.json(supplement);
     }),
   );
@@ -143,7 +151,12 @@ export function createSupplementsRouter(supplementsService: SupplementsService):
       const locale = resolveLocale(authReq);
       const supplementId = requireRouteParam(req.params.supplementId, 'supplementId');
       const body = UpdateSupplementInputSchema.parse(req.body);
-      const supplement = await supplementsService.update(authReq.userId ?? '', supplementId, body, locale);
+      const supplement = await supplementsService.update(
+        authReq.userId ?? '',
+        supplementId,
+        body,
+        locale,
+      );
       res.json(supplement);
     }),
   );

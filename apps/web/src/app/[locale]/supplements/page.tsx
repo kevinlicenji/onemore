@@ -271,11 +271,7 @@ export default function SupplementsPage(): React.ReactElement {
               {supplement.isGlobal ? t('global') : t('custom')}
             </>
           }
-          subtitle={
-            supplement.brand
-              ? `${supplement.brand} · ${supplement.unit}`
-              : supplement.unit
-          }
+          subtitle={supplement.brand ? `${supplement.brand} · ${supplement.unit}` : supplement.unit}
           title={supplement.name}
           onClick={() => {
             openEdit(supplement);
@@ -285,45 +281,46 @@ export default function SupplementsPage(): React.ReactElement {
     </GymListGroup>
   );
 
-  const todaySection = todayLogs.length > 0 ? (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-muted-foreground">{t('todayLogsTitle')}</h3>
-        <button
-          className="text-xs font-medium text-primary disabled:opacity-50"
-          disabled={saving}
-          type="button"
-          onClick={() => {
-            void handleRepeatYesterday();
-          }}
-        >
-          {t('repeatYesterday')}
-        </button>
+  const todaySection =
+    todayLogs.length > 0 ? (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-muted-foreground">{t('todayLogsTitle')}</h3>
+          <button
+            className="text-xs font-medium text-primary disabled:opacity-50"
+            disabled={saving}
+            type="button"
+            onClick={() => {
+              void handleRepeatYesterday();
+            }}
+          >
+            {t('repeatYesterday')}
+          </button>
+        </div>
+        <GymListGroup>
+          {todayLogs.map((log) => (
+            <GymListRow
+              key={log.id}
+              meta={String(log.amount) + ' ' + log.supplementUnit}
+              subtitle={log.notes ?? undefined}
+              title={log.supplementName}
+              trailing={
+                <button
+                  aria-label={t('delete')}
+                  className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground/60 transition-colors active:text-destructive"
+                  type="button"
+                  onClick={() => {
+                    void handleRemoveLog(log.id);
+                  }}
+                >
+                  ✕
+                </button>
+              }
+            />
+          ))}
+        </GymListGroup>
       </div>
-      <GymListGroup>
-        {todayLogs.map((log) => (
-          <GymListRow
-            key={log.id}
-            meta={String(log.amount) + ' ' + log.supplementUnit}
-            subtitle={log.notes ?? undefined}
-            title={log.supplementName}
-            trailing={
-              <button
-                aria-label={t('delete')}
-                className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground/60 transition-colors active:text-destructive"
-                type="button"
-                onClick={() => {
-                  void handleRemoveLog(log.id);
-                }}
-              >
-                ✕
-              </button>
-            }
-          />
-        ))}
-      </GymListGroup>
-    </div>
-  ) : null;
+    ) : null;
 
   return (
     <RequireAuth>
@@ -406,7 +403,8 @@ export default function SupplementsPage(): React.ReactElement {
                       </span>
                       <span>{supplement.isGlobal ? t('global') : t('custom')}</span>
                       <span className="ml-auto tabular-nums">
-                        {supplement.recentLogCount} {supplement.recentLogCount === 1 ? 'log' : 'logs'}
+                        {supplement.recentLogCount}{' '}
+                        {supplement.recentLogCount === 1 ? 'log' : 'logs'}
                       </span>
                     </div>
                   </CardContent>

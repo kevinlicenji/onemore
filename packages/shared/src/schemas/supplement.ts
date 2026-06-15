@@ -96,11 +96,13 @@ export const SupplementTrendItemSchema = z.object({
   date: z.string().date(),
   hasLogged: z.boolean(),
   totalItems: z.number().int().nonnegative(),
-  items: z.array(z.object({
-    name: z.string(),
-    amount: z.number(),
-    unit: SupplementUnitEnum,
-  })),
+  items: z.array(
+    z.object({
+      name: z.string(),
+      amount: z.number(),
+      unit: SupplementUnitEnum,
+    }),
+  ),
 });
 export type SupplementTrendItem = z.infer<typeof SupplementTrendItemSchema>;
 

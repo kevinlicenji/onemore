@@ -80,7 +80,11 @@ export class SupplementsService {
     };
   }
 
-  async create(userId: string, input: CreateSupplementInput, locale?: string): Promise<SupplementDetail> {
+  async create(
+    userId: string,
+    input: CreateSupplementInput,
+    locale?: string,
+  ): Promise<SupplementDetail> {
     const supplement = await this.prisma.supplement.create({
       data: {
         name: input.name,
@@ -393,11 +397,7 @@ export class SupplementsService {
     };
   }
 
-  async getTrend(
-    userId: string,
-    days: number,
-    locale: string,
-  ): Promise<SupplementTrendItem[]> {
+  async getTrend(userId: string, days: number, locale: string): Promise<SupplementTrendItem[]> {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days + 1);

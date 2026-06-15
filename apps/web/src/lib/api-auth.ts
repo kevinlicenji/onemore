@@ -668,10 +668,7 @@ export async function updateSupplement(
   return response.json() as Promise<SupplementDetail>;
 }
 
-export async function deleteSupplement(
-  accessToken: string,
-  supplementId: string,
-): Promise<void> {
+export async function deleteSupplement(accessToken: string, supplementId: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/v1/supplements/${supplementId}`, {
     method: 'DELETE',
     headers: authHeaders(accessToken),
@@ -693,13 +690,10 @@ export async function fetchTodaySupplements(
     limit: '50',
   });
   if (locale) params.set('locale', locale);
-  const response = await fetch(
-    API_BASE_URL + '/api/v1/supplements/logs?' + params.toString(),
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      credentials: 'include',
-    },
-  );
+  const response = await fetch(API_BASE_URL + '/api/v1/supplements/logs?' + params.toString(), {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
   if (!response.ok) {
     throw await parseApiError(response, 'Failed to load today supplements');
   }
@@ -727,10 +721,7 @@ export async function createSupplementLog(
   return response.json() as Promise<SupplementLogItem>;
 }
 
-export async function deleteSupplementLog(
-  accessToken: string,
-  logId: string,
-): Promise<void> {
+export async function deleteSupplementLog(accessToken: string, logId: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/v1/supplements/logs/${logId}`, {
     method: 'DELETE',
     headers: authHeaders(accessToken),
@@ -764,13 +755,10 @@ export async function fetchSupplementTrend(
 ): Promise<SupplementTrendItem[]> {
   const params = new URLSearchParams({ days: String(days) });
   if (locale) params.set('locale', locale);
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/supplements/trend?${params.toString()}`,
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      credentials: 'include',
-    },
-  );
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements/trend?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
   if (!response.ok) {
     throw await parseApiError(response, 'Failed to load supplement trend');
   }

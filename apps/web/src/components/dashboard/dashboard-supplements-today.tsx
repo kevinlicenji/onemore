@@ -88,8 +88,6 @@ export function DashboardSupplementsToday({
   }
 
   return (
-    <div className="rounded-lg border border-gym-separator bg-card p-5 shadow-sm">
-      {content}
-    </div>
+    <div className="rounded-lg border border-gym-separator bg-card p-5 shadow-sm">{content}</div>
   );
 }

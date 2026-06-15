@@ -113,14 +113,18 @@ describe('SupplementsService', () => {
       );
 
       const service = new SupplementsService(prisma as never);
-      const result = await service.create('user-1', {
-        name: { it: 'Creatina', en: 'Creatine' },
-        unit: 'g',
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0,
-      }, 'it');
+      const result = await service.create(
+        'user-1',
+        {
+          name: { it: 'Creatina', en: 'Creatine' },
+          unit: 'g',
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+        },
+        'it',
+      );
 
       expect(result.isGlobal).toBe(false);
       expect(result.name).toBe('Creatina');
@@ -160,10 +164,15 @@ describe('SupplementsService', () => {
       );
 
       const service = new SupplementsService(prisma as never);
-      const result = await service.update('user-1', 'sup-global', {
-        name: { it: 'Nuova', en: 'New' },
-        calories: 5,
-      }, 'en');
+      const result = await service.update(
+        'user-1',
+        'sup-global',
+        {
+          name: { it: 'Nuova', en: 'New' },
+          calories: 5,
+        },
+        'en',
+      );
 
       expect(prisma.supplement.create).toHaveBeenCalledOnce();
       expect(result.name).toBe('New');
@@ -202,10 +211,15 @@ describe('SupplementsService', () => {
       );
 
       const service = new SupplementsService(prisma as never);
-      const result = await service.update('user-1', 'sup-own', {
-        name: { it: 'Nuova', en: 'New' },
-        calories: 5,
-      }, 'en');
+      const result = await service.update(
+        'user-1',
+        'sup-own',
+        {
+          name: { it: 'Nuova', en: 'New' },
+          calories: 5,
+        },
+        'en',
+      );
 
       expect(prisma.supplement.update).toHaveBeenCalledOnce();
       expect(result.name).toBe('New');
@@ -237,9 +251,7 @@ describe('SupplementsService', () => {
       );
 
       const service = new SupplementsService(prisma as never);
-      await expect(service.delete('user-1', 'sup-global')).rejects.toThrow(
-        'Supplement not found',
-      );
+      await expect(service.delete('user-1', 'sup-global')).rejects.toThrow('Supplement not found');
     });
   });
 
@@ -264,11 +276,7 @@ describe('SupplementsService', () => {
       );
 
       const service = new SupplementsService(prisma as never);
-      const result = await service.listLogs(
-        'user-1',
-        { limit: 50 },
-        'en',
-      );
+      const result = await service.listLogs('user-1', { limit: 50 }, 'en');
 
       expect(result.logs).toHaveLength(1);
       expect(result.logs[0]?.supplementName).toBe('Creatine');
@@ -298,11 +306,15 @@ describe('SupplementsService', () => {
       );
 
       const service = new SupplementsService(prisma as never);
-      const result = await service.createLog('user-1', {
-        supplementId: 'sup-1',
-        amount: 10,
-        date: '2026-06-15T00:00:00.000Z',
-      }, 'it');
+      const result = await service.createLog(
+        'user-1',
+        {
+          supplementId: 'sup-1',
+          amount: 10,
+          date: '2026-06-15T00:00:00.000Z',
+        },
+        'it',
+      );
 
       expect(result.supplementName).toBe('Creatina');
     });
@@ -334,11 +346,15 @@ describe('SupplementsService', () => {
       );
 
       const service = new SupplementsService(prisma as never);
-      const result = await service.updateLog('user-1', {
-        id: 'log-1',
-        amount: 20,
-        notes: 'updated',
-      }, 'en');
+      const result = await service.updateLog(
+        'user-1',
+        {
+          id: 'log-1',
+          amount: 20,
+          notes: 'updated',
+        },
+        'en',
+      );
 
       expect(result.amount).toBe(20);
     });
