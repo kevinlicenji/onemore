@@ -2,18 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ExercisesService } from './exercises.service.js';
 
-interface ExerciseSearchRow {
-  id: string;
-  slug: string;
-  names: { en: string };
-  category: string;
-  primary_muscles: string[];
-  secondary_muscles: string[];
-  equipment: string;
-  is_bodyweight: boolean;
-  owner_user_id: string | null;
-}
-
 function createMockPrisma() {
   const exercises = [
     {
@@ -48,7 +36,6 @@ function createMockPrisma() {
         }),
       ),
     },
-    $queryRaw: vi.fn((): Promise<ExerciseSearchRow[]> => Promise.resolve([])),
   };
 }
 
@@ -116,39 +103,38 @@ describe('ExercisesService', () => {
 
   it('searches exercises with substring match and alphabetical order', async () => {
     const prisma = createMockPrisma();
-    prisma.$queryRaw.mockResolvedValueOnce([
+    prisma.exerciseLibrary.findMany.mockResolvedValueOnce([
       {
         id: 'ex-1',
         slug: 'hip-abductor-machine',
         names: { en: 'Hip Abductor Machine' },
         category: 'legs',
-        primary_muscles: ['glutes'],
-        secondary_muscles: [],
+        primaryMuscles: ['glutes'],
+        secondaryMuscles: [],
         equipment: 'machine',
-        is_bodyweight: false,
-        owner_user_id: null,
+        isBodyweight: false,
+        ownerUserId: null,
+        deletedAt: null,
       },
       {
         id: 'ex-2',
         slug: 'hip-thrust-machine',
         names: { en: 'Hip Thrust Machine' },
         category: 'legs',
-        primary_muscles: ['glutes'],
-        secondary_muscles: [],
+        primaryMuscles: ['glutes'],
+        secondaryMuscles: [],
         equipment: 'machine',
-        is_bodyweight: false,
-        owner_user_id: null,
+        isBodyweight: false,
+        ownerUserId: null,
+        deletedAt: null,
       },
     ]);
     const service = new ExercisesService(prisma as never);
 
     const result = await service.search('user-1', { q: 'Thru', limit: 10 });
 
-    expect(result.map((item) => item.names.en)).toEqual([
-      'Hip Abductor Machine',
-      'Hip Thrust Machine',
-    ]);
-    expect(prisma.$queryRaw).toHaveBeenCalled();
+    expect(result.map((item) => item.names.en)).toEqual(['Hip Thrust Machine']);
+    expect(prisma.exerciseLibrary.findMany).toHaveBeenCalled();
   });
 
   it('creates a custom exercise', async () => {

@@ -91,8 +91,9 @@ export function AddProgramExerciseModal({
           .then((items) => {
             setResults(sortExercisesByDisplayName(items, locale));
           })
-          .catch(() => {
+          .catch((err: unknown) => {
             setResults([]);
+            console.error('Exercise search error:', err);
           })
           .finally(() => {
             setIsSearching(false);
