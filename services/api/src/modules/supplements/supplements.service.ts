@@ -10,13 +10,15 @@ import type {
   UpdateSupplementInput,
   UpdateSupplementLogInput,
 } from '@onemore/shared';
-import type { PrismaClient } from '@prisma/client';
-
-import type { Prisma, SupplementUnit } from '@prisma/client';
+import type { PrismaClient, Prisma } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
 
 type SupplementName = { it: string; en: string };
+
+function dateString(d: Date): string {
+  return d.toISOString().split('T')[0] ?? '';
+}
 
 export class SupplementsService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -43,7 +45,7 @@ export class SupplementsService {
       id: s.id,
       name: flattenName(s.name as SupplementName, locale),
       brand: s.brand,
-      unit: s.unit as SupplementListItem['unit'],
+      unit: s.unit,
       isGlobal: s.userId === null,
       calories: s.calories,
       protein: s.protein,
@@ -69,7 +71,7 @@ export class SupplementsService {
       id: supplement.id,
       name: flattenName(supplement.name as SupplementName, locale),
       brand: supplement.brand,
-      unit: supplement.unit as SupplementDetail['unit'],
+      unit: supplement.unit,
       isGlobal: supplement.userId === null,
       calories: supplement.calories,
       protein: supplement.protein,
@@ -91,10 +93,10 @@ export class SupplementsService {
         brand: input.brand ?? null,
         unit: input.unit,
         userId,
-        calories: input.calories ?? 0,
-        protein: input.protein ?? 0,
-        carbs: input.carbs ?? 0,
-        fat: input.fat ?? 0,
+        calories: input.calories,
+        protein: input.protein,
+        carbs: input.carbs,
+        fat: input.fat,
       },
     });
 
@@ -102,7 +104,7 @@ export class SupplementsService {
       id: supplement.id,
       name: flattenName(supplement.name as SupplementName, locale ?? 'en'),
       brand: supplement.brand,
-      unit: supplement.unit as SupplementDetail['unit'],
+      unit: supplement.unit,
       isGlobal: false,
       calories: supplement.calories,
       protein: supplement.protein,
@@ -132,7 +134,7 @@ export class SupplementsService {
         data: {
           name: input.name ?? (existing.name as SupplementName),
           brand: input.brand !== undefined ? input.brand : existing.brand,
-          unit: (input.unit ?? existing.unit) as SupplementUnit,
+          unit: input.unit ?? existing.unit,
           userId,
           calories: input.calories ?? existing.calories,
           protein: input.protein ?? existing.protein,
@@ -145,7 +147,7 @@ export class SupplementsService {
         id: cloned.id,
         name: flattenName(cloned.name as SupplementName, locale),
         brand: cloned.brand,
-        unit: cloned.unit as SupplementDetail['unit'],
+        unit: cloned.unit,
         isGlobal: false,
         calories: cloned.calories,
         protein: cloned.protein,
@@ -163,7 +165,7 @@ export class SupplementsService {
     const updated = await this.prisma.supplement.update({
       where: { id: supplementId },
       data: {
-        name: input.name as object | undefined,
+        name: input.name,
         brand: input.brand,
         unit: input.unit,
         calories: input.calories,
@@ -177,7 +179,7 @@ export class SupplementsService {
       id: updated.id,
       name: flattenName(updated.name as SupplementName, locale),
       brand: updated.brand,
-      unit: updated.unit as SupplementDetail['unit'],
+      unit: updated.unit,
       isGlobal: false,
       calories: updated.calories,
       protein: updated.protein,
@@ -232,20 +234,21 @@ export class SupplementsService {
     });
 
     const hasMore = logs.length > query.limit;
-    if (hasMore) logs.pop();
+    const trimmed = hasMore ? logs.slice(0, -1) : logs;
 
     return {
-      logs: logs.map((log) => ({
+      logs: trimmed.map((log) => ({
         id: log.id,
         supplementId: log.supplementId,
         supplementName: flattenName(log.supplement.name as SupplementName, locale),
-        supplementUnit: log.supplement.unit as SupplementLogItem['supplementUnit'],
+        supplementUnit: log.supplement.unit,
         amount: log.amount,
         notes: log.notes,
         date: log.date.toISOString(),
         createdAt: log.createdAt.toISOString(),
       })),
-      nextCursor: hasMore && logs.length > 0 ? logs[logs.length - 1]!.date.toISOString() : null,
+      nextCursor:
+        hasMore && trimmed.length > 0 ? (trimmed.at(-1)?.date.toISOString() ?? null) : null,
     };
   }
 
@@ -282,7 +285,7 @@ export class SupplementsService {
       id: log.id,
       supplementId: log.supplementId,
       supplementName: flattenName(log.supplement.name as SupplementName, locale),
-      supplementUnit: log.supplement.unit as SupplementLogItem['supplementUnit'],
+      supplementUnit: log.supplement.unit,
       amount: log.amount,
       notes: log.notes,
       date: log.date.toISOString(),
@@ -320,7 +323,7 @@ export class SupplementsService {
       id: log.id,
       supplementId: log.supplementId,
       supplementName: flattenName(log.supplement.name as SupplementName, locale),
-      supplementUnit: log.supplement.unit as SupplementLogItem['supplementUnit'],
+      supplementUnit: log.supplement.unit,
       amount: log.amount,
       notes: log.notes,
       date: log.date.toISOString(),
@@ -349,12 +352,15 @@ export class SupplementsService {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
+    const yesterdayStart = dateString(yesterday) + 'T00:00:00.000Z';
+    const todayStart = dateString(today) + 'T00:00:00.000Z';
+
     const yesterdayLogs = await this.prisma.supplementLog.findMany({
       where: {
         userId,
         date: {
-          gte: new Date(yesterday.toISOString().split('T')[0] + 'T00:00:00.000Z'),
-          lt: new Date(today.toISOString().split('T')[0] + 'T00:00:00.000Z'),
+          gte: new Date(yesterdayStart),
+          lt: new Date(todayStart),
         },
       },
       include: {
@@ -362,7 +368,7 @@ export class SupplementsService {
       },
     });
 
-    const dayStart = new Date(today.toISOString().split('T')[0] + 'T00:00:00.000Z');
+    const dayStart = new Date(todayStart);
 
     const createdLogs = [];
     for (const log of yesterdayLogs) {
@@ -382,12 +388,12 @@ export class SupplementsService {
     }
 
     return {
-      date: date.split('T')[0]!,
+      date: date.split('T')[0] ?? '',
       logs: createdLogs.map((log) => ({
         id: log.id,
         supplementId: log.supplementId,
         supplementName: flattenName(log.supplement.name as SupplementName, locale),
-        supplementUnit: log.supplement.unit as SupplementLogItem['supplementUnit'],
+        supplementUnit: log.supplement.unit,
         amount: log.amount,
         notes: log.notes,
         date: log.date.toISOString(),
@@ -402,12 +408,15 @@ export class SupplementsService {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days + 1);
 
+    const startStr = dateString(startDate) + 'T00:00:00.000Z';
+    const endStr = dateString(endDate) + 'T23:59:59.999Z';
+
     const logs = await this.prisma.supplementLog.findMany({
       where: {
         userId,
         date: {
-          gte: new Date(startDate.toISOString().split('T')[0] + 'T00:00:00.000Z'),
-          lte: new Date(endDate.toISOString().split('T')[0] + 'T23:59:59.999Z'),
+          gte: new Date(startStr),
+          lte: new Date(endStr),
         },
       },
       include: {
@@ -419,22 +428,30 @@ export class SupplementsService {
     const grouped = new Map<string, SupplementTrendItem['items']>();
 
     for (const log of logs) {
-      const dateKey = log.date.toISOString().split('T')[0]!;
-      if (!grouped.has(dateKey)) {
-        grouped.set(dateKey, []);
+      const dateKey = dateString(log.date);
+      const group = grouped.get(dateKey);
+      if (group) {
+        group.push({
+          name: flattenName(log.supplement.name as SupplementName, locale),
+          amount: log.amount,
+          unit: log.supplement.unit,
+        });
+      } else {
+        grouped.set(dateKey, [
+          {
+            name: flattenName(log.supplement.name as SupplementName, locale),
+            amount: log.amount,
+            unit: log.supplement.unit,
+          },
+        ]);
       }
-      grouped.get(dateKey)!.push({
-        name: flattenName(log.supplement.name as SupplementName, locale),
-        amount: log.amount,
-        unit: log.supplement.unit as SupplementTrendItem['items'][number]['unit'],
-      });
     }
 
     const result: SupplementTrendItem[] = [];
     const current = new Date(startDate);
 
     while (current <= endDate) {
-      const dateKey = current.toISOString().split('T')[0]!;
+      const dateKey = dateString(current);
       const items = grouped.get(dateKey) ?? [];
       result.push({
         date: dateKey,
@@ -450,5 +467,6 @@ export class SupplementsService {
 }
 
 function flattenName(name: SupplementName, locale: string): string {
-  return (name as Record<string, string>)[locale] || name.en || name.it || '';
+  const map = name as Record<string, string>;
+  return map[locale] || map.en || map.it || '';
 }
