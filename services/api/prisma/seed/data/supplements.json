@@ -1,0 +1,182 @@
+[
+  {
+    "name": { "it": "Proteine del siero di latte", "en": "Whey Protein" },
+    "brand": null,
+    "unit": "g",
+    "calories": 120,
+    "protein": 25,
+    "carbs": 3,
+    "fat": 1.5
+  },
+  {
+    "name": { "it": "Caseina", "en": "Casein" },
+    "brand": null,
+    "unit": "g",
+    "calories": 110,
+    "protein": 24,
+    "carbs": 2,
+    "fat": 1
+  },
+  {
+    "name": { "it": "Proteine vegetali", "en": "Plant Protein" },
+    "brand": null,
+    "unit": "g",
+    "calories": 110,
+    "protein": 22,
+    "carbs": 3,
+    "fat": 2
+  },
+  {
+    "name": { "it": "Creatina Monoidrato", "en": "Creatine Monohydrate" },
+    "brand": null,
+    "unit": "g",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "BCAA", "en": "BCAA" },
+    "brand": null,
+    "unit": "g",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Glutammina", "en": "Glutamine" },
+    "brand": null,
+    "unit": "g",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Beta-Alanina", "en": "Beta-Alanine" },
+    "brand": null,
+    "unit": "g",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Citrullina Malato", "en": "Citrulline Malate" },
+    "brand": null,
+    "unit": "g",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Omega-3", "en": "Omega-3" },
+    "brand": null,
+    "unit": "capsule",
+    "calories": 10,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 1
+  },
+  {
+    "name": { "it": "Vitamina D", "en": "Vitamin D" },
+    "brand": null,
+    "unit": "drops",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Magnesio", "en": "Magnesium" },
+    "brand": null,
+    "unit": "capsule",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Zinco", "en": "Zinc" },
+    "brand": null,
+    "unit": "capsule",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Multivitaminico", "en": "Multivitamin" },
+    "brand": null,
+    "unit": "capsule",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Pre-allenamento", "en": "Pre-Workout" },
+    "brand": null,
+    "unit": "scoop",
+    "calories": 15,
+    "protein": 0,
+    "carbs": 3,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Maltodestrine", "en": "Maltodextrin" },
+    "brand": null,
+    "unit": "g",
+    "calories": 30,
+    "protein": 0,
+    "carbs": 8,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Collagene", "en": "Collagen" },
+    "brand": null,
+    "unit": "g",
+    "calories": 40,
+    "protein": 9,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "L-Carnitina", "en": "L-Carnitine" },
+    "brand": null,
+    "unit": "capsule",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Taurina", "en": "Taurine" },
+    "brand": null,
+    "unit": "g",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Eleuterococco", "en": "Eleuthero" },
+    "brand": null,
+    "unit": "capsule",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  },
+  {
+    "name": { "it": "Ashwagandha", "en": "Ashwagandha" },
+    "brand": null,
+    "unit": "capsule",
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
+  }
+]
