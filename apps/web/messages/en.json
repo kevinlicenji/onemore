@@ -938,7 +938,13 @@
     "createError": "Could not create supplement.",
     "loadError": "Could not load supplements.",
     "deleteError": "Could not delete supplement.",
-    "logAmount": "Amount"
+    "logAmount": "Amount",
+    "quickAdd": "Quick add",
+    "quickAddDescription": "Search a supplement and log the amount taken today.",
+    "searchSupplement": "Search supplement…",
+    "manageSupplements": "Manage supplements",
+    "repeatYesterday": "Repeat yesterday",
+    "noLogsForDay": "No supplements logged for this day."
   },
   "Gym": {
     "releaseToRefresh": "Release to refresh",

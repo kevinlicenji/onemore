@@ -938,7 +938,13 @@
     "createError": "Impossibile creare l'integratore.",
     "loadError": "Impossibile caricare gli integratori.",
     "deleteError": "Impossibile eliminare l'integratore.",
-    "logAmount": "Quantità"
+    "logAmount": "Quantità",
+    "quickAdd": "Aggiunta rapida",
+    "quickAddDescription": "Cerca un integratore e registra la quantità assunta oggi.",
+    "searchSupplement": "Cerca integratore…",
+    "manageSupplements": "Gestisci integratori",
+    "repeatYesterday": "Ripeti ieri",
+    "noLogsForDay": "Nessun integratore registrato per questo giorno."
   },
   "Gym": {
     "releaseToRefresh": "Rilascia per aggiornare",

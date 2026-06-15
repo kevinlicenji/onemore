@@ -14,6 +14,7 @@ import { GymEmptyState } from '@/components/gym-ui/gym-empty-state';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
 import { GymListRow } from '@/components/gym-ui/gym-list-row';
 import { ScrollWheelPicker } from '@/components/scroll-wheel-picker';
+import { SupplementCalendar } from '@/components/supplement-calendar';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
 import { RequireAuth } from '@/components/require-auth';
@@ -26,6 +27,8 @@ import {
   deleteSupplementLog,
   fetchSupplementLogs,
   fetchSupplements,
+  fetchSupplementTrend,
+  repeatYesterdaySupplements,
   updateSupplement,
   updateSupplementLog,
 } from '@/lib/api-auth';
@@ -61,11 +64,13 @@ export default function SupplementsPage(): React.ReactElement {
   const [date, setDate] = useState(() => todayDateString());
   const [items, setItems] = useState<SupplementListItem[]>([]);
   const [logs, setLogs] = useState<SupplementLogItem[]>([]);
+  const [logDates, setLogDates] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const trendDays = 60;
 
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showManageForm, setShowManageForm] = useState(false);
   const [formName, setFormName] = useState('');
   const [formUnit, setFormUnit] = useState<SupplementListItem['unit']>('g');
   const [editingItem, setEditingItem] = useState<SupplementListItem | null>(null);
@@ -76,6 +81,15 @@ export default function SupplementsPage(): React.ReactElement {
     existingLog: SupplementLogItem | null;
   } | null>(null);
   const [logWheelValue, setLogWheelValue] = useState(0);
+
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddSearch, setQuickAddSearch] = useState('');
+  const [quickAddStep, setQuickAddStep] = useState<'select' | 'amount'>('select');
+  const [quickAddSupplement, setQuickAddSupplement] = useState<SupplementListItem | null>(null);
+  const [quickAddAmount, setQuickAddAmount] = useState(0);
+
+  const [yesterdayRepeatable, setYesterdayRepeatable] = useState(false);
+  const [savingRepeat, setSavingRepeat] = useState(false);
 
   const selectedDate = useMemo(() => new Date(date + 'T12:00:00.000Z'), [date]);
 
@@ -92,18 +106,28 @@ export default function SupplementsPage(): React.ReactElement {
     setLoading(true);
     setError(null);
     try {
-      const [supplements, logsResponse] = await Promise.all([
+      const [supplements, logsResponse, trend] = await Promise.all([
         fetchSupplements(accessToken, locale),
         fetchSupplementLogs(accessToken, date, date, locale),
+        fetchSupplementTrend(accessToken, trendDays, locale),
       ]);
       setItems(supplements);
       setLogs(logsResponse.logs);
+      setLogDates(new Set(trend.filter((d) => d.hasLogged).map((d) => d.date)));
+
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0] ?? '';
+      const yesterdayTrend = trend.find((d) => d.date === yesterdayStr);
+      setYesterdayRepeatable(
+        yesterdayTrend !== undefined && yesterdayTrend.hasLogged && logsResponse.logs.length === 0,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loadError'));
     } finally {
       setLoading(false);
     }
-  }, [accessToken, locale, t, date]);
+  }, [accessToken, locale, t, date, trendDays]);
 
   useEffect(() => {
     void loadData();
@@ -120,15 +144,20 @@ export default function SupplementsPage(): React.ReactElement {
     setFormUnit('g');
   }
 
-  function openEdit(item: SupplementListItem): void {
-    setEditingItem(item);
-    setFormName(item.name);
-    setFormUnit(item.unit);
-    setShowAddForm(true);
+  function openManage(supplement?: SupplementListItem): void {
+    if (supplement) {
+      setEditingItem(supplement);
+      setFormName(supplement.name);
+      setFormUnit(supplement.unit);
+    } else {
+      setEditingItem(null);
+      resetForm();
+    }
+    setShowManageForm(true);
   }
 
-  function closeForm(): void {
-    setShowAddForm(false);
+  function closeManageForm(): void {
+    setShowManageForm(false);
     setEditingItem(null);
     resetForm();
   }
@@ -152,7 +181,7 @@ export default function SupplementsPage(): React.ReactElement {
       } else {
         await createSupplement(accessToken, payload);
       }
-      closeForm();
+      closeManageForm();
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('createError'));
@@ -168,7 +197,7 @@ export default function SupplementsPage(): React.ReactElement {
     try {
       await deleteSupplement(accessToken, deleteTarget.id);
       setDeleteTarget(null);
-      closeForm();
+      closeManageForm();
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('deleteError'));
@@ -235,26 +264,114 @@ export default function SupplementsPage(): React.ReactElement {
     }
   }
 
-  const wheelValues = logTarget ? wheelValuesForUnit(logTarget.supplement.unit) : [];
+  async function handleRepeatYesterday(): Promise<void> {
+    if (!accessToken) return;
+    setSavingRepeat(true);
+    setError(null);
+    try {
+      await repeatYesterdaySupplements(accessToken, date + 'T00:00:00.000Z');
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('loadError'));
+    } finally {
+      setSavingRepeat(false);
+    }
+  }
+
+  const quickAddFiltered = useMemo(() => {
+    if (!quickAddSearch.trim()) return items;
+    const q = quickAddSearch.toLowerCase();
+    return items.filter((s) => s.name.toLowerCase().includes(q));
+  }, [items, quickAddSearch]);
+
+  function openQuickAdd(): void {
+    setQuickAddSearch('');
+    setQuickAddStep('select');
+    setQuickAddSupplement(null);
+    setQuickAddAmount(0);
+    setQuickAddOpen(true);
+  }
+
+  function selectQuickAddSupplement(supplement: SupplementListItem): void {
+    setQuickAddSupplement(supplement);
+    setQuickAddAmount(0);
+    setQuickAddStep('amount');
+  }
+
+  async function handleQuickAddSave(): Promise<void> {
+    if (!accessToken || !quickAddSupplement) return;
+    if (quickAddAmount <= 0) {
+      setQuickAddOpen(false);
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await createSupplementLog(accessToken, {
+        supplementId: quickAddSupplement.id,
+        amount: quickAddAmount,
+        notes: null,
+        date: date + 'T00:00:00.000Z',
+      });
+      setQuickAddOpen(false);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('createError'));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const wheelValues = logTarget
+    ? wheelValuesForUnit(logTarget.supplement.unit)
+    : quickAddSupplement
+      ? wheelValuesForUnit(quickAddSupplement.unit)
+      : [];
 
   const wheelOptions = wheelValues.map((v) => ({
     value: v,
     label: v % 1 === 0 ? String(v) : v.toFixed(1),
   }));
 
-  const headerActions = (
-    <button
-      aria-label={t('addTitle')}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-gym-separator bg-gym-surface text-xl leading-none text-primary shadow-sm transition-transform active:scale-95"
-      type="button"
-      onClick={() => {
-        setEditingItem(null);
-        resetForm();
-        setShowAddForm(true);
-      }}
-    >
-      +
-    </button>
+  const headerActions = isDesktop ? (
+    <div className="flex items-center gap-2">
+      <Button
+        className="min-h-9 gap-1.5"
+        size="sm"
+        type="button"
+        onClick={openQuickAdd}
+      >
+        <Plus className="h-4 w-4" />
+        {t('quickAdd')}
+      </Button>
+      <button
+        aria-label={t('manageSupplements')}
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-gym-separator text-muted-foreground transition-colors hover:text-foreground"
+        type="button"
+        onClick={() => { openManage(); }}
+      >
+        <Settings className="h-4 w-4" />
+      </button>
+    </div>
+  ) : (
+    <div className="flex items-center gap-1">
+      <button
+        aria-label={t('quickAdd')}
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-gym-separator bg-gym-surface text-xl leading-none text-primary shadow-sm transition-transform active:scale-95"
+        type="button"
+        onClick={openQuickAdd}
+      >
+        +
+      </button>
+      <button
+        aria-label={t('manageSupplements')}
+        className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
+        type="button"
+        onClick={() => { openManage(); }}
+      >
+        <Settings className="h-5 w-5" />
+      </button>
+    </div>
   );
 
   const dateNav = (
@@ -263,9 +380,7 @@ export default function SupplementsPage(): React.ReactElement {
         aria-label="Previous day"
         className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
         type="button"
-        onClick={() => {
-          goTo(-1);
-        }}
+        onClick={() => { goTo(-1); }}
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
@@ -284,9 +399,7 @@ export default function SupplementsPage(): React.ReactElement {
         aria-label="Next day"
         className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
         type="button"
-        onClick={() => {
-          goTo(1);
-        }}
+        onClick={() => { goTo(1); }}
       >
         <ChevronRight className="h-5 w-5" />
       </button>
@@ -304,9 +417,50 @@ export default function SupplementsPage(): React.ReactElement {
         actions={headerActions}
         onRefresh={isDesktop ? undefined : loadData}
       >
-        {dateNav}
+        <div className={isDesktop ? 'flex gap-6' : 'flex flex-col gap-4'}>
+          {isDesktop ? (
+            <>
+              <div className="w-80 shrink-0">
+                <SupplementCalendar
+                  locale={locale}
+                  logDates={logDates}
+                  selectedDate={date}
+                  onSelectDate={setDate}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-col gap-4">
+                  {dateNav}
+                  {renderSupplementList()}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <SupplementCalendar
+                locale={locale}
+                logDates={logDates}
+                selectedDate={date}
+                onSelectDate={setDate}
+              />
+              {dateNav}
+              {renderSupplementList()}
+            </>
+          )}
+        </div>
+      </AdaptivePageShell>
 
-        {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
+      {renderLogOverlay()}
+      {renderManageForm()}
+      {renderDeleteConfirm()}
+      {renderQuickAdd()}
+    </RequireAuth>
+  );
+
+  function renderSupplementList(): React.ReactElement {
+    return (
+      <>
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
         {loading ? (
           <CardGridSkeleton count={isDesktop ? 6 : 4} columns="2" />
@@ -316,11 +470,7 @@ export default function SupplementsPage(): React.ReactElement {
               <Button
                 className="min-h-11 w-full"
                 type="button"
-                onClick={() => {
-                  setEditingItem(null);
-                  resetForm();
-                  setShowAddForm(true);
-                }}
+                onClick={() => { openManage(); }}
               >
                 {t('addTitle')}
               </Button>
@@ -330,197 +480,279 @@ export default function SupplementsPage(): React.ReactElement {
             description={t('emptyDescription')}
           />
         ) : (
-          <GymListGroup>
-            {items.map((supplement) => {
-              const log = logBySupplementId.get(supplement.id);
-              return (
-                <GymListRow
-                  key={supplement.id}
-                  title={supplement.name}
-                  subtitle={supplement.unit}
-                  trailing={
-                    <div className="flex items-center gap-2">
-                      <span className="min-w-[2ch] text-right tabular-nums text-muted-foreground">
-                        {log ? String(log.amount) : '\u2014'}
-                      </span>
-                      <button
-                        aria-label={t('logAmount')}
-                        className="flex h-8 w-8 items-center justify-center rounded-full border border-gym-separator text-muted-foreground transition-colors active:text-foreground"
-                        type="button"
-                        onClick={() => {
-                          openLog(supplement);
-                        }}
-                      >
-                        {log ? (
-                          <span className="text-sm font-medium">{log.supplementUnit}</span>
-                        ) : (
-                          <Plus className="h-4 w-4" />
-                        )}
-                      </button>
-                      <button
-                        aria-label={t('editTitle')}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/50 transition-colors active:text-foreground"
-                        type="button"
-                        onClick={() => {
-                          openEdit(supplement);
-                        }}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </button>
-                    </div>
-                  }
-                />
-              );
-            })}
-          </GymListGroup>
-        )}
-
-        <GymAdaptiveOverlay
-          ariaLabel={editingItem ? t('editTitle') : t('addTitle')}
-          open={showAddForm}
-          tall
-          title={editingItem ? t('editTitle') : t('addTitle')}
-          onClose={closeForm}
-        >
-          <div className="flex flex-col gap-4">
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-                  {t('name')}
-                  <Input
-                    className="min-h-11"
-                    placeholder="Creatina"
-                    value={formName}
-                    onChange={(e) => {
-                      setFormName(e.target.value);
-                    }}
-                  />
-                </label>
-              </div>
-              <div className="w-[80px] shrink-0">
-                <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-                  {t('unit')}
-                  <select
-                    className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
-                    value={formUnit}
-                    onChange={(e) => {
-                      setFormUnit(e.target.value as SupplementListItem['unit']);
-                    }}
-                  >
-                    <option value="g">g</option>
-                    <option value="mg">mg</option>
-                    <option value="capsule">caps</option>
-                    <option value="scoop">scoop</option>
-                    <option value="drops">gocce</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-            {editingItem ? (
+          <div className="flex flex-col gap-3">
+            {yesterdayRepeatable && (
               <Button
-                className="min-h-11 w-full"
-                disabled={saving}
+                className="min-h-9 w-full gap-1.5 text-xs"
+                disabled={savingRepeat}
+                size="sm"
                 type="button"
-                variant="destructive"
-                onClick={() => {
-                  setDeleteTarget(editingItem);
-                }}
+                variant="outline"
+                onClick={() => { void handleRepeatYesterday(); }}
               >
-                {t('delete')}
+                {t('repeatYesterday')}
               </Button>
-            ) : null}
-            <div className="flex gap-2">
+            )}
+
+            <GymListGroup>
+              {items.map((supplement) => {
+                const log = logBySupplementId.get(supplement.id);
+                return (
+                  <GymListRow
+                    key={supplement.id}
+                    title={supplement.name}
+                    subtitle={supplement.unit}
+                    trailing={
+                      <div className="flex items-center gap-2">
+                        <span className="min-w-[2ch] text-right tabular-nums text-muted-foreground">
+                          {log ? String(log.amount) : '\u2014'}
+                        </span>
+                        <button
+                          aria-label={t('logAmount')}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-gym-separator text-muted-foreground transition-colors active:text-foreground"
+                          type="button"
+                          onClick={() => { openLog(supplement); }}
+                        >
+                          {log ? (
+                            <span className="text-sm font-medium">{log.supplementUnit}</span>
+                          ) : (
+                            <Plus className="h-4 w-4" />
+                          )}
+                        </button>
+                        <button
+                          aria-label={t('editTitle')}
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/50 transition-colors active:text-foreground"
+                          type="button"
+                          onClick={() => { openManage(supplement); }}
+                        >
+                          <Settings className="h-4 w-4" />
+                        </button>
+                      </div>
+                    }
+                  />
+                );
+              })}
+            </GymListGroup>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  function renderLogOverlay(): React.ReactElement {
+    return (
+      <GymAdaptiveOverlay
+        ariaLabel={t('logAmount')}
+        open={logTarget !== null}
+        title={logTarget ? logTarget.supplement.name : t('logAmount')}
+        onClose={closeLog}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-xs text-muted-foreground">{logTarget?.supplement.unit}</p>
+          <ScrollWheelPicker
+            label=""
+            options={wheelOptions}
+            showLabel={false}
+            value={logWheelValue}
+            onChange={(v) => { setLogWheelValue(v); }}
+          />
+          {logTarget?.existingLog ? (
+            <Button
+              className="min-h-11 w-full"
+              disabled={saving}
+              type="button"
+              variant="destructive"
+              onClick={() => { void handleDeleteLog(); }}
+            >
+              {t('deleteLog')}
+            </Button>
+          ) : null}
+          <div className="flex w-full gap-2">
+            <Button
+              className="min-h-11 flex-1"
+              disabled={saving}
+              type="button"
+              variant="outline"
+              onClick={closeLog}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              className="min-h-11 flex-1"
+              disabled={saving || (logWheelValue <= 0 && !logTarget?.existingLog)}
+              type="button"
+              onClick={() => { void handleSaveLog(); }}
+            >
+              {logWheelValue > 0 || !logTarget?.existingLog ? t('save') : t('deleteLog')}
+            </Button>
+          </div>
+        </div>
+      </GymAdaptiveOverlay>
+    );
+  }
+
+  function renderManageForm(): React.ReactElement {
+    return (
+      <GymAdaptiveOverlay
+        ariaLabel={editingItem ? t('editTitle') : t('manageSupplements')}
+        open={showManageForm}
+        tall
+        title={editingItem ? t('editTitle') : t('manageSupplements')}
+        onClose={closeManageForm}
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+                {t('name')}
+                <Input
+                  className="min-h-11"
+                  placeholder="Creatina"
+                  value={formName}
+                  onChange={(e) => { setFormName(e.target.value); }}
+                />
+              </label>
+            </div>
+            <div className="w-[80px] shrink-0">
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+                {t('unit')}
+                <select
+                  className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
+                  value={formUnit}
+                  onChange={(e) => { setFormUnit(e.target.value as SupplementListItem['unit']); }}
+                >
+                  <option value="g">g</option>
+                  <option value="mg">mg</option>
+                  <option value="capsule">caps</option>
+                  <option value="scoop">scoop</option>
+                  <option value="drops">gocce</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          {editingItem ? (
+            <Button
+              className="min-h-11 w-full"
+              disabled={saving}
+              type="button"
+              variant="destructive"
+              onClick={() => { setDeleteTarget(editingItem); }}
+            >
+              {t('delete')}
+            </Button>
+          ) : null}
+          <div className="flex gap-2">
+            <Button
+              className="min-h-11 flex-1"
+              type="button"
+              variant="outline"
+              onClick={closeManageForm}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              className="min-h-11 flex-1"
+              disabled={saving || !formName.trim()}
+              type="button"
+              onClick={() => { void handleSaveSupplement(); }}
+            >
+              {t('save')}
+            </Button>
+          </div>
+        </div>
+      </GymAdaptiveOverlay>
+    );
+  }
+
+  function renderDeleteConfirm(): React.ReactElement {
+    return (
+      <GymActionSheet
+        cancelLabel={t('cancel')}
+        confirmLabel={t('delete')}
+        destructive
+        loading={saving}
+        open={deleteTarget !== null}
+        title={t('deleteConfirm')}
+        onCancel={() => { setDeleteTarget(null); }}
+        onConfirm={() => { void handleDeleteSupplement(); }}
+      />
+    );
+  }
+
+  function renderQuickAdd(): React.ReactElement {
+    return (
+      <GymAdaptiveOverlay
+        ariaLabel={t('quickAdd')}
+        open={quickAddOpen}
+        tall
+        title={quickAddStep === 'select' ? t('quickAdd') : (quickAddSupplement?.name ?? '')}
+        onClose={() => { setQuickAddOpen(false); }}
+      >
+        {quickAddStep === 'select' ? (
+          <div className="flex flex-col gap-3">
+            <Input
+              autoFocus
+              className="min-h-11"
+              placeholder={t('searchSupplement')}
+              value={quickAddSearch}
+              onChange={(e) => { setQuickAddSearch(e.target.value); }}
+            />
+            <div className="flex max-h-80 flex-col overflow-y-auto">
+              {quickAddFiltered.length === 0 ? (
+                <p className="py-4 text-center text-xs text-muted-foreground">
+                  {t('empty')}
+                </p>
+              ) : (
+                quickAddFiltered.map((supplement) => (
+                  <button
+                    key={supplement.id}
+                    className="flex min-h-11 items-center gap-2 border-b border-gym-separator px-2 text-left text-sm last:border-b-0 hover:bg-muted/50"
+                    type="button"
+                    onClick={() => { selectQuickAddSupplement(supplement); }}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{supplement.name}</p>
+                      <p className="text-xs text-muted-foreground">{supplement.unit}</p>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-xs text-muted-foreground">{quickAddSupplement?.unit}</p>
+            <ScrollWheelPicker
+              label=""
+              options={wheelOptions}
+              showLabel={false}
+              value={quickAddAmount}
+              onChange={(v) => { setQuickAddAmount(v); }}
+            />
+            <div className="flex w-full gap-2">
               <Button
                 className="min-h-11 flex-1"
                 type="button"
                 variant="outline"
-                onClick={closeForm}
+                onClick={() => {
+                  setQuickAddStep('select');
+                  setQuickAddSupplement(null);
+                }}
               >
                 {t('cancel')}
               </Button>
               <Button
                 className="min-h-11 flex-1"
-                disabled={saving || !formName.trim()}
+                disabled={saving || quickAddAmount <= 0}
                 type="button"
-                onClick={() => {
-                  void handleSaveSupplement();
-                }}
+                onClick={() => { void handleQuickAddSave(); }}
               >
                 {t('save')}
               </Button>
             </div>
           </div>
-        </GymAdaptiveOverlay>
-
-        <GymAdaptiveOverlay
-          ariaLabel={t('logAmount')}
-          open={logTarget !== null}
-          title={logTarget ? logTarget.supplement.name : t('logAmount')}
-          onClose={closeLog}
-        >
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-xs text-muted-foreground">{logTarget?.supplement.unit}</p>
-            <ScrollWheelPicker
-              label=""
-              options={wheelOptions}
-              showLabel={false}
-              value={logWheelValue}
-              onChange={(v) => {
-                setLogWheelValue(v);
-              }}
-            />
-            {logTarget?.existingLog ? (
-              <Button
-                className="min-h-11 w-full"
-                disabled={saving}
-                type="button"
-                variant="destructive"
-                onClick={() => {
-                  void handleDeleteLog();
-                }}
-              >
-                {t('deleteLog')}
-              </Button>
-            ) : null}
-            <div className="flex w-full gap-2">
-              <Button
-                className="min-h-11 flex-1"
-                disabled={saving}
-                type="button"
-                variant="outline"
-                onClick={closeLog}
-              >
-                {t('cancel')}
-              </Button>
-              <Button
-                className="min-h-11 flex-1"
-                disabled={saving || (logWheelValue <= 0 && !logTarget?.existingLog)}
-                type="button"
-                onClick={() => {
-                  void handleSaveLog();
-                }}
-              >
-                {logWheelValue > 0 || !logTarget?.existingLog ? t('save') : t('deleteLog')}
-              </Button>
-            </div>
-          </div>
-        </GymAdaptiveOverlay>
-
-        <GymActionSheet
-          cancelLabel={t('cancel')}
-          confirmLabel={t('delete')}
-          destructive
-          loading={saving}
-          open={deleteTarget !== null}
-          title={t('deleteConfirm')}
-          onCancel={() => {
-            setDeleteTarget(null);
-          }}
-          onConfirm={() => {
-            void handleDeleteSupplement();
-          }}
-        />
-      </AdaptivePageShell>
-    </RequireAuth>
-  );
+        )}
+      </GymAdaptiveOverlay>
+    );
+  }
 }
