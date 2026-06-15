@@ -15,7 +15,10 @@ const emptyNextWorkout: NextWorkoutPreview = {
   days: [],
 };
 
-function createSessionsInCurrentWeek(count: number, timezone = 'UTC'): Array<{
+function createSessionsInCurrentWeek(
+  count: number,
+  timezone = 'UTC',
+): Array<{
   id: string;
   completedAt: string;
   sessionType: 'free' | 'programmed';
