@@ -57,8 +57,7 @@ export class ExercisesService {
       .filter((row) => {
         const names = row.names as { en: string; it?: string };
         return (
-          names.en.toLowerCase().includes(term) ||
-          (names.it ?? '').toLowerCase().includes(term)
+          names.en.toLowerCase().includes(term) || (names.it ?? '').toLowerCase().includes(term)
         );
       })
       .map((row) => this.toListItem(row, userId));

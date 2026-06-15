@@ -335,12 +335,7 @@ export default function SupplementsPage(): React.ReactElement {
 
   const headerActions = isDesktop ? (
     <div className="flex items-center gap-2">
-      <Button
-        className="min-h-9 gap-1.5"
-        size="sm"
-        type="button"
-        onClick={openQuickAdd}
-      >
+      <Button className="min-h-9 gap-1.5" size="sm" type="button" onClick={openQuickAdd}>
         <Plus className="h-4 w-4" />
         {t('quickAdd')}
       </Button>
@@ -348,7 +343,9 @@ export default function SupplementsPage(): React.ReactElement {
         aria-label={t('manageSupplements')}
         className="flex h-9 w-9 items-center justify-center rounded-full border border-gym-separator text-muted-foreground transition-colors hover:text-foreground"
         type="button"
-        onClick={() => { openManage(); }}
+        onClick={() => {
+          openManage();
+        }}
       >
         <Settings className="h-4 w-4" />
       </button>
@@ -367,7 +364,9 @@ export default function SupplementsPage(): React.ReactElement {
         aria-label={t('manageSupplements')}
         className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
         type="button"
-        onClick={() => { openManage(); }}
+        onClick={() => {
+          openManage();
+        }}
       >
         <Settings className="h-5 w-5" />
       </button>
@@ -380,7 +379,9 @@ export default function SupplementsPage(): React.ReactElement {
         aria-label="Previous day"
         className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
         type="button"
-        onClick={() => { goTo(-1); }}
+        onClick={() => {
+          goTo(-1);
+        }}
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
@@ -399,7 +400,9 @@ export default function SupplementsPage(): React.ReactElement {
         aria-label="Next day"
         className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
         type="button"
-        onClick={() => { goTo(1); }}
+        onClick={() => {
+          goTo(1);
+        }}
       >
         <ChevronRight className="h-5 w-5" />
       </button>
@@ -470,7 +473,9 @@ export default function SupplementsPage(): React.ReactElement {
               <Button
                 className="min-h-11 w-full"
                 type="button"
-                onClick={() => { openManage(); }}
+                onClick={() => {
+                  openManage();
+                }}
               >
                 {t('addTitle')}
               </Button>
@@ -488,7 +493,9 @@ export default function SupplementsPage(): React.ReactElement {
                 size="sm"
                 type="button"
                 variant="outline"
-                onClick={() => { void handleRepeatYesterday(); }}
+                onClick={() => {
+                  void handleRepeatYesterday();
+                }}
               >
                 {t('repeatYesterday')}
               </Button>
@@ -511,7 +518,9 @@ export default function SupplementsPage(): React.ReactElement {
                           aria-label={t('logAmount')}
                           className="flex h-8 w-8 items-center justify-center rounded-full border border-gym-separator text-muted-foreground transition-colors active:text-foreground"
                           type="button"
-                          onClick={() => { openLog(supplement); }}
+                          onClick={() => {
+                            openLog(supplement);
+                          }}
                         >
                           {log ? (
                             <span className="text-sm font-medium">{log.supplementUnit}</span>
@@ -523,7 +532,9 @@ export default function SupplementsPage(): React.ReactElement {
                           aria-label={t('editTitle')}
                           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/50 transition-colors active:text-foreground"
                           type="button"
-                          onClick={() => { openManage(supplement); }}
+                          onClick={() => {
+                            openManage(supplement);
+                          }}
                         >
                           <Settings className="h-4 w-4" />
                         </button>
@@ -554,7 +565,9 @@ export default function SupplementsPage(): React.ReactElement {
             options={wheelOptions}
             showLabel={false}
             value={logWheelValue}
-            onChange={(v) => { setLogWheelValue(v); }}
+            onChange={(v) => {
+              setLogWheelValue(v);
+            }}
           />
           {logTarget?.existingLog ? (
             <Button
@@ -562,7 +575,9 @@ export default function SupplementsPage(): React.ReactElement {
               disabled={saving}
               type="button"
               variant="destructive"
-              onClick={() => { void handleDeleteLog(); }}
+              onClick={() => {
+                void handleDeleteLog();
+              }}
             >
               {t('deleteLog')}
             </Button>
@@ -581,7 +596,9 @@ export default function SupplementsPage(): React.ReactElement {
               className="min-h-11 flex-1"
               disabled={saving || (logWheelValue <= 0 && !logTarget?.existingLog)}
               type="button"
-              onClick={() => { void handleSaveLog(); }}
+              onClick={() => {
+                void handleSaveLog();
+              }}
             >
               {logWheelValue > 0 || !logTarget?.existingLog ? t('save') : t('deleteLog')}
             </Button>
@@ -609,7 +626,9 @@ export default function SupplementsPage(): React.ReactElement {
                   className="min-h-11"
                   placeholder="Creatina"
                   value={formName}
-                  onChange={(e) => { setFormName(e.target.value); }}
+                  onChange={(e) => {
+                    setFormName(e.target.value);
+                  }}
                 />
               </label>
             </div>
@@ -619,7 +638,9 @@ export default function SupplementsPage(): React.ReactElement {
                 <select
                   className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
                   value={formUnit}
-                  onChange={(e) => { setFormUnit(e.target.value as SupplementListItem['unit']); }}
+                  onChange={(e) => {
+                    setFormUnit(e.target.value as SupplementListItem['unit']);
+                  }}
                 >
                   <option value="g">g</option>
                   <option value="mg">mg</option>
@@ -636,7 +657,9 @@ export default function SupplementsPage(): React.ReactElement {
               disabled={saving}
               type="button"
               variant="destructive"
-              onClick={() => { setDeleteTarget(editingItem); }}
+              onClick={() => {
+                setDeleteTarget(editingItem);
+              }}
             >
               {t('delete')}
             </Button>
@@ -654,7 +677,9 @@ export default function SupplementsPage(): React.ReactElement {
               className="min-h-11 flex-1"
               disabled={saving || !formName.trim()}
               type="button"
-              onClick={() => { void handleSaveSupplement(); }}
+              onClick={() => {
+                void handleSaveSupplement();
+              }}
             >
               {t('save')}
             </Button>
@@ -673,8 +698,12 @@ export default function SupplementsPage(): React.ReactElement {
         loading={saving}
         open={deleteTarget !== null}
         title={t('deleteConfirm')}
-        onCancel={() => { setDeleteTarget(null); }}
-        onConfirm={() => { void handleDeleteSupplement(); }}
+        onCancel={() => {
+          setDeleteTarget(null);
+        }}
+        onConfirm={() => {
+          void handleDeleteSupplement();
+        }}
       />
     );
   }
@@ -686,7 +715,9 @@ export default function SupplementsPage(): React.ReactElement {
         open={quickAddOpen}
         tall
         title={quickAddStep === 'select' ? t('quickAdd') : (quickAddSupplement?.name ?? '')}
-        onClose={() => { setQuickAddOpen(false); }}
+        onClose={() => {
+          setQuickAddOpen(false);
+        }}
       >
         {quickAddStep === 'select' ? (
           <div className="flex flex-col gap-3">
@@ -695,20 +726,22 @@ export default function SupplementsPage(): React.ReactElement {
               className="min-h-11"
               placeholder={t('searchSupplement')}
               value={quickAddSearch}
-              onChange={(e) => { setQuickAddSearch(e.target.value); }}
+              onChange={(e) => {
+                setQuickAddSearch(e.target.value);
+              }}
             />
             <div className="flex max-h-80 flex-col overflow-y-auto">
               {quickAddFiltered.length === 0 ? (
-                <p className="py-4 text-center text-xs text-muted-foreground">
-                  {t('empty')}
-                </p>
+                <p className="py-4 text-center text-xs text-muted-foreground">{t('empty')}</p>
               ) : (
                 quickAddFiltered.map((supplement) => (
                   <button
                     key={supplement.id}
                     className="flex min-h-11 items-center gap-2 border-b border-gym-separator px-2 text-left text-sm last:border-b-0 hover:bg-muted/50"
                     type="button"
-                    onClick={() => { selectQuickAddSupplement(supplement); }}
+                    onClick={() => {
+                      selectQuickAddSupplement(supplement);
+                    }}
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{supplement.name}</p>
@@ -727,7 +760,9 @@ export default function SupplementsPage(): React.ReactElement {
               options={wheelOptions}
               showLabel={false}
               value={quickAddAmount}
-              onChange={(v) => { setQuickAddAmount(v); }}
+              onChange={(v) => {
+                setQuickAddAmount(v);
+              }}
             />
             <div className="flex w-full gap-2">
               <Button
@@ -745,7 +780,9 @@ export default function SupplementsPage(): React.ReactElement {
                 className="min-h-11 flex-1"
                 disabled={saving || quickAddAmount <= 0}
                 type="button"
-                onClick={() => { void handleQuickAddSave(); }}
+                onClick={() => {
+                  void handleQuickAddSave();
+                }}
               >
                 {t('save')}
               </Button>

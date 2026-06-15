@@ -47,12 +47,26 @@ function buildMonthDays(
   for (let i = padStart; i > 0; i--) {
     const d = prevLastDay - i + 1;
     const dateStr = formatDate(prevYear, prevMonth + 1, d);
-    days.push({ date: dateStr, day: d, hasLog: logDates.has(dateStr), isCurrentMonth: false, isToday: dateStr === today, isSelected: dateStr === selectedDate });
+    days.push({
+      date: dateStr,
+      day: d,
+      hasLog: logDates.has(dateStr),
+      isCurrentMonth: false,
+      isToday: dateStr === today,
+      isSelected: dateStr === selectedDate,
+    });
   }
 
   for (let d = 1; d <= lastDay.getDate(); d++) {
     const dateStr = formatDate(year, month + 1, d);
-    days.push({ date: dateStr, day: d, hasLog: logDates.has(dateStr), isCurrentMonth: true, isToday: dateStr === today, isSelected: dateStr === selectedDate });
+    days.push({
+      date: dateStr,
+      day: d,
+      hasLog: logDates.has(dateStr),
+      isCurrentMonth: true,
+      isToday: dateStr === today,
+      isSelected: dateStr === selectedDate,
+    });
   }
 
   const remaining = 42 - days.length;
@@ -60,7 +74,14 @@ function buildMonthDays(
   const nextYear = month === 11 ? year + 1 : year;
   for (let d = 1; d <= remaining; d++) {
     const dateStr = formatDate(nextYear, nextMonth + 1, d);
-    days.push({ date: dateStr, day: d, hasLog: logDates.has(dateStr), isCurrentMonth: false, isToday: dateStr === today, isSelected: dateStr === selectedDate });
+    days.push({
+      date: dateStr,
+      day: d,
+      hasLog: logDates.has(dateStr),
+      isCurrentMonth: false,
+      isToday: dateStr === today,
+      isSelected: dateStr === selectedDate,
+    });
   }
 
   return days;
@@ -74,8 +95,35 @@ function formatDate(year: number, month: number, day: number): string {
 }
 
 function monthNames(locale: string): string[] {
-  if (locale === 'it') return ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
-  return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  if (locale === 'it')
+    return [
+      'Gennaio',
+      'Febbraio',
+      'Marzo',
+      'Aprile',
+      'Maggio',
+      'Giugno',
+      'Luglio',
+      'Agosto',
+      'Settembre',
+      'Ottobre',
+      'Novembre',
+      'Dicembre',
+    ];
+  return [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
 }
 
 export function SupplementCalendar({
@@ -104,7 +152,10 @@ export function SupplementCalendar({
   }
 
   const weekDays = weekdayLabels(locale).map((label, i) => (
-    <div key={i} className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+    <div
+      key={i}
+      className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60"
+    >
       {label}
     </div>
   ));
@@ -118,7 +169,9 @@ export function SupplementCalendar({
           aria-label="Previous month"
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
           type="button"
-          onClick={() => { goMonth(-1); }}
+          onClick={() => {
+            goMonth(-1);
+          }}
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -129,7 +182,9 @@ export function SupplementCalendar({
           aria-label="Next month"
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
           type="button"
-          onClick={() => { goMonth(1); }}
+          onClick={() => {
+            goMonth(1);
+          }}
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -156,11 +211,11 @@ export function SupplementCalendar({
                         : 'text-muted-foreground/40',
                 )}
                 type="button"
-                onClick={() => { onSelectDate(day.date); }}
+                onClick={() => {
+                  onSelectDate(day.date);
+                }}
               >
-                <span className={cn(isSelectedOrToday && 'font-bold')}>
-                  {day.day}
-                </span>
+                <span className={cn(isSelectedOrToday && 'font-bold')}>{day.day}</span>
                 {day.hasLog && (
                   <span
                     className={cn(
