@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { SupplementUnit } from '@prisma/client';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 interface SupplementSeedRow {
   name: { en: string; it: string };
@@ -26,11 +26,16 @@ export async function seedSupplements(): Promise<number> {
   const raw = readFileSync(join(seedDir, 'data/supplements.json'), 'utf8');
   const rows = JSON.parse(raw) as SupplementSeedRow[];
 
-  await prisma.supplement.deleteMany({ where: { userId: null } });
-
-  await prisma.supplement.createMany({
-    data: rows,
-  });
+  try {
+    await prisma.supplement.deleteMany({ where: { userId: null } });
+    await prisma.supplement.createMany({ data: rows });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2021') {
+      console.warn('⚠ supplement table does not exist yet — skipping supplement seed');
+      return 0;
+    }
+    throw err;
+  }
 
   return rows.length;
 }
