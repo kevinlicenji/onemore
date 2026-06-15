@@ -152,7 +152,7 @@ describe('Supplement schemas', () => {
   describe('SupplementLogQuerySchema', () => {
     it('provides defaults', () => {
       const result = SupplementLogQuerySchema.safeParse({});
-      expect(result.success).toBe(true);
+      if (!result.success) throw new Error('Expected success');
       expect(result.data.limit).toBe(50);
     });
 
