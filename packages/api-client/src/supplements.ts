@@ -16,18 +16,16 @@ export class SupplementsApi {
   constructor(private readonly client: ApiClient) {}
 
   async list(locale?: string): Promise<SupplementListItem[]> {
-    const headers: Record<string, string> = {};
-    if (locale) {
-      headers['Accept-Language'] = locale;
-    }
-    const data = await this.client.getJson<{ supplements: SupplementListItem[] }>(
-      '/api/v1/supplements',
-    );
+    const path = locale ? `/api/v1/supplements?locale=${locale}` : '/api/v1/supplements';
+    const data = await this.client.getJson<{ supplements: SupplementListItem[] }>(path);
     return data.supplements;
   }
 
   async getById(supplementId: string, locale?: string): Promise<SupplementDetail> {
-    return this.client.getJson<SupplementDetail>(`/api/v1/supplements/${supplementId}`);
+    const path = locale
+      ? `/api/v1/supplements/${supplementId}?locale=${locale}`
+      : `/api/v1/supplements/${supplementId}`;
+    return this.client.getJson<SupplementDetail>(path);
   }
 
   async create(payload: CreateSupplementInput): Promise<SupplementDetail> {
@@ -64,8 +62,12 @@ export class SupplementsApi {
     );
   }
 
-  async createLog(payload: CreateSupplementLogInput, locale?: string): Promise<SupplementLogItem> {
-    return this.client.postJson<SupplementLogItem>('/api/v1/supplements/logs', payload);
+  async createLog(
+    payload: CreateSupplementLogInput,
+    locale?: string,
+  ): Promise<SupplementLogItem> {
+    const path = locale ? `/api/v1/supplements/logs?locale=${locale}` : '/api/v1/supplements/logs';
+    return this.client.postJson<SupplementLogItem>(path, payload);
   }
 
   async updateLog(
@@ -80,10 +82,10 @@ export class SupplementsApi {
   }
 
   async repeatYesterday(date: string, locale?: string): Promise<TodaySupplementsResponse> {
-    return this.client.postJson<TodaySupplementsResponse>(
-      '/api/v1/supplements/logs/repeat-yesterday',
-      { date },
-    );
+    const path = locale
+      ? `/api/v1/supplements/logs/repeat-yesterday?locale=${locale}`
+      : '/api/v1/supplements/logs/repeat-yesterday';
+    return this.client.postJson<TodaySupplementsResponse>(path, { date });
   }
 
   async getTrend(days = 30, locale?: string): Promise<SupplementTrendItem[]> {
