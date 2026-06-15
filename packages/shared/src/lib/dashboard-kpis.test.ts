@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { computeDashboardKpis, computeStreakWeeks, resolveWeeklyTarget } from './dashboard-kpis.js';
-import { getCurrentIsoWeekKey, getIsoWeeksInYear } from './iso-week.js';
+import { getCurrentIsoWeekKey } from './iso-week.js';
 import type { NextWorkoutPreview } from '../schemas/workout.js';
 
 const emptyNextWorkout: NextWorkoutPreview = {
