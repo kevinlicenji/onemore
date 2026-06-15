@@ -1,10 +1,11 @@
 'use client';
 
+import type { TodaySupplementsResponse } from '@onemore/shared';
 import { Skeleton, cn } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
@@ -12,6 +13,7 @@ import { ActiveWorkoutBanner } from '@/components/active-workout-banner';
 import { DashboardMonthlySets } from '@/components/dashboard/dashboard-monthly-sets';
 import { DashboardPrMonthBadge } from '@/components/dashboard/dashboard-pr-month-badge';
 import { DashboardProgramCta } from '@/components/dashboard/dashboard-program-cta';
+import { DashboardSupplementsToday } from '@/components/dashboard/dashboard-supplements-today';
 import { DashboardVolumeCompare } from '@/components/dashboard/dashboard-volume-compare';
 import { DashboardWeekTracker } from '@/components/dashboard/dashboard-week-tracker';
 import { GymStatGrid } from '@/components/gym-ui/gym-stat-grid';
@@ -21,15 +23,24 @@ import { SyncStatusBadge } from '@/components/sync-status-badge';
 import { useDashboardKpis } from '@/hooks/use-dashboard-kpis';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useMotivationalLine } from '@/hooks/use-motivational-line';
+import { fetchTodaySupplements } from '@/lib/api-auth';
 
 export default function DashboardPage(): React.ReactElement {
   const t = useTranslations('Dashboard');
-  const { profile, isLoading } = useAuth();
+  const { profile, isLoading, accessToken } = useAuth();
   const router = useRouter();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const isDesktop = useIsDesktop();
   const { dashboard } = useDashboardKpis(locale);
+  const [todaySupplements, setTodaySupplements] = useState<TodaySupplementsResponse | null>(null);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    void fetchTodaySupplements(accessToken, locale)
+      .then(setTodaySupplements)
+      .catch(() => {});
+  }, [accessToken, locale]);
 
   useEffect(() => {
     if (!isLoading && profile && !profile.onboardingCompletedAt) {
@@ -109,6 +120,13 @@ export default function DashboardPage(): React.ReactElement {
                   <DashboardPrMonthBadge count={dashboard.monthlyStats.personalRecordsCount} />
                   <DashboardMonthlySets count={dashboard.monthlyStats.completedSetsCount} />
                 </StatGrid>
+                {todaySupplements ? (
+                  <DashboardSupplementsToday
+                    locale={locale}
+                    logs={todaySupplements.logs}
+                    totalCount={todaySupplements.totalCount}
+                  />
+                ) : null}
               </>
             ) : (
               <>
@@ -120,6 +138,14 @@ export default function DashboardPage(): React.ReactElement {
                   />
                   <DashboardMonthlySets count={dashboard.monthlyStats.completedSetsCount} mobile />
                 </GymStatGrid>
+                {todaySupplements ? (
+                  <DashboardSupplementsToday
+                    locale={locale}
+                    logs={todaySupplements.logs}
+                    mobile
+                    totalCount={todaySupplements.totalCount}
+                  />
+                ) : null}
               </>
             )}
             {!hasActivity ? emptyState : null}
