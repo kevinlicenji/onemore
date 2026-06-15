@@ -62,10 +62,7 @@ export class SupplementsApi {
     );
   }
 
-  async createLog(
-    payload: CreateSupplementLogInput,
-    locale?: string,
-  ): Promise<SupplementLogItem> {
+  async createLog(payload: CreateSupplementLogInput, locale?: string): Promise<SupplementLogItem> {
     const path = locale ? `/api/v1/supplements/logs?locale=${locale}` : '/api/v1/supplements/logs';
     return this.client.postJson<SupplementLogItem>(path, payload);
   }
