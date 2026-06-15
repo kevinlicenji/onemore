@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { computeDashboardKpis, computeStreakWeeks, resolveWeeklyTarget } from './dashboard-kpis.js';
+import { getCurrentIsoWeekKey, getIsoWeeksInYear } from './iso-week.js';
 import type { NextWorkoutPreview } from '../schemas/workout.js';
 
 const emptyNextWorkout: NextWorkoutPreview = {
@@ -13,6 +14,43 @@ const emptyNextWorkout: NextWorkoutPreview = {
   exercises: [],
   days: [],
 };
+
+function createSessionsInCurrentWeek(count: number, timezone = 'UTC'): Array<{
+  id: string;
+  completedAt: string;
+  sessionType: 'free' | 'programmed';
+  workoutDayId: string | null;
+  workoutDayLabel: string | null;
+  totalSets: number;
+  totalVolumeKg: number;
+}> {
+  const weekKey = getCurrentIsoWeekKey(timezone);
+  const [yearStr, weekStr] = weekKey.split('-W');
+  const year = Number(yearStr);
+  const week = Number(weekStr);
+
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Day = jan4.getUTCDay() || 7;
+  const weekStart = new Date(jan4);
+  weekStart.setUTCDate(jan4.getUTCDate() + (week - 1) * 7 - (jan4Day - 1));
+
+  const sessions = [];
+  for (let i = 0; i < count; i++) {
+    const day = new Date(weekStart);
+    day.setUTCDate(weekStart.getUTCDate() + i);
+    day.setUTCHours(12, 0, 0, 0);
+    sessions.push({
+      id: `session-${String(i)}`,
+      completedAt: day.toISOString(),
+      sessionType: 'free' as const,
+      workoutDayId: null,
+      workoutDayLabel: null,
+      totalSets: 5,
+      totalVolumeKg: 500,
+    });
+  }
+  return sessions;
+}
 
 describe('resolveWeeklyTarget', () => {
   it('uses program day count when an assignment is active', () => {
@@ -109,16 +147,7 @@ describe('computeDashboardKpis', () => {
   });
 
   it('allows workouts completed to exceed weekly target', () => {
-    const now = new Date();
-    const sessions = Array.from({ length: 5 }, (_, index) => ({
-      id: `session-${String(index)}`,
-      completedAt: new Date(now.getTime() - index * 86_400_000).toISOString(),
-      sessionType: 'free' as const,
-      workoutDayId: null,
-      workoutDayLabel: null,
-      totalSets: 5,
-      totalVolumeKg: 500,
-    }));
+    const sessions = createSessionsInCurrentWeek(5, 'UTC');
 
     const dashboard = computeDashboardKpis({
       timezone: 'UTC',

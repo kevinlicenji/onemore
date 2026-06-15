@@ -11,80 +11,73 @@ export interface DashboardLoadContext {
 }
 
 let cachedDashboard: AnalyticsDashboard | null = null;
-let cacheKey: string | null = null;
-
-/**
- * Build a cache key from profile context and local row counts.
- *
- * @param context - User profile fields affecting KPI computation.
- */
-async function buildCacheKey(context: DashboardLoadContext): Promise<string> {
-  const [sessionCount, prCount, nextWorkout] = await Promise.all([
-    offlineDb.completedSessions.count(),
-    offlineDb.personalRecords.count(),
-    offlineDb.nextWorkout.get('default'),
-  ]);
-  return [
-    context.timezone,
-    context.locale,
-    String(context.trainingDaysPerWeek ?? 'null'),
-    String(sessionCount),
-    String(prCount),
-    nextWorkout?.workoutDayId ?? 'none',
-    nextWorkout?.programAssignmentId ?? 'none',
-  ].join(':');
-}
+let cacheVersion = 0;
+let loadingPromise: Promise<AnalyticsDashboard> | null = null;
 
 /**
  * Invalidate the in-memory dashboard KPI cache.
  */
 export function invalidateDashboardCache(): void {
   cachedDashboard = null;
-  cacheKey = null;
+  cacheVersion += 1;
+  loadingPromise = null;
 }
 
 /**
  * Load dashboard KPIs from IndexedDB with in-memory caching.
+ * Uses a version counter and promise deduplication to prevent race conditions.
  *
  * @param context - User profile fields affecting KPI computation.
  */
 export async function loadDashboardKpisFromLocal(
   context: DashboardLoadContext,
 ): Promise<AnalyticsDashboard> {
-  const nextCacheKey = await buildCacheKey(context);
-  if (cachedDashboard && cacheKey === nextCacheKey) {
-    return cachedDashboard;
+  const currentVersion = cacheVersion;
+
+  if (cachedDashboard && loadingPromise) {
+    return loadingPromise;
   }
 
-  const [summaries, personalRecords, nextWorkout] = await Promise.all([
-    offlineDb.completedSessions.orderBy('completedAt').reverse().toArray(),
-    offlineDb.personalRecords.orderBy('achievedAt').reverse().toArray(),
-    offlineDb.nextWorkout.get('default'),
-  ]);
+  const computeDashboard = async (): Promise<AnalyticsDashboard> => {
+    const [summaries, personalRecords, nextWorkout] = await Promise.all([
+      offlineDb.completedSessions.orderBy('completedAt').reverse().toArray(),
+      offlineDb.personalRecords.orderBy('achievedAt').reverse().toArray(),
+      offlineDb.nextWorkout.get('default'),
+    ]);
 
-  const sessions = summaries
-    .map((summary) => historySummaryToDashboardInput(summary))
-    .filter((session): session is NonNullable<typeof session> => session !== null);
+    const sessions = summaries
+      .map((summary) => historySummaryToDashboardInput(summary))
+      .filter((session): session is NonNullable<typeof session> => session !== null);
 
-  const dashboard = computeDashboardKpis({
-    timezone: context.timezone,
-    locale: context.locale,
-    trainingDaysPerWeek: context.trainingDaysPerWeek,
-    nextWorkout: nextWorkout ?? {
-      hasActiveAssignment: false,
-      programAssignmentId: null,
-      workoutDayId: null,
-      workoutDayLabel: null,
-      exerciseCount: 0,
-      programName: null,
-      exercises: [],
-      days: [],
-    },
-    sessions,
-    personalRecords,
-  });
+    const dashboard = computeDashboardKpis({
+      timezone: context.timezone,
+      locale: context.locale,
+      trainingDaysPerWeek: context.trainingDaysPerWeek,
+      nextWorkout: nextWorkout ?? {
+        hasActiveAssignment: false,
+        programAssignmentId: null,
+        workoutDayId: null,
+        workoutDayLabel: null,
+        exerciseCount: 0,
+        programName: null,
+        exercises: [],
+        days: [],
+      },
+      sessions,
+      personalRecords,
+    });
 
-  cachedDashboard = dashboard;
-  cacheKey = nextCacheKey;
+    if (cacheVersion === currentVersion) {
+      cachedDashboard = dashboard;
+    }
+    return dashboard;
+  };
+
+  if (!loadingPromise) {
+    loadingPromise = computeDashboard();
+  }
+
+  const dashboard = await loadingPromise;
+  loadingPromise = null;
   return dashboard;
 }
