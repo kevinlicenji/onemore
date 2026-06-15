@@ -29,6 +29,11 @@ export default function AdminHomePage(): React.ReactElement {
             subtitle={t('exercisesLinkHint')}
           />
           <GymListRow
+            href={`/${locale}/admin/supplements`}
+            title={t('supplementsLink')}
+            subtitle={t('supplementsLinkHint')}
+          />
+          <GymListRow
             href={`/${locale}/admin/templates`}
             title={t('templatesLink')}
             subtitle={t('templatesLinkHint')}

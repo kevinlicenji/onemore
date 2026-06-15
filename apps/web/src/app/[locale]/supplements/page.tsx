@@ -1,11 +1,9 @@
 'use client';
 
 import type {
-  CreateSupplementInput,
   CreateSupplementLogInput,
   SupplementListItem,
   SupplementLogItem,
-  UpdateSupplementInput,
 } from '@onemore/shared';
 import { Button, Card, CardContent, Input } from '@onemore/ui';
 import { Pill, Plus } from 'lucide-react';
@@ -61,22 +59,11 @@ export default function SupplementsPage(): React.ReactElement {
   const [logNotes, setLogNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState<CreateSupplementInput>({
-    name: { it: '', en: '' },
-    brand: null,
-    unit: 'g',
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
-  });
+  const [formName, setFormName] = useState('');
+  const [formUnit, setFormUnit] = useState<SupplementListItem['unit']>('g');
 
   const filteredItems = search.trim()
-    ? items.filter(
-        (s) =>
-          s.name.toLowerCase().includes(search.toLowerCase()) ||
-          (s.brand ?? '').toLowerCase().includes(search.toLowerCase()),
-      )
+    ? items.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()))
     : items;
 
   const loadData = useCallback(async (): Promise<void> => {
@@ -104,28 +91,14 @@ export default function SupplementsPage(): React.ReactElement {
   const loggedSupplementIds = new Set(todayLogs.map((l) => l.supplementId));
 
   function resetForm(): void {
-    setForm({
-      name: { it: '', en: '' },
-      brand: null,
-      unit: 'g',
-      calories: 0,
-      protein: 0,
-      carbs: 0,
-      fat: 0,
-    });
+    setFormName('');
+    setFormUnit('g');
   }
 
   function openEdit(item: SupplementListItem): void {
     setEditingItem(item);
-    setForm({
-      name: { it: item.name, en: item.name },
-      brand: item.brand ?? null,
-      unit: item.unit,
-      calories: item.calories,
-      protein: item.protein,
-      carbs: item.carbs,
-      fat: item.fat,
-    });
+    setFormName(item.name);
+    setFormUnit(item.unit);
   }
 
   function closeForm(): void {
@@ -136,24 +109,22 @@ export default function SupplementsPage(): React.ReactElement {
 
   async function handleSave(): Promise<void> {
     if (!accessToken) return;
-    if (!form.name.en.trim() || !form.name.it.trim()) return;
+    if (!formName.trim()) return;
     setSaving(true);
     setError(null);
     try {
+      const payload = {
+        name: { it: formName, en: formName },
+        unit: formUnit,
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+      };
       if (editingItem) {
-        const payload: UpdateSupplementInput = {};
-        if (form.name.en !== editingItem.name || form.name.it !== editingItem.name) {
-          payload.name = form.name;
-        }
-        if (form.brand !== editingItem.brand) payload.brand = form.brand;
-        if (form.unit !== editingItem.unit) payload.unit = form.unit;
-        if (form.calories !== editingItem.calories) payload.calories = form.calories;
-        if (form.protein !== editingItem.protein) payload.protein = form.protein;
-        if (form.carbs !== editingItem.carbs) payload.carbs = form.carbs;
-        if (form.fat !== editingItem.fat) payload.fat = form.fat;
         await updateSupplement(accessToken, editingItem.id, payload);
       } else {
-        await createSupplement(accessToken, form);
+        await createSupplement(accessToken, payload);
       }
       closeForm();
       await loadData();
@@ -271,7 +242,7 @@ export default function SupplementsPage(): React.ReactElement {
               {supplement.isGlobal ? t('global') : t('custom')}
             </>
           }
-          subtitle={supplement.brand ? `${supplement.brand} · ${supplement.unit}` : supplement.unit}
+          subtitle={supplement.unit}
           title={supplement.name}
           onClick={() => {
             openEdit(supplement);
@@ -393,9 +364,6 @@ export default function SupplementsPage(): React.ReactElement {
                           </button>
                         ) : null}
                       </div>
-                      {supplement.brand ? (
-                        <p className="mt-0.5 text-xs text-muted-foreground">{supplement.brand}</p>
-                      ) : null}
                     </div>
                     <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                       <span className="rounded-md border border-gym-separator bg-background px-1.5 py-0.5 font-medium">
@@ -426,104 +394,38 @@ export default function SupplementsPage(): React.ReactElement {
           onClose={closeForm}
         >
           <div className="flex flex-col gap-4">
-            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-              {t('nameEn')}
-              <Input
-                className="min-h-11"
-                placeholder="Creatine"
-                value={form.name.en}
-                onChange={(e) => {
-                  setForm({ ...form, name: { ...form.name, en: e.target.value } });
-                }}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-              {t('nameIt')}
-              <Input
-                className="min-h-11"
-                placeholder="Creatina"
-                value={form.name.it}
-                onChange={(e) => {
-                  setForm({ ...form, name: { ...form.name, it: e.target.value } });
-                }}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-              {t('brand')}
-              <Input
-                className="min-h-11"
-                placeholder="Optimum Nutrition"
-                value={form.brand ?? ''}
-                onChange={(e) => {
-                  setForm({ ...form, brand: e.target.value || null });
-                }}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-              {t('unit')}
-              <select
-                className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
-                value={form.unit}
-                onChange={(e) => {
-                  setForm({ ...form, unit: e.target.value as CreateSupplementInput['unit'] });
-                }}
-              >
-                <option value="g">g</option>
-                <option value="mg">mg</option>
-                <option value="capsule">capsule</option>
-                <option value="scoop">scoop</option>
-                <option value="drops">drops</option>
-              </select>
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-                {t('calories')}
-                <Input
-                  className="min-h-11"
-                  min={0}
-                  type="number"
-                  value={form.calories}
-                  onChange={(e) => {
-                    setForm({ ...form, calories: Number(e.target.value) || 0 });
-                  }}
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-                {t('protein')}
-                <Input
-                  className="min-h-11"
-                  min={0}
-                  type="number"
-                  value={form.protein}
-                  onChange={(e) => {
-                    setForm({ ...form, protein: Number(e.target.value) || 0 });
-                  }}
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-                {t('carbs')}
-                <Input
-                  className="min-h-11"
-                  min={0}
-                  type="number"
-                  value={form.carbs}
-                  onChange={(e) => {
-                    setForm({ ...form, carbs: Number(e.target.value) || 0 });
-                  }}
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-                {t('fat')}
-                <Input
-                  className="min-h-11"
-                  min={0}
-                  type="number"
-                  value={form.fat}
-                  onChange={(e) => {
-                    setForm({ ...form, fat: Number(e.target.value) || 0 });
-                  }}
-                />
-              </label>
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+                  {t('name')}
+                  <Input
+                    className="min-h-11"
+                    placeholder="Creatina"
+                    value={formName}
+                    onChange={(e) => {
+                      setFormName(e.target.value);
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="w-[80px] shrink-0">
+                <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+                  {t('unit')}
+                  <select
+                    className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
+                    value={formUnit}
+                    onChange={(e) => {
+                      setFormUnit(e.target.value as SupplementListItem['unit']);
+                    }}
+                  >
+                    <option value="g">g</option>
+                    <option value="mg">mg</option>
+                    <option value="capsule">caps</option>
+                    <option value="scoop">scoop</option>
+                    <option value="drops">gocce</option>
+                  </select>
+                </label>
+              </div>
             </div>
             {editingItem ? (
               <Button
@@ -549,7 +451,7 @@ export default function SupplementsPage(): React.ReactElement {
               </Button>
               <Button
                 className="min-h-11 flex-1"
-                disabled={saving || !form.name.en.trim() || !form.name.it.trim()}
+                disabled={saving || !formName.trim()}
                 type="button"
                 onClick={() => {
                   void handleSave();

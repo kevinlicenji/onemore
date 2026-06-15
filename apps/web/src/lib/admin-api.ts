@@ -1,10 +1,13 @@
 import type {
+  AdminCreateSupplement,
   AdminCreateSystemExercise,
   AdminCreateTemplate,
   AdminDuplicateTemplate,
+  AdminSupplement,
   AdminSystemExercise,
   AdminTemplateDetail,
   AdminTemplateListItem,
+  AdminUpdateSupplement,
   AdminUpdateSystemExercise,
   AdminUpdateTemplate,
   CreateProgramInput,
@@ -86,6 +89,65 @@ export async function deleteAdminExercise(
     throw await parseApiError(response, 'Failed to delete exercise');
   }
   return response.json() as Promise<AdminSystemExercise>;
+}
+
+export async function fetchAdminSupplements(accessToken: string): Promise<AdminSupplement[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/supplements`, {
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load admin supplements');
+  }
+  const body = (await response.json()) as { supplements: AdminSupplement[] };
+  return body.supplements;
+}
+
+export async function createAdminSupplement(
+  accessToken: string,
+  payload: AdminCreateSupplement,
+): Promise<AdminSupplement> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/supplements`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to create supplement');
+  }
+  return response.json() as Promise<AdminSupplement>;
+}
+
+export async function updateAdminSupplement(
+  accessToken: string,
+  supplementId: string,
+  payload: AdminUpdateSupplement,
+): Promise<AdminSupplement> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/supplements/${supplementId}`, {
+    method: 'PATCH',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to update supplement');
+  }
+  return response.json() as Promise<AdminSupplement>;
+}
+
+export async function deleteAdminSupplement(
+  accessToken: string,
+  supplementId: string,
+): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/supplements/${supplementId}`, {
+    method: 'DELETE',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to delete supplement');
+  }
 }
 
 export async function fetchAdminTemplates(accessToken: string): Promise<AdminTemplateListItem[]> {

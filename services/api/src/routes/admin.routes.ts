@@ -1,8 +1,10 @@
 import {
+  adminCreateSupplementSchema,
   adminCreateSystemExerciseSchema,
   adminCreateTemplateSchema,
   adminDuplicateTemplateSchema,
   adminSetUserAdminSchema,
+  adminUpdateSupplementSchema,
   adminUpdateSystemExerciseSchema,
   adminUpdateTemplateSchema,
 } from '@onemore/shared';
@@ -13,6 +15,7 @@ import { asyncHandler } from '../middleware/async-handler.js';
 import type { AuthenticatedRequest } from '../middleware/authenticate.js';
 import { requireAdmin } from '../middleware/require-role.js';
 import type { AdminExercisesService } from '../modules/admin/admin-exercises.service.js';
+import type { AdminSupplementsService } from '../modules/admin/admin-supplements.service.js';
 import type { AdminTemplatesService } from '../modules/admin/admin-templates.service.js';
 import type { AdminUsersService } from '../modules/admin/admin-users.service.js';
 
@@ -25,6 +28,7 @@ function requireRouteParam(value: string | string[] | undefined, name: string): 
 
 export interface AdminRouterDeps {
   adminExercisesService: AdminExercisesService;
+  adminSupplementsService: AdminSupplementsService;
   adminTemplatesService: AdminTemplatesService;
   adminUsersService: AdminUsersService;
 }
@@ -73,6 +77,43 @@ export function createAdminRouter(deps: AdminRouterDeps): Router {
         requireRouteParam(req.params.id, 'id'),
       );
       res.json(exercise);
+    }),
+  );
+
+  router.get(
+    '/supplements',
+    asyncHandler(async (_req, res) => {
+      const items = await deps.adminSupplementsService.list();
+      res.json({ supplements: items });
+    }),
+  );
+
+  router.post(
+    '/supplements',
+    asyncHandler(async (req, res) => {
+      const body = adminCreateSupplementSchema.parse(req.body);
+      const item = await deps.adminSupplementsService.create(body);
+      res.status(201).json(item);
+    }),
+  );
+
+  router.patch(
+    '/supplements/:id',
+    asyncHandler(async (req, res) => {
+      const body = adminUpdateSupplementSchema.parse(req.body);
+      const item = await deps.adminSupplementsService.update(
+        requireRouteParam(req.params.id, 'id'),
+        body,
+      );
+      res.json(item);
+    }),
+  );
+
+  router.delete(
+    '/supplements/:id',
+    asyncHandler(async (req, res) => {
+      await deps.adminSupplementsService.delete(requireRouteParam(req.params.id, 'id'));
+      res.status(204).send();
     }),
   );
 

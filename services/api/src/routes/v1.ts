@@ -20,6 +20,7 @@ import { PrDetectionService } from '../modules/progress/pr-detection.service.js'
 import { SyncService } from '../modules/sync/sync.service.js';
 import { WorkoutsService } from '../modules/workouts/workouts.service.js';
 import { AdminExercisesService } from '../modules/admin/admin-exercises.service.js';
+import { AdminSupplementsService } from '../modules/admin/admin-supplements.service.js';
 import { AdminTemplatesService } from '../modules/admin/admin-templates.service.js';
 import { AdminUsersService } from '../modules/admin/admin-users.service.js';
 import type { UsersService } from '../modules/users/users.service.js';
@@ -118,6 +119,7 @@ export function createV1Router(deps: V1RouterDeps): Router {
     authenticate,
     createAdminRouter({
       adminExercisesService: new AdminExercisesService(prisma),
+      adminSupplementsService: new AdminSupplementsService(prisma),
       adminTemplatesService: new AdminTemplatesService(prisma),
       adminUsersService: new AdminUsersService(prisma),
     }),
