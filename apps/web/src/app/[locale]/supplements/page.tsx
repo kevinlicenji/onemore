@@ -1,15 +1,11 @@
 'use client';
 
-import type {
-  CreateSupplementLogInput,
-  SupplementListItem,
-  SupplementLogItem,
-} from '@onemore/shared';
-import { Button, Card, CardContent, Input } from '@onemore/ui';
-import { Pill, Plus } from 'lucide-react';
+import type { SupplementListItem, SupplementLogItem } from '@onemore/shared';
+import { Button, Input } from '@onemore/ui';
+import { ChevronLeft, ChevronRight, Pill, Plus, Settings } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
@@ -17,25 +13,42 @@ import { GymAdaptiveOverlay } from '@/components/gym-ui/gym-adaptive-overlay';
 import { GymEmptyState } from '@/components/gym-ui/gym-empty-state';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
 import { GymListRow } from '@/components/gym-ui/gym-list-row';
-import { GymSearchField } from '@/components/gym-ui/gym-search-field';
+import { ScrollWheelPicker } from '@/components/scroll-wheel-picker';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
-import { StaggerGroup, StaggerItem } from '@/components/motion/stagger';
 import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
+import { buildNumericWheelValues } from '@/lib/scroll-wheel-snap';
 import {
   createSupplement,
   createSupplementLog,
   deleteSupplement,
   deleteSupplementLog,
+  fetchSupplementLogs,
   fetchSupplements,
-  fetchTodaySupplements,
-  repeatYesterdaySupplements,
   updateSupplement,
+  updateSupplementLog,
 } from '@/lib/api-auth';
 
 function todayDateString(): string {
   return new Date().toISOString().split('T')[0] ?? '';
+}
+
+function wheelValuesForUnit(unit: string): number[] {
+  switch (unit) {
+    case 'g':
+      return buildNumericWheelValues(0, 200, 0.5);
+    case 'mg':
+      return buildNumericWheelValues(0, 2000, 50);
+    case 'capsule':
+      return buildNumericWheelValues(0, 20, 1);
+    case 'scoop':
+      return buildNumericWheelValues(0, 10, 0.5);
+    case 'drops':
+      return buildNumericWheelValues(0, 50, 1);
+    default:
+      return buildNumericWheelValues(0, 100, 1);
+  }
 }
 
 export default function SupplementsPage(): React.ReactElement {
@@ -45,50 +58,62 @@ export default function SupplementsPage(): React.ReactElement {
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const isDesktop = useIsDesktop();
 
+  const [date, setDate] = useState(() => todayDateString());
   const [items, setItems] = useState<SupplementListItem[]>([]);
-  const [todayLogs, setTodayLogs] = useState<SupplementLogItem[]>([]);
+  const [logs, setLogs] = useState<SupplementLogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-
-  const [showForm, setShowForm] = useState(false);
-  const [editingItem, setEditingItem] = useState<SupplementListItem | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<SupplementListItem | null>(null);
-  const [logTarget, setLogTarget] = useState<SupplementListItem | null>(null);
-  const [logAmount, setLogAmount] = useState('');
-  const [logNotes, setLogNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const [showAddForm, setShowAddForm] = useState(false);
   const [formName, setFormName] = useState('');
   const [formUnit, setFormUnit] = useState<SupplementListItem['unit']>('g');
+  const [editingItem, setEditingItem] = useState<SupplementListItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<SupplementListItem | null>(null);
 
-  const filteredItems = search.trim()
-    ? items.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()))
-    : items;
+  const [logTarget, setLogTarget] = useState<{
+    supplement: SupplementListItem;
+    existingLog: SupplementLogItem | null;
+  } | null>(null);
+  const [logWheelValue, setLogWheelValue] = useState(0);
+
+  const selectedDate = useMemo(() => new Date(date + 'T12:00:00.000Z'), [date]);
+
+  const logBySupplementId = useMemo(() => {
+    const map = new Map<string, SupplementLogItem>();
+    for (const log of logs) {
+      map.set(log.supplementId, log);
+    }
+    return map;
+  }, [logs]);
 
   const loadData = useCallback(async (): Promise<void> => {
     if (!accessToken) return;
     setLoading(true);
     setError(null);
     try {
-      const [supplements, today] = await Promise.all([
+      const [supplements, logsResponse] = await Promise.all([
         fetchSupplements(accessToken, locale),
-        fetchTodaySupplements(accessToken, locale),
+        fetchSupplementLogs(accessToken, date, date, locale),
       ]);
       setItems(supplements);
-      setTodayLogs(today.logs);
+      setLogs(logsResponse.logs);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loadError'));
     } finally {
       setLoading(false);
     }
-  }, [accessToken, locale, t]);
+  }, [accessToken, locale, t, date]);
 
   useEffect(() => {
     void loadData();
   }, [loadData]);
 
-  const loggedSupplementIds = new Set(todayLogs.map((l) => l.supplementId));
+  function goTo(delta: number): void {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + delta);
+    setDate(d.toISOString().split('T')[0] ?? '');
+  }
 
   function resetForm(): void {
     setFormName('');
@@ -99,15 +124,16 @@ export default function SupplementsPage(): React.ReactElement {
     setEditingItem(item);
     setFormName(item.name);
     setFormUnit(item.unit);
+    setShowAddForm(true);
   }
 
   function closeForm(): void {
-    setShowForm(false);
+    setShowAddForm(false);
     setEditingItem(null);
     resetForm();
   }
 
-  async function handleSave(): Promise<void> {
+  async function handleSaveSupplement(): Promise<void> {
     if (!accessToken) return;
     if (!formName.trim()) return;
     setSaving(true);
@@ -135,13 +161,14 @@ export default function SupplementsPage(): React.ReactElement {
     }
   }
 
-  async function handleDelete(): Promise<void> {
+  async function handleDeleteSupplement(): Promise<void> {
     if (!accessToken || !deleteTarget) return;
     setSaving(true);
     setError(null);
     try {
       await deleteSupplement(accessToken, deleteTarget.id);
       setDeleteTarget(null);
+      closeForm();
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('deleteError'));
@@ -150,24 +177,41 @@ export default function SupplementsPage(): React.ReactElement {
     }
   }
 
-  async function handleLog(): Promise<void> {
+  function openLog(supplement: SupplementListItem): void {
+    const existing = logBySupplementId.get(supplement.id) ?? null;
+    setLogTarget({ supplement, existingLog: existing });
+    setLogWheelValue(existing?.amount ?? 0);
+  }
+
+  function closeLog(): void {
+    setLogTarget(null);
+  }
+
+  async function handleSaveLog(): Promise<void> {
     if (!accessToken || !logTarget) return;
-    const amount = Number(logAmount);
-    if (!amount || amount <= 0) return;
+    if (logWheelValue <= 0 && !logTarget.existingLog) {
+      closeLog();
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
-      const date = todayDateString();
-      const payload: CreateSupplementLogInput = {
-        supplementId: logTarget.id,
-        amount,
-        notes: logNotes.trim() || null,
-        date: date + 'T00:00:00.000Z',
-      };
-      await createSupplementLog(accessToken, payload);
-      setLogTarget(null);
-      setLogAmount('');
-      setLogNotes('');
+      if (logWheelValue <= 0 && logTarget.existingLog) {
+        await deleteSupplementLog(accessToken, logTarget.existingLog.id);
+      } else if (logTarget.existingLog) {
+        await updateSupplementLog(accessToken, logTarget.existingLog.id, {
+          id: logTarget.existingLog.id,
+          amount: logWheelValue,
+        });
+      } else {
+        await createSupplementLog(accessToken, {
+          supplementId: logTarget.supplement.id,
+          amount: logWheelValue,
+          notes: null,
+          date: date + 'T00:00:00.000Z',
+        });
+      }
+      closeLog();
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('createError'));
@@ -176,29 +220,27 @@ export default function SupplementsPage(): React.ReactElement {
     }
   }
 
-  async function handleRepeatYesterday(): Promise<void> {
-    if (!accessToken) return;
+  async function handleDeleteLog(): Promise<void> {
+    if (!accessToken || !logTarget?.existingLog) return;
     setSaving(true);
     setError(null);
     try {
-      await repeatYesterdaySupplements(accessToken, todayDateString() + 'T00:00:00.000Z');
+      await deleteSupplementLog(accessToken, logTarget.existingLog.id);
+      closeLog();
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('createError'));
+      setError(err instanceof Error ? err.message : t('deleteError'));
     } finally {
       setSaving(false);
     }
   }
 
-  async function handleRemoveLog(logId: string): Promise<void> {
-    if (!accessToken) return;
-    try {
-      await deleteSupplementLog(accessToken, logId);
-      await loadData();
-    } catch {
-      // ignore
-    }
-  }
+  const wheelValues = logTarget ? wheelValuesForUnit(logTarget.supplement.unit) : [];
+
+  const wheelOptions = wheelValues.map((v) => ({
+    value: v,
+    label: v % 1 === 0 ? String(v) : v.toFixed(1),
+  }));
 
   const headerActions = (
     <button
@@ -206,92 +248,50 @@ export default function SupplementsPage(): React.ReactElement {
       className="flex h-10 w-10 items-center justify-center rounded-full border border-gym-separator bg-gym-surface text-xl leading-none text-primary shadow-sm transition-transform active:scale-95"
       type="button"
       onClick={() => {
+        setEditingItem(null);
         resetForm();
-        setShowForm(true);
+        setShowAddForm(true);
       }}
     >
       +
     </button>
   );
 
-  const searchField = isDesktop ? (
-    <Input
-      className="max-w-md"
-      enterKeyHint="search"
-      inputMode="search"
-      placeholder={t('searchPlaceholder')}
-      type="search"
-      value={search}
-      onChange={(e) => {
-        setSearch(e.target.value);
-      }}
-    />
-  ) : (
-    <GymSearchField placeholder={t('searchPlaceholder')} value={search} onChange={setSearch} />
-  );
-
-  const supplementListMobile = (
-    <GymListGroup>
-      {filteredItems.map((supplement) => (
-        <GymListRow
-          key={supplement.id}
-          meta={
-            <>
-              <span className="tabular-nums">{supplement.recentLogCount}</span>
-              <span className="mx-1">·</span>
-              {supplement.isGlobal ? t('global') : t('custom')}
-            </>
-          }
-          subtitle={supplement.unit}
-          title={supplement.name}
-          onClick={() => {
-            openEdit(supplement);
+  const dateNav = (
+    <div className="flex items-center justify-center gap-3">
+      <button
+        aria-label="Previous day"
+        className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
+        type="button"
+        onClick={() => {
+          goTo(-1);
+        }}
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+      <label className="flex items-center gap-1 text-sm font-medium">
+        <input
+          className="appearance-none bg-transparent text-center text-sm font-medium text-foreground outline-none [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+          type="date"
+          value={date}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val) setDate(val);
           }}
         />
-      ))}
-    </GymListGroup>
+      </label>
+      <button
+        aria-label="Next day"
+        className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
+        type="button"
+        onClick={() => {
+          goTo(1);
+        }}
+      >
+        <ChevronRight className="h-5 w-5" />
+      </button>
+    </div>
   );
-
-  const todaySection =
-    todayLogs.length > 0 ? (
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-muted-foreground">{t('todayLogsTitle')}</h3>
-          <button
-            className="text-xs font-medium text-primary disabled:opacity-50"
-            disabled={saving}
-            type="button"
-            onClick={() => {
-              void handleRepeatYesterday();
-            }}
-          >
-            {t('repeatYesterday')}
-          </button>
-        </div>
-        <GymListGroup>
-          {todayLogs.map((log) => (
-            <GymListRow
-              key={log.id}
-              meta={String(log.amount) + ' ' + log.supplementUnit}
-              subtitle={log.notes ?? undefined}
-              title={log.supplementName}
-              trailing={
-                <button
-                  aria-label={t('delete')}
-                  className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground/60 transition-colors active:text-destructive"
-                  type="button"
-                  onClick={() => {
-                    void handleRemoveLog(log.id);
-                  }}
-                >
-                  ✕
-                </button>
-              }
-            />
-          ))}
-        </GymListGroup>
-      </div>
-    ) : null;
 
   return (
     <RequireAuth>
@@ -304,91 +304,80 @@ export default function SupplementsPage(): React.ReactElement {
         actions={headerActions}
         onRefresh={isDesktop ? undefined : loadData}
       >
-        {searchField}
+        {dateNav}
 
-        {todaySection}
-
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
 
         {loading ? (
           <CardGridSkeleton count={isDesktop ? 6 : 4} columns="2" />
-        ) : filteredItems.length === 0 ? (
-          isDesktop ? (
-            <p className="text-sm text-muted-foreground">{t('empty')}</p>
-          ) : (
-            <GymEmptyState
-              action={
-                <Button
-                  className="min-h-11 w-full"
-                  type="button"
-                  onClick={() => {
-                    resetForm();
-                    setShowForm(true);
-                  }}
-                >
-                  {t('addTitle')}
-                </Button>
-              }
-              icon={<Pill aria-hidden className="h-7 w-7" />}
-              title={t('empty')}
-              description={t('emptyDescription')}
-            />
-          )
-        ) : isDesktop ? (
-          <StaggerGroup className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredItems.map((supplement) => (
-              <StaggerItem key={supplement.id}>
-                <Card
-                  className="h-full cursor-pointer transition-colors hover:bg-muted/30"
-                  onClick={() => {
-                    openEdit(supplement);
-                  }}
-                >
-                  <CardContent className="flex flex-col justify-between p-4">
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium">{supplement.name}</p>
-                        {!loggedSupplementIds.has(supplement.id) ? (
-                          <button
-                            aria-label={t('logAmount')}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform active:scale-95"
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setLogTarget(supplement);
-                              setLogAmount('');
-                              setLogNotes('');
-                            }}
-                          >
-                            <Plus aria-hidden className="h-4 w-4" />
-                          </button>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="rounded-md border border-gym-separator bg-background px-1.5 py-0.5 font-medium">
-                        {supplement.unit}
-                      </span>
-                      <span>{supplement.isGlobal ? t('global') : t('custom')}</span>
-                      <span className="ml-auto tabular-nums">
-                        {supplement.recentLogCount}{' '}
-                        {supplement.recentLogCount === 1 ? 'log' : 'logs'}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </StaggerItem>
-            ))}
-          </StaggerGroup>
+        ) : items.length === 0 ? (
+          <GymEmptyState
+            action={
+              <Button
+                className="min-h-11 w-full"
+                type="button"
+                onClick={() => {
+                  setEditingItem(null);
+                  resetForm();
+                  setShowAddForm(true);
+                }}
+              >
+                {t('addTitle')}
+              </Button>
+            }
+            icon={<Pill aria-hidden className="h-7 w-7" />}
+            title={t('empty')}
+            description={t('emptyDescription')}
+          />
         ) : (
-          <StaggerGroup compact>
-            <StaggerItem>{supplementListMobile}</StaggerItem>
-          </StaggerGroup>
+          <GymListGroup>
+            {items.map((supplement) => {
+              const log = logBySupplementId.get(supplement.id);
+              return (
+                <GymListRow
+                  key={supplement.id}
+                  title={supplement.name}
+                  subtitle={supplement.unit}
+                  trailing={
+                    <div className="flex items-center gap-2">
+                      <span className="min-w-[2ch] text-right tabular-nums text-muted-foreground">
+                        {log ? String(log.amount) : '\u2014'}
+                      </span>
+                      <button
+                        aria-label={t('logAmount')}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-gym-separator text-muted-foreground transition-colors active:text-foreground"
+                        type="button"
+                        onClick={() => {
+                          openLog(supplement);
+                        }}
+                      >
+                        {log ? (
+                          <span className="text-sm font-medium">{log.supplementUnit}</span>
+                        ) : (
+                          <Plus className="h-4 w-4" />
+                        )}
+                      </button>
+                      <button
+                        aria-label={t('editTitle')}
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/50 transition-colors active:text-foreground"
+                        type="button"
+                        onClick={() => {
+                          openEdit(supplement);
+                        }}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </button>
+                    </div>
+                  }
+                />
+              );
+            })}
+          </GymListGroup>
         )}
 
         <GymAdaptiveOverlay
           ariaLabel={editingItem ? t('editTitle') : t('addTitle')}
-          open={showForm || editingItem !== null}
+          open={showAddForm}
           tall
           title={editingItem ? t('editTitle') : t('addTitle')}
           onClose={closeForm}
@@ -454,7 +443,7 @@ export default function SupplementsPage(): React.ReactElement {
                 disabled={saving || !formName.trim()}
                 type="button"
                 onClick={() => {
-                  void handleSave();
+                  void handleSaveSupplement();
                 }}
               >
                 {t('save')}
@@ -466,58 +455,52 @@ export default function SupplementsPage(): React.ReactElement {
         <GymAdaptiveOverlay
           ariaLabel={t('logAmount')}
           open={logTarget !== null}
-          title={logTarget ? logTarget.name : t('logAmount')}
-          onClose={() => {
-            setLogTarget(null);
-          }}
+          title={logTarget ? logTarget.supplement.name : t('logAmount')}
+          onClose={closeLog}
         >
-          <div className="flex flex-col gap-4">
-            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-              {t('logAmount')} ({logTarget?.unit})
-              <Input
-                className="min-h-11"
-                inputMode="decimal"
-                min={0}
-                placeholder="5"
-                step="any"
-                type="number"
-                value={logAmount}
-                onChange={(e) => {
-                  setLogAmount(e.target.value);
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-xs text-muted-foreground">{logTarget?.supplement.unit}</p>
+            <ScrollWheelPicker
+              label=""
+              options={wheelOptions}
+              showLabel={false}
+              value={logWheelValue}
+              onChange={(v) => {
+                setLogWheelValue(v);
+              }}
+            />
+            {logTarget?.existingLog ? (
+              <Button
+                className="min-h-11 w-full"
+                disabled={saving}
+                type="button"
+                variant="destructive"
+                onClick={() => {
+                  void handleDeleteLog();
                 }}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-              {t('logNotes')}
-              <Input
-                className="min-h-11"
-                placeholder={t('logPlaceholder')}
-                value={logNotes}
-                onChange={(e) => {
-                  setLogNotes(e.target.value);
-                }}
-              />
-            </label>
-            <div className="flex gap-2">
+              >
+                {t('deleteLog')}
+              </Button>
+            ) : null}
+            <div className="flex w-full gap-2">
               <Button
                 className="min-h-11 flex-1"
+                disabled={saving}
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  setLogTarget(null);
-                }}
+                onClick={closeLog}
               >
                 {t('cancel')}
               </Button>
               <Button
                 className="min-h-11 flex-1"
-                disabled={saving || !logAmount || Number(logAmount) <= 0}
+                disabled={saving || (logWheelValue <= 0 && !logTarget?.existingLog)}
                 type="button"
                 onClick={() => {
-                  void handleLog();
+                  void handleSaveLog();
                 }}
               >
-                {saving ? t('logging') : t('save')}
+                {logWheelValue > 0 || !logTarget?.existingLog ? t('save') : t('deleteLog')}
               </Button>
             </div>
           </div>
@@ -534,7 +517,7 @@ export default function SupplementsPage(): React.ReactElement {
             setDeleteTarget(null);
           }}
           onConfirm={() => {
-            void handleDelete();
+            void handleDeleteSupplement();
           }}
         />
       </AdaptivePageShell>

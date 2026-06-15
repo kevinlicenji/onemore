@@ -34,6 +34,7 @@ import type {
   UpdateUserProfile,
   UpdateCustomExercise,
   UpdateSupplementInput,
+  UpdateSupplementLogInput,
   UpsertSetLogInput,
   UpsertSetResponse,
   UserProfile,
@@ -719,6 +720,45 @@ export async function createSupplementLog(
     throw await parseApiError(response, 'Failed to log supplement');
   }
   return response.json() as Promise<SupplementLogItem>;
+}
+
+export async function updateSupplementLog(
+  accessToken: string,
+  logId: string,
+  payload: UpdateSupplementLogInput,
+): Promise<SupplementLogItem> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/supplements/logs/${logId}`, {
+    method: 'PUT',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to update supplement log');
+  }
+  return response.json() as Promise<SupplementLogItem>;
+}
+
+export async function fetchSupplementLogs(
+  accessToken: string,
+  from: string,
+  to: string,
+  locale?: string,
+): Promise<SupplementLogListResponse> {
+  const params = new URLSearchParams({
+    from: from + 'T00:00:00.000Z',
+    to: to + 'T23:59:59.999Z',
+    limit: '200',
+  });
+  if (locale) params.set('locale', locale);
+  const response = await fetch(API_BASE_URL + '/api/v1/supplements/logs?' + params.toString(), {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load supplement logs');
+  }
+  return response.json() as Promise<SupplementLogListResponse>;
 }
 
 export async function deleteSupplementLog(accessToken: string, logId: string): Promise<void> {

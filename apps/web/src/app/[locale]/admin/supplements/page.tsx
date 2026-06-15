@@ -148,7 +148,10 @@ export default function AdminSupplementsPage(): React.ReactElement {
           className="min-h-11 rounded-md border bg-background px-2 text-sm text-foreground"
           value={form.unit}
           onChange={(e) => {
-            setForm({ ...form, unit: e.target.value as 'g' | 'mg' | 'capsule' | 'scoop' | 'drops' });
+            setForm({
+              ...form,
+              unit: e.target.value as 'g' | 'mg' | 'capsule' | 'scoop' | 'drops',
+            });
           }}
         >
           <option value="g">g</option>
