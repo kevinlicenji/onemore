@@ -11,11 +11,12 @@ describe('gym navigation', () => {
 
   it('exposes exercises and settings in the more menu', () => {
     const items = buildGymMoreNavItems('it');
-    expect(items.map((item) => item.labelKey)).toEqual(['navExercises', 'navSettings']);
+    expect(items.map((item) => item.labelKey)).toEqual(['navExercises', 'navSupplements', 'navSettings']);
   });
 
   it('detects more-menu routes', () => {
     expect(isGymMoreRouteActive('exercises')).toBe(true);
+    expect(isGymMoreRouteActive('supplements')).toBe(true);
     expect(isGymMoreRouteActive('settings')).toBe(true);
     expect(isGymMoreRouteActive('dashboard')).toBe(false);
   });
