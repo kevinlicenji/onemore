@@ -10,12 +10,14 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { DifficultyStepsIcon } from '@/components/difficulty-steps-icon';
 import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
-import { GymMobileActions } from '@/components/gym-ui/gym-mobile-actions';
+import { GymStickyActions, GymStickyActionsSpacer } from '@/components/gym-ui/gym-sticky-actions';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
+import { CardGridSkeleton } from '@/components/layout/card-grid-skeleton';
 import { ProgramDayList } from '@/components/program-day-list';
 import { RequireAuth } from '@/components/require-auth';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { deleteProgram, fetchProgramDetail } from '@/lib/api-auth';
+import { getNextWorkoutPreviewClient } from '@/lib/offline/workout-client';
 
 export default function ProgramDetailPage(): React.ReactElement {
   const t = useTranslations('Programs');
@@ -26,6 +28,8 @@ export default function ProgramDetailPage(): React.ReactElement {
   const programId = typeof params.id === 'string' ? params.id : '';
   const isDesktop = useIsDesktop();
   const [program, setProgram] = useState<ProgramDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [startHref, setStartHref] = useState(`/${locale}/workouts/start`);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -34,12 +38,25 @@ export default function ProgramDetailPage(): React.ReactElement {
     if (!accessToken || !programId) {
       return;
     }
-    void fetchProgramDetail(accessToken, programId)
-      .then(setProgram)
+    setLoading(true);
+    void Promise.all([
+      fetchProgramDetail(accessToken, programId),
+      getNextWorkoutPreviewClient(accessToken),
+    ])
+      .then(([detail, preview]) => {
+        setProgram(detail);
+        if (preview.hasActiveAssignment && preview.workoutDayId) {
+          setStartHref(`/${locale}/workouts/prepare?dayId=${preview.workoutDayId}`);
+        }
+        setError(null);
+      })
       .catch(() => {
         setError(t('programLoadError'));
+      })
+      .finally(() => {
+        setLoading(false);
       });
-  }, [accessToken, programId, t]);
+  }, [accessToken, locale, programId, t]);
 
   async function handleDelete(): Promise<void> {
     if (!accessToken) {
@@ -69,7 +86,7 @@ export default function ProgramDetailPage(): React.ReactElement {
     program !== null ? (
       <>
         <Button asChild>
-          <Link href={`/${locale}/workouts/start`}>{t('startWorkoutFromProgram')}</Link>
+          <Link href={startHref}>{t('startWorkoutFromProgram')}</Link>
         </Button>
         <Button type="button" variant="outline" onClick={openNewDayEditor}>
           {t('addDay')}
@@ -106,7 +123,9 @@ export default function ProgramDetailPage(): React.ReactElement {
         titleTrailing={titleTrailing}
         variant="wide"
       >
-        {program ? (
+        {loading ? (
+          <CardGridSkeleton count={isDesktop ? 4 : 3} columns="2" />
+        ) : program ? (
           <ProgramDayList
             days={program.days}
             locale={locale}
@@ -114,32 +133,28 @@ export default function ProgramDetailPage(): React.ReactElement {
             onDayClick={openDayEditor}
           />
         ) : (
-          <p className="text-sm text-muted-foreground">{error ?? t('loadingProgram')}</p>
+          <p className="text-sm text-muted-foreground">{error ?? t('programLoadError')}</p>
         )}
 
-        {!isDesktop ? (
-          <GymMobileActions>
-            <Button asChild>
-              <Link href={`/${locale}/workouts/start`}>{t('startWorkoutFromProgram')}</Link>
-            </Button>
-            <Button type="button" variant="outline" onClick={openNewDayEditor}>
-              {t('addDay')}
-            </Button>
-            <Button
-              variant="outline"
-              disabled={deleting}
-              type="button"
-              onClick={() => {
-                setDeleteConfirmOpen(true);
-              }}
-            >
-              {t('deleteProgram')}
-            </Button>
-            <Button asChild variant="ghost">
-              <Link href={`/${locale}/programs`}>{t('backToPrograms')}</Link>
-            </Button>
-          </GymMobileActions>
+        {!isDesktop && program ? (
+          <>
+            <GymStickyActionsSpacer />
+            <GymStickyActions>
+              <Button asChild className="min-h-12">
+                <Link href={startHref}>{t('startWorkoutFromProgram')}</Link>
+              </Button>
+              <Button
+                className="min-h-11"
+                type="button"
+                variant="outline"
+                onClick={openNewDayEditor}
+              >
+                {t('addDay')}
+              </Button>
+            </GymStickyActions>
+          </>
         ) : null}
+
         <GymActionSheet
           cancelLabel={t('cancel')}
           confirmLabel={t('deleteProgram')}

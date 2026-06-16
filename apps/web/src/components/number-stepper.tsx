@@ -14,6 +14,7 @@ interface NumberStepperProps {
   disabled?: boolean;
   size?: NumberStepperSize;
   kind?: MetricInputKind;
+  wheelCenterKg?: number;
   onChange: (value: number | null) => void;
 }
 
@@ -38,6 +39,7 @@ export function NumberStepper({
   disabled = false,
   size = 'default',
   kind,
+  wheelCenterKg,
   onChange,
 }: NumberStepperProps): React.ReactElement {
   return (
@@ -48,6 +50,7 @@ export function NumberStepper({
       placeholder={placeholder}
       size={size}
       value={value}
+      wheelCenterKg={wheelCenterKg}
       onChange={onChange}
     />
   );

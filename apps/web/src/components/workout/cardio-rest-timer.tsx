@@ -1,7 +1,7 @@
 'use client';
 
 import { computePeakBpm, computePulseDurationSeconds, computeRecoveryBpm } from '@onemore/shared';
-import { Button } from '@onemore/ui';
+import { Button, cn } from '@onemore/ui';
 import { Heart } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
@@ -19,6 +19,7 @@ interface CardioRestTimerProps {
   locale: string;
   rpe?: number | null;
   nextSetLabel: string;
+  compact?: boolean;
   onNextSet: (actualRestSeconds: number) => void;
   onRestComplete?: () => void;
 }
@@ -38,12 +39,14 @@ export function CardioRestTimer({
   locale,
   rpe,
   nextSetLabel,
+  compact = false,
   onNextSet,
   onRestComplete,
 }: CardioRestTimerProps): React.ReactElement {
   const t = useTranslations('Workouts');
   const [remaining, setRemaining] = useState(seconds);
-  const [trivia] = useState(() => pickRestTrivia(locale));
+  const [bonusSeconds, setBonusSeconds] = useState(0);
+  const [trivia] = useState(() => (compact ? null : pickRestTrivia(locale)));
   const startedAtRef = useRef(Date.now());
   const plannedSecondsRef = useRef(seconds);
   const onNextSetRef = useRef(onNextSet);
@@ -56,7 +59,11 @@ export function CardioRestTimer({
 
   const peakBpm = useMemo(() => computePeakBpm(rpe), [rpe]);
   const displayRemaining = Math.max(0, remaining);
-  const currentBpm = computeRecoveryBpm(peakBpm, displayRemaining, plannedSecondsRef.current);
+  const currentBpm = computeRecoveryBpm(
+    peakBpm,
+    displayRemaining,
+    plannedSecondsRef.current + bonusSeconds,
+  );
   const pulseDuration = useMemo(() => computePulseDurationSeconds(peakBpm), [peakBpm]);
 
   useEffect(() => {
@@ -72,6 +79,7 @@ export function CardioRestTimer({
     plannedSecondsRef.current = seconds;
     restCompleteSignaledRef.current = false;
     autoAdvancedRef.current = false;
+    setBonusSeconds(0);
     setRemaining(seconds);
   }, [seconds]);
 
@@ -96,15 +104,15 @@ export function CardioRestTimer({
         }
         autoAdvancedRef.current = true;
         onNextSetRef.current(
-          getElapsedRestSeconds(startedAtRef.current, plannedSecondsRef.current),
+          getElapsedRestSeconds(startedAtRef.current, plannedSecondsRef.current + bonusSeconds),
         );
       },
-      reducedMotion ? 200 : 700,
+      reducedMotion ? 200 : 2000,
     );
     return () => {
       window.clearTimeout(timer);
     };
-  }, [remaining, reducedMotion]);
+  }, [remaining, reducedMotion, bonusSeconds]);
 
   useEffect(() => {
     if (remaining <= 0) {
@@ -120,55 +128,76 @@ export function CardioRestTimer({
 
   function handleNextSet(): void {
     autoAdvancedRef.current = true;
-    onNextSetRef.current(getElapsedRestSeconds(startedAtRef.current, plannedSecondsRef.current));
+    onNextSetRef.current(
+      getElapsedRestSeconds(startedAtRef.current, plannedSecondsRef.current + bonusSeconds),
+    );
+  }
+
+  function handleAddThirty(): void {
+    setBonusSeconds((value) => value + 30);
+    setRemaining((value) => value + 30);
   }
 
   return (
     <div className="flex min-h-[calc(100dvh-env(safe-area-inset-top)-4rem)] flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="flex flex-1 flex-col items-center justify-center text-center">
-        <motion.div
-          animate={
-            reducedMotion
-              ? undefined
-              : {
-                  scale: [1, 1.1, 1.04, 1.08, 1],
-                  opacity: [0.92, 1, 0.96, 1, 0.92],
-                }
-          }
-          className="relative flex h-40 w-40 items-center justify-center"
-          transition={
-            reducedMotion
-              ? { duration: 0 }
-              : {
-                  duration: pulseDuration,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                  times: [0, 0.14, 0.28, 0.42, 1],
-                }
-          }
-        >
-          <Heart aria-hidden className="h-28 w-28 fill-primary text-primary" strokeWidth={1.5} />
-          <span className="absolute bottom-2 rounded-full bg-background/90 px-2 py-0.5 text-sm font-bold tabular-nums text-primary shadow-sm">
-            {currentBpm} BPM
-          </span>
-        </motion.div>
+        {!compact ? (
+          <motion.div
+            animate={
+              reducedMotion
+                ? undefined
+                : {
+                    scale: [1, 1.1, 1.04, 1.08, 1],
+                    opacity: [0.92, 1, 0.96, 1, 0.92],
+                  }
+            }
+            className="relative flex h-40 w-40 items-center justify-center"
+            transition={
+              reducedMotion
+                ? { duration: 0 }
+                : {
+                    duration: pulseDuration,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                    times: [0, 0.14, 0.28, 0.42, 1],
+                  }
+            }
+          >
+            <Heart aria-hidden className="h-28 w-28 fill-primary text-primary" strokeWidth={1.5} />
+            <span className="absolute bottom-2 rounded-full bg-background/90 px-2 py-0.5 text-sm font-bold tabular-nums text-primary shadow-sm">
+              {currentBpm} BPM
+            </span>
+          </motion.div>
+        ) : null}
 
-        <p className="mt-6 text-5xl font-bold tabular-nums tracking-tight">
+        <p
+          className={cn(
+            'font-bold tabular-nums tracking-tight',
+            compact ? 'text-6xl' : 'mt-6 text-5xl',
+          )}
+        >
           {formatMmSs(displayRemaining)}
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">{t('restCardioRecovering')}</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {compact ? t('restLabel') : t('restCardioRecovering')}
+        </p>
       </div>
 
-      <div className="mx-auto w-full max-w-sm rounded-2xl border border-gym-separator bg-gym-surface/80 p-4 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-          {t('restTriviaTitle')}
-        </p>
-        <p className="mt-2 text-sm leading-relaxed text-foreground/90">{trivia}</p>
-      </div>
+      {!compact && trivia ? (
+        <div className="mx-auto w-full max-w-sm rounded-2xl border border-gym-separator bg-gym-surface/80 p-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+            {t('restTriviaTitle')}
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-foreground/90">{trivia}</p>
+        </div>
+      ) : null}
 
       <div className="mt-8 flex w-full max-w-sm flex-col gap-3 self-center">
         <Button className="min-h-14 text-lg" type="button" onClick={handleNextSet}>
           {nextSetLabel}
+        </Button>
+        <Button className="min-h-11" type="button" variant="outline" onClick={handleAddThirty}>
+          {t('restAddThirty')}
         </Button>
       </div>
     </div>

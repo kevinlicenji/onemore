@@ -3,6 +3,7 @@
 import { Button, cn } from '@onemore/ui';
 import { useState } from 'react';
 
+import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
 import { GymSheet } from '@/components/gym-ui/gym-sheet';
 
 interface GymWorkoutMenuProps {
@@ -12,7 +13,9 @@ interface GymWorkoutMenuProps {
     skipExercise: string;
     finishWorkout: string;
     abandon: string;
+    abandonConfirm: string;
     addSet: string;
+    cancel: string;
   };
   showAddSet: boolean;
   showSkipExercise: boolean;
@@ -39,6 +42,7 @@ export function GymWorkoutMenu({
   onAbandon,
 }: GymWorkoutMenuProps): React.ReactElement {
   const [open, setOpen] = useState(false);
+  const [abandonConfirmOpen, setAbandonConfirmOpen] = useState(false);
 
   function handleAction(action: () => void): void {
     setOpen(false);
@@ -50,7 +54,14 @@ export function GymWorkoutMenu({
     ...(showAddSet ? [{ label: labels.addSet, onClick: onAddSet }] : []),
     ...(showSkipExercise ? [{ label: labels.skipExercise, onClick: onSkipExercise }] : []),
     { label: labels.finishWorkout, onClick: onFinishWorkout, emphasis: true as const },
-    { label: labels.abandon, onClick: onAbandon, destructive: true as const },
+    {
+      label: labels.abandon,
+      onClick: () => {
+        setOpen(false);
+        setAbandonConfirmOpen(true);
+      },
+      destructive: true as const,
+    },
   ];
 
   return (
@@ -99,6 +110,21 @@ export function GymWorkoutMenu({
           ))}
         </ul>
       </GymSheet>
+
+      <GymActionSheet
+        cancelLabel={labels.cancel}
+        confirmLabel={labels.abandon}
+        destructive
+        open={abandonConfirmOpen}
+        title={labels.abandonConfirm}
+        onCancel={() => {
+          setAbandonConfirmOpen(false);
+        }}
+        onConfirm={() => {
+          setAbandonConfirmOpen(false);
+          onAbandon();
+        }}
+      />
     </>
   );
 }

@@ -115,4 +115,67 @@ export function buildExerciseSetViewState({
   };
 }
 
+/**
+ * Numeric default reps for the active set when the athlete has not edited the field yet.
+ */
+export function resolveDefaultReps(
+  exercise: WorkoutExerciseDetail,
+  set: WorkoutSetDetail,
+  labels: {
+    placeholderReps: string;
+    placeholderWeight: string;
+    failureReps: string;
+  },
+): number | null {
+  const viewState = buildExerciseSetViewState({
+    exercise,
+    restTimerContext: null,
+    actualRestBySetId: {},
+    labels,
+  });
+  const placeholder = viewState.getRepsPlaceholder(
+    isExtraSet(set.setNumber, exercise.prescription.targetSets),
+  );
+  const parsed = Number(placeholder);
+  if (!Number.isNaN(parsed) && parsed > 0) {
+    return parsed;
+  }
+  const target = exercise.prescription.targetReps;
+  if (target > 0) {
+    return target;
+  }
+  return null;
+}
+
+/**
+ * Numeric default weight (kg) for the active set when not yet edited.
+ */
+export function resolveDefaultWeightKg(
+  exercise: WorkoutExerciseDetail,
+  set: WorkoutSetDetail,
+  labels: {
+    placeholderReps: string;
+    placeholderWeight: string;
+    failureReps: string;
+  },
+): number | null {
+  if (exercise.exercise.isBodyweight) {
+    return null;
+  }
+  const viewState = buildExerciseSetViewState({
+    exercise,
+    restTimerContext: null,
+    actualRestBySetId: {},
+    labels,
+  });
+  const placeholder = viewState.getWeightPlaceholder(
+    isExtraSet(set.setNumber, exercise.prescription.targetSets),
+  );
+  const parsed = Number(placeholder);
+  if (!Number.isNaN(parsed) && parsed >= 0) {
+    return parsed;
+  }
+  return exercise.prescription.targetWeightKg ?? null;
+}
+
 export { isExtraSet };
