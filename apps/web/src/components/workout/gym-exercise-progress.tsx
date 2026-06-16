@@ -13,6 +13,7 @@ interface GymExerciseProgressProps {
   completedIndexes: number[];
   skippedIndexes: number[];
   className?: string;
+  onSelectIndex?: (index: number) => void;
 }
 
 function isExerciseDone(
@@ -32,6 +33,7 @@ export function GymExerciseProgress({
   completedIndexes,
   skippedIndexes,
   className,
+  onSelectIndex,
 }: GymExerciseProgressProps): ReactElement {
   const reducedMotion = useReducedMotion();
 
@@ -40,7 +42,11 @@ export function GymExerciseProgress({
   }
 
   return (
-    <div aria-hidden className={cn('relative mt-3 w-full', className)}>
+    <div
+      aria-label="Exercise progress"
+      className={cn('relative mt-3 w-full', className)}
+      role="tablist"
+    >
       {total > 1 ? (
         <div className="absolute left-3 right-3 top-1/2 h-0.5 -translate-y-1/2 bg-foreground/25" />
       ) : null}
@@ -51,35 +57,37 @@ export function GymExerciseProgress({
 
           if (done) {
             return (
-              <motion.span
+              <button
                 key={index}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-background ring-2 ring-foreground/30"
-                initial={reducedMotion ? undefined : { opacity: 0, scale: 0.6 }}
-                transition={{ duration: 0.2, delay: reducedMotion ? 0 : index * 0.02 }}
+                aria-label={`Exercise ${String(index + 1)} completed`}
+                aria-selected={current}
+                className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background ring-2 ring-foreground/30"
+                role="tab"
+                type="button"
+                onClick={() => {
+                  onSelectIndex?.(index);
+                }}
               >
                 <GymCompletedCheck className="h-4 w-4 text-foreground" />
-              </motion.span>
+              </button>
             );
           }
 
           return (
-            <motion.span
+            <button
               key={index}
-              animate={{ scale: current ? 1.2 : 1 }}
+              aria-label={`Exercise ${String(index + 1)}`}
+              aria-selected={current}
               className={cn(
-                'relative z-10 h-3 w-3 shrink-0 rounded-full border-2 bg-background',
+                'relative z-10 h-8 w-8 shrink-0 rounded-full border-2 bg-background transition-transform active:scale-95',
                 current
                   ? 'border-primary bg-primary ring-4 ring-primary/25'
                   : 'border-foreground/35',
               )}
-              initial={reducedMotion ? undefined : { opacity: 0, scale: 0.5 }}
-              layout
-              transition={{
-                type: 'spring',
-                stiffness: 420,
-                damping: 28,
-                delay: reducedMotion ? 0 : index * 0.02,
+              role="tab"
+              type="button"
+              onClick={() => {
+                onSelectIndex?.(index);
               }}
             />
           );

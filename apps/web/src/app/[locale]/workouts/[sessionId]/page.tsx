@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { useWakeLock } from '@/hooks/use-wake-lock';
 import { ExerciseActionsMenu } from '@/components/exercise-actions-menu';
 import { ExerciseNotesModal } from '@/components/exercise-notes-modal';
 import { ExerciseSearchCombobox } from '@/components/exercise-search-combobox';
@@ -28,6 +29,8 @@ import { useIsDesktop } from '@/hooks/use-is-desktop';
 import {
   buildExerciseSetViewState,
   isExtraSet,
+  resolveDefaultReps,
+  resolveDefaultWeightKg,
   type RestTimerContext,
 } from '@/lib/workout-exercise-set-state';
 import {
@@ -44,6 +47,7 @@ import {
   skipWorkoutExerciseClient,
   updateWorkoutExerciseNotesClient,
   upsertWorkoutSetClient,
+  persistWorkoutSessionDraft,
 } from '@/lib/offline/workout-client';
 import { POSTHOG_EVENTS, trackEvent } from '@/lib/analytics';
 import { canCompleteWorkoutSet } from '@/lib/can-complete-workout-set';
@@ -72,6 +76,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     Record<string, SetPerformanceFeedback>
   >({});
   const [loading, setLoading] = useState(false);
+  const [syncingSetId, setSyncingSetId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [newPrs, setNewPrs] = useState<PersonalRecordSummary[]>([]);
   const [pendingMaxProposal, setPendingMaxProposal] = useState<PendingMaxProposal | null>(null);
@@ -80,8 +85,20 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   const [activeSetId, setActiveSetId] = useState<string | null>(null);
   const setRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const autoFinishTriggeredRef = useRef(false);
+  const draftPersistTimerRef = useRef<number | null>(null);
   const { refreshPendingCount } = useSync();
   const isDesktop = useIsDesktop();
+
+  useWakeLock(session?.status === 'in_progress');
+
+  const setFieldLabels = useMemo(
+    () => ({
+      placeholderReps: t('placeholderReps'),
+      placeholderWeight: t('placeholderWeight'),
+      failureReps: t('failureReps'),
+    }),
+    [t],
+  );
 
   const loadSession = useCallback(async (): Promise<void> => {
     if (!accessToken || !sessionId) {
@@ -165,6 +182,56 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
   }
 
+  useEffect(() => {
+    if (!currentExercise || restTimerContext !== null) {
+      return;
+    }
+    const activeSet = currentExercise.sets.find((set) => !set.isCompleted && !set.isSkipped);
+    if (!activeSet) {
+      return;
+    }
+    const repsDefault = resolveDefaultReps(currentExercise, activeSet, setFieldLabels);
+    const weightDefault = resolveDefaultWeightKg(currentExercise, activeSet, setFieldLabels);
+    if (
+      (activeSet.reps !== null || repsDefault === null) &&
+      (activeSet.weightKg !== null || weightDefault === null)
+    ) {
+      return;
+    }
+    setSession((prev) => {
+      if (!prev) {
+        return prev;
+      }
+      return {
+        ...prev,
+        exercises: prev.exercises.map((exercise) =>
+          exercise.id === currentExercise.id
+            ? {
+                ...exercise,
+                sets: exercise.sets.map((set) =>
+                  set.id === activeSet.id
+                    ? {
+                        ...set,
+                        reps: set.reps ?? repsDefault,
+                        weightKg: set.weightKg ?? weightDefault,
+                      }
+                    : set,
+                ),
+              }
+            : exercise,
+        ),
+      };
+    });
+  }, [currentExercise, restTimerContext, setFieldLabels]);
+
+  useEffect(() => {
+    return () => {
+      if (draftPersistTimerRef.current) {
+        window.clearTimeout(draftPersistTimerRef.current);
+      }
+    };
+  }, []);
+
   async function handleCompleteSet(setId: string, setNumber: number): Promise<void> {
     if (!accessToken || !session || !currentExercise) {
       return;
@@ -173,12 +240,18 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     if (!set) {
       return;
     }
-    if (!canCompleteWorkoutSet(set.reps)) {
+    if (
+      !canCompleteWorkoutSet(set.reps ?? resolveDefaultReps(currentExercise, set, setFieldLabels))
+    ) {
       setError(t('repsRequiredToComplete'));
       return;
     }
 
-    setLoading(true);
+    const effectiveReps = set.reps ?? resolveDefaultReps(currentExercise, set, setFieldLabels);
+    const effectiveWeight =
+      set.weightKg ?? resolveDefaultWeightKg(currentExercise, set, setFieldLabels);
+
+    setSyncingSetId(setId);
     setError(null);
     try {
       const result = await upsertWorkoutSetClient(
@@ -188,8 +261,8 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           id: setId,
           exerciseExecutionId: currentExercise.id,
           setNumber,
-          weightKg: set.weightKg,
-          reps: set.reps,
+          weightKg: effectiveWeight,
+          reps: effectiveReps,
           rpe: set.rpe,
           rir: set.rir,
           isCompleted: true,
@@ -219,10 +292,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
       }
       await refreshPendingCount();
 
-      if (!set.isWarmup && set.weightKg !== null && set.reps !== null) {
+      if (!set.isWarmup && effectiveWeight !== null && effectiveReps !== null) {
         const feedback = await evaluateSetPerformanceFeedback(
-          set.weightKg,
-          set.reps,
+          effectiveWeight,
+          effectiveReps,
           currentExercise.exerciseLibraryId,
           session.id,
         );
@@ -246,7 +319,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     } catch (err) {
       setError(err instanceof Error ? err.message : t('setError'));
     } finally {
-      setLoading(false);
+      setSyncingSetId(null);
     }
   }
 
@@ -304,21 +377,30 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     field: 'weightKg' | 'reps' | 'rir',
     value: number | null,
   ): void {
-    if (!session || !currentExercise) {
-      return;
-    }
-    setSession({
-      ...session,
-      exercises: session.exercises.map((exercise) =>
-        exercise.id === currentExercise.id
-          ? {
-              ...exercise,
-              sets: exercise.sets.map((set) =>
-                set.id === setId ? { ...set, [field]: value } : set,
-              ),
-            }
-          : exercise,
-      ),
+    setSession((prev) => {
+      if (!prev || !currentExercise) {
+        return prev;
+      }
+      const updated: WorkoutSessionDetail = {
+        ...prev,
+        exercises: prev.exercises.map((exercise) =>
+          exercise.id === currentExercise.id
+            ? {
+                ...exercise,
+                sets: exercise.sets.map((set) =>
+                  set.id === setId ? { ...set, [field]: value } : set,
+                ),
+              }
+            : exercise,
+        ),
+      };
+      if (draftPersistTimerRef.current) {
+        window.clearTimeout(draftPersistTimerRef.current);
+      }
+      draftPersistTimerRef.current = window.setTimeout(() => {
+        void persistWorkoutSessionDraft(updated);
+      }, 300);
+      return updated;
     });
   }
 
@@ -532,6 +614,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     skipSet: t('skipSetShort'),
     finishWorkout: t('finishWorkout'),
     abandon: t('abandon'),
+    abandonConfirm: t('abandonConfirm'),
     notesPlaceholder: t('notesPlaceholder'),
     notesModalTitle: t('notesModalTitle'),
     saveNotes: t('saveNotes'),
@@ -577,6 +660,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           formatSetLabel={(setNumber) => t('setLabel', { number: setNumber })}
           labels={gymLabels}
           loading={loading}
+          syncingSetId={syncingSetId}
           locale={locale}
           newPrs={newPrs}
           notesModalOpen={notesModalOpen}

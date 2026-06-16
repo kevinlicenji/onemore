@@ -17,6 +17,7 @@ import {
   REST_WHEEL_VALUES,
   SETS_WHEEL_VALUES,
   WEIGHT_WHEEL_VALUES,
+  buildWeightWheelValuesAround,
 } from '@/lib/metric-picker-config';
 import { buildNumericWheelValues } from '@/lib/scroll-wheel-snap';
 
@@ -38,6 +39,8 @@ interface MetricInputProps {
   size?: MetricInputSize;
   wheelSize?: ScrollWheelPickerSize;
   showLabel?: boolean;
+  /** Centers the weight wheel around this value on mobile (smaller, faster scroll). */
+  wheelCenterKg?: number;
   onChange: (value: number | null) => void;
 }
 
@@ -82,6 +85,7 @@ function getBounds(kind: MetricInputKind): { min: number; max: number; step: num
 function buildWheelOptions(
   kind: MetricInputKind,
   failureLabel: string,
+  wheelCenterKg?: number,
 ): ScrollWheelPickerOption<number>[] {
   if (kind === 'repsPrescription') {
     return REPS_PRESCRIPTION_WHEEL_VALUES.map((value) => ({
@@ -93,7 +97,11 @@ function buildWheelOptions(
     }));
   }
   if (kind === 'weight') {
-    return WEIGHT_WHEEL_VALUES.map((value) => ({ value, label: String(value) }));
+    const values =
+      wheelCenterKg !== undefined
+        ? buildWeightWheelValuesAround(wheelCenterKg)
+        : WEIGHT_WHEEL_VALUES;
+    return values.map((value) => ({ value, label: String(value) }));
   }
   if (kind === 'rest') {
     return REST_WHEEL_VALUES.map((value) => ({ value, label: String(value) }));
@@ -121,14 +129,17 @@ export function MetricInput({
   size = 'default',
   wheelSize,
   showLabel = true,
+  wheelCenterKg,
   onChange,
 }: MetricInputProps): React.ReactElement {
   const isDesktop = useIsDesktop();
   const classes = sizeClasses[size];
   const { min, max, step } = getBounds(kind);
   const displayValue = value === null ? '' : String(value);
-  const wheelValue = value ?? min;
+  const wheelValue =
+    value ?? (kind === 'weight' && wheelCenterKg !== undefined ? wheelCenterKg : min);
   const useWheel = isDesktop === false;
+  const resolvedWheelSize = wheelSize ?? (size === 'gym' ? 'workout' : 'default');
 
   function applyDelta(delta: number): void {
     if (disabled) {
@@ -139,12 +150,11 @@ export function MetricInput({
   }
 
   if (useWheel) {
-    const resolvedWheelSize = wheelSize ?? 'default';
     return (
       <ScrollWheelPicker
         disabled={disabled}
         label={label}
-        options={buildWheelOptions(kind, failureLabel)}
+        options={buildWheelOptions(kind, failureLabel, wheelCenterKg)}
         showLabel={showLabel}
         size={resolvedWheelSize}
         value={wheelValue}

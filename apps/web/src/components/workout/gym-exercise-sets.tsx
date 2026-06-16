@@ -9,6 +9,8 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import {
   buildExerciseSetViewState,
   isExtraSet,
+  resolveDefaultReps,
+  resolveDefaultWeightKg,
   type RestTimerContext,
   type WorkoutExerciseDetail,
 } from '@/lib/workout-exercise-set-state';
@@ -27,6 +29,7 @@ interface GymExerciseSetsProps {
   performanceFeedbackBySetId: Record<string, SetPerformanceFeedback>;
   actualRestBySetId: Record<string, number>;
   loading: boolean;
+  syncingSetId?: string | null;
   labels: {
     setSkippedLabel: string;
     skipSet: string;
@@ -60,7 +63,8 @@ export function GymExerciseSets({
   restTimerContext,
   performanceFeedbackBySetId,
   actualRestBySetId,
-  loading,
+  loading: _loading,
+  syncingSetId = null,
   labels,
   formatSetLabel,
   onSkipSet,
@@ -81,6 +85,19 @@ export function GymExerciseSets({
   const motionTransition = reducedMotion
     ? { duration: 0 }
     : { type: 'spring' as const, stiffness: 420, damping: 32, mass: 0.75 };
+  const fieldLabels = {
+    placeholderReps: labels.placeholderReps,
+    placeholderWeight: labels.placeholderWeight,
+    failureReps: labels.failureReps,
+  };
+  const activeSet = setState.activeSet;
+  const activeReps =
+    activeSet?.reps ?? (activeSet ? resolveDefaultReps(exercise, activeSet, fieldLabels) : null);
+  const activeWeight =
+    activeSet?.weightKg ??
+    (activeSet ? resolveDefaultWeightKg(exercise, activeSet, fieldLabels) : null);
+  const weightWheelCenter = activeWeight ?? activeSet?.weightKg ?? 60;
+  const inputsDisabled = syncingSetId !== null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -130,48 +147,26 @@ export function GymExerciseSets({
             initial={reducedMotion ? undefined : activeSetTransition.initial}
             transition={motionTransition}
           >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                <p className="text-lg font-semibold">
-                  {formatSetLabel(setState.activeSet.setNumber)}
+            <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <p className="text-lg font-semibold">
+                {formatSetLabel(setState.activeSet.setNumber)}
+              </p>
+              {!isExtraSet(setState.activeSet.setNumber, prescription.targetSets) ? (
+                <p className="text-sm font-semibold text-primary">
+                  {formatSetTargetInline(
+                    prescription.targetSets,
+                    prescription.targetReps,
+                    prescription.targetWeightKg,
+                    prescription.restSeconds,
+                    labels.failureReps,
+                  )}
                 </p>
-                {!isExtraSet(setState.activeSet.setNumber, prescription.targetSets) ? (
-                  <p className="text-sm font-semibold text-primary">
-                    {formatSetTargetInline(
-                      prescription.targetSets,
-                      prescription.targetReps,
-                      prescription.targetWeightKg,
-                      prescription.restSeconds,
-                      labels.failureReps,
-                    )}
-                  </p>
-                ) : null}
-              </div>
-              <Button
-                className="min-h-8 shrink-0 px-2 text-xs underline decoration-1 underline-offset-4"
-                disabled={loading}
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  const activeSet = setState.activeSet;
-                  if (!activeSet) {
-                    return;
-                  }
-                  onSkipSet(activeSet.id, activeSet.setNumber);
-                }}
-              >
-                {labels.skipSet}
-              </Button>
+              ) : null}
             </div>
 
-            <div
-              className={cn(
-                'mt-4 grid gap-3',
-                exercise.exercise.isBodyweight ? 'grid-cols-1' : 'grid-cols-2',
-              )}
-            >
+            <div className="mt-4 flex flex-col gap-3">
               <NumberStepper
-                disabled={loading}
+                disabled={inputsDisabled}
                 kind="reps"
                 label={labels.reps}
                 placeholder={setState.getRepsPlaceholder(
@@ -179,18 +174,18 @@ export function GymExerciseSets({
                 )}
                 size="gym"
                 step={1}
-                value={setState.activeSet.reps}
+                value={activeReps}
                 onChange={(value) => {
-                  const activeSet = setState.activeSet;
-                  if (!activeSet) {
+                  const currentActiveSet = setState.activeSet;
+                  if (!currentActiveSet) {
                     return;
                   }
-                  onUpdateSetValue(activeSet.id, 'reps', value);
+                  onUpdateSetValue(currentActiveSet.id, 'reps', value);
                 }}
               />
               {!exercise.exercise.isBodyweight ? (
                 <NumberStepper
-                  disabled={loading}
+                  disabled={inputsDisabled}
                   kind="weight"
                   label={labels.weightKg}
                   placeholder={setState.getWeightPlaceholder(
@@ -198,13 +193,14 @@ export function GymExerciseSets({
                   )}
                   size="gym"
                   step={0.5}
-                  value={setState.activeSet.weightKg}
+                  value={activeWeight}
+                  wheelCenterKg={weightWheelCenter}
                   onChange={(value) => {
-                    const activeSet = setState.activeSet;
-                    if (!activeSet) {
+                    const currentActiveSet = setState.activeSet;
+                    if (!currentActiveSet) {
                       return;
                     }
-                    onUpdateSetValue(activeSet.id, 'weightKg', value);
+                    onUpdateSetValue(currentActiveSet.id, 'weightKg', value);
                   }}
                 />
               ) : null}
@@ -213,19 +209,35 @@ export function GymExerciseSets({
             {!setState.activeSet.isWarmup ? (
               <div className="mt-4">
                 <RirSelector
-                  disabled={loading}
+                  disabled={inputsDisabled}
                   label={labels.rirLabel}
                   value={setState.activeSet.rir}
                   onChange={(rir) => {
-                    const activeSet = setState.activeSet;
-                    if (!activeSet) {
+                    const currentActiveSet = setState.activeSet;
+                    if (!currentActiveSet) {
                       return;
                     }
-                    onUpdateSetValue(activeSet.id, 'rir', rir);
+                    onUpdateSetValue(currentActiveSet.id, 'rir', rir);
                   }}
                 />
               </div>
             ) : null}
+
+            <Button
+              className="mt-4 min-h-11 w-full text-sm"
+              disabled={inputsDisabled}
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const currentActiveSet = setState.activeSet;
+                if (!currentActiveSet) {
+                  return;
+                }
+                onSkipSet(currentActiveSet.id, currentActiveSet.setNumber);
+              }}
+            >
+              {labels.skipSet}
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>

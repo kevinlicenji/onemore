@@ -5,11 +5,10 @@ import { Skeleton, cn } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
-import { ActiveWorkoutBanner } from '@/components/active-workout-banner';
 import { DashboardMaxValues } from '@/components/dashboard/dashboard-max-values';
 import { DashboardMonthlySets } from '@/components/dashboard/dashboard-monthly-sets';
 import { DashboardPrMonthBadge } from '@/components/dashboard/dashboard-pr-month-badge';
@@ -22,6 +21,7 @@ import { GymStatGrid } from '@/components/gym-ui/gym-stat-grid';
 import { AdaptivePageShell } from '@/components/layout/adaptive-page-shell';
 import { StatGrid } from '@/components/layout/desktop/stat-grid';
 import { SyncStatusBadge } from '@/components/sync-status-badge';
+import { useActiveWorkoutSession } from '@/hooks/use-active-workout-session';
 import { useDashboardKpis } from '@/hooks/use-dashboard-kpis';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useMotivationalLine } from '@/hooks/use-motivational-line';
@@ -34,7 +34,8 @@ export default function DashboardPage(): React.ReactElement {
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const isDesktop = useIsDesktop();
-  const { dashboard } = useDashboardKpis(locale);
+  const { dashboard, refresh } = useDashboardKpis(locale);
+  const { session: activeWorkoutSession } = useActiveWorkoutSession();
   const timezone = profile?.timezone ?? 'Europe/Rome';
 
   const [todaySupplements, setTodaySupplements] = useState<TodaySupplementsResponse | null>(null);
@@ -44,14 +45,14 @@ export default function DashboardPage(): React.ReactElement {
   const [pendingMaxCount, setPendingMaxCount] = useState(0);
   const [maxValuesError, setMaxValuesError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadSupplementsAndMaxes = useCallback(async (): Promise<void> => {
     if (!accessToken) {
       return;
     }
 
     setSupplementsLoading(true);
     setSupplementsError(null);
-    void fetchTodaySupplements(accessToken, locale, timezone)
+    await fetchTodaySupplements(accessToken, locale, timezone)
       .then(setTodaySupplements)
       .catch((err: unknown) => {
         setSupplementsError(err instanceof Error ? err.message : t('loadError'));
@@ -60,7 +61,7 @@ export default function DashboardPage(): React.ReactElement {
         setSupplementsLoading(false);
       });
 
-    void Promise.all([fetchMaxValues(accessToken), fetchPendingMaxValues(accessToken)])
+    await Promise.all([fetchMaxValues(accessToken), fetchPendingMaxValues(accessToken)])
       .then(([active, pending]) => {
         setMaxValues(active);
         setPendingMaxCount(pending.length);
@@ -70,6 +71,15 @@ export default function DashboardPage(): React.ReactElement {
         setMaxValuesError(err instanceof Error ? err.message : t('loadError'));
       });
   }, [accessToken, locale, t, timezone]);
+
+  useEffect(() => {
+    void loadSupplementsAndMaxes();
+  }, [loadSupplementsAndMaxes]);
+
+  const handleRefresh = useCallback(async (): Promise<void> => {
+    await refresh();
+    await loadSupplementsAndMaxes();
+  }, [loadSupplementsAndMaxes, refresh]);
 
   useEffect(() => {
     if (!isLoading && profile && !profile.onboardingCompletedAt) {
@@ -94,7 +104,7 @@ export default function DashboardPage(): React.ReactElement {
     <div className="rounded-2xl border border-dashed border-gym-separator p-6 text-center">
       <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
       <Link
-        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+        className="mt-4 inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
         href={`/${locale}/programs`}
       >
         {t('pickProgramCta')}
@@ -122,11 +132,51 @@ export default function DashboardPage(): React.ReactElement {
     />
   );
 
+  const programCta =
+    dashboard !== null ? (
+      <DashboardProgramCta
+        activeSessionId={activeWorkoutSession?.id ?? null}
+        locale={locale}
+        mobile={!isDesktop}
+        navigation={dashboard.programNavigation}
+      />
+    ) : null;
+
+  const mobileActiveContent =
+    dashboard !== null && hasActivity ? (
+      <>
+        {programCta}
+        <DashboardWeekTracker
+          consistency={dashboard.weeklyConsistency}
+          streakWeeks={dashboard.streakWeeks}
+        />
+        <DashboardRecentPrs locale={locale} mobile records={dashboard.recentPersonalRecords} />
+        {supplementsCard}
+        <GymStatGrid>
+          <DashboardPrMonthBadge count={dashboard.monthlyStats.personalRecordsCount} mobile />
+          <DashboardMonthlySets count={dashboard.monthlyStats.completedSetsCount} mobile />
+        </GymStatGrid>
+        <DashboardVolumeCompare mobile volume={dashboard.volumeComparison} />
+        {maxValuesCard}
+        {maxValuesError ? <p className="text-sm text-destructive">{maxValuesError}</p> : null}
+      </>
+    ) : null;
+
+  const mobileNewUserContent =
+    dashboard !== null && !hasActivity ? (
+      <>
+        {programCta}
+        {emptyState}
+      </>
+    ) : null;
+
   return (
     <RequireAuth>
-      <AdaptivePageShell title={motivationalLine} description={subtitle}>
-        <ActiveWorkoutBanner />
-
+      <AdaptivePageShell
+        title={motivationalLine}
+        description={subtitle}
+        onRefresh={isDesktop ? undefined : handleRefresh}
+      >
         {!dashboard ? (
           isDesktop ? (
             <div className="flex flex-col gap-4">
@@ -153,17 +203,13 @@ export default function DashboardPage(): React.ReactElement {
           )
         ) : (
           <div className={cn('flex flex-col', isDesktop ? 'gap-4' : 'gap-3')}>
-            <DashboardWeekTracker
-              consistency={dashboard.weeklyConsistency}
-              streakWeeks={dashboard.streakWeeks}
-            />
-            <DashboardProgramCta
-              locale={locale}
-              mobile={!isDesktop}
-              navigation={dashboard.programNavigation}
-            />
             {isDesktop ? (
               <>
+                <DashboardWeekTracker
+                  consistency={dashboard.weeklyConsistency}
+                  streakWeeks={dashboard.streakWeeks}
+                />
+                {programCta}
                 <DashboardVolumeCompare mobile={false} volume={dashboard.volumeComparison} />
                 <StatGrid>
                   <DashboardPrMonthBadge count={dashboard.monthlyStats.personalRecordsCount} />
@@ -179,32 +225,14 @@ export default function DashboardPage(): React.ReactElement {
                 <DashboardRecentPrs locale={locale} records={dashboard.recentPersonalRecords} />
               </>
             ) : (
-              <>
-                <DashboardVolumeCompare mobile volume={dashboard.volumeComparison} />
-                <GymStatGrid>
-                  <DashboardPrMonthBadge
-                    count={dashboard.monthlyStats.personalRecordsCount}
-                    mobile
-                  />
-                  <DashboardMonthlySets count={dashboard.monthlyStats.completedSetsCount} mobile />
-                </GymStatGrid>
-                {supplementsCard}
-                {maxValuesCard}
-                {maxValuesError ? (
-                  <p className="text-sm text-destructive">{maxValuesError}</p>
-                ) : null}
-                <DashboardRecentPrs
-                  locale={locale}
-                  mobile
-                  records={dashboard.recentPersonalRecords}
-                />
-              </>
+              (mobileNewUserContent ?? mobileActiveContent)
             )}
-            {!hasActivity ? emptyState : null}
           </div>
         )}
 
-        <SyncStatusBadge />
+        <div className="mt-4">
+          <SyncStatusBadge />
+        </div>
       </AdaptivePageShell>
     </RequireAuth>
   );

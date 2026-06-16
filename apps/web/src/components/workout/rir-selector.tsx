@@ -28,7 +28,7 @@ export function RirSelector({
           <button
             key={rir}
             className={cn(
-              'min-h-9 min-w-9 rounded-lg border px-2 text-sm font-medium transition-colors',
+              'min-h-11 min-w-11 rounded-lg border px-2 text-sm font-medium transition-colors',
               value === rir
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-gym-separator bg-background text-foreground',
@@ -45,7 +45,7 @@ export function RirSelector({
         ))}
         <button
           className={cn(
-            'min-h-9 rounded-lg border px-2 text-xs font-medium text-muted-foreground',
+            'min-h-11 rounded-lg border px-3 text-sm font-medium text-muted-foreground',
             value === null && 'border-primary/40 bg-muted/50',
             disabled && 'pointer-events-none opacity-50',
           )}

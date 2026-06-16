@@ -5,6 +5,10 @@ import { usePathname } from 'next/navigation';
 
 import { useActiveWorkoutSession } from '@/hooks/use-active-workout-session';
 import { shouldHideShell } from '@/lib/shell-routes';
+import {
+  gymMobileShellBottomPadding,
+  gymMobileShellBottomPaddingWithResume,
+} from '@/lib/gym-mobile-layout';
 
 import { GymActiveWorkoutBar } from './gym-active-workout-bar';
 import { GymBottomNav } from './gym-bottom-nav';
@@ -34,9 +38,7 @@ export function GymShell({ locale, children }: GymShellProps): React.ReactElemen
       <div
         className={cn(
           'min-h-screen bg-background dark:bg-[linear-gradient(180deg,hsl(var(--background))_0%,hsl(var(--gym-tint)/0.35)_100%)]',
-          showResumeBar
-            ? 'pb-[calc(var(--tab-bar-height)+3.25rem+env(safe-area-inset-bottom))]'
-            : 'pb-[calc(var(--tab-bar-height)+env(safe-area-inset-bottom))]',
+          showResumeBar ? gymMobileShellBottomPaddingWithResume : gymMobileShellBottomPadding,
         )}
       >
         {children}

@@ -11,6 +11,7 @@ interface DashboardProgramCtaProps {
   navigation: AnalyticsDashboard['programNavigation'];
   locale: string;
   mobile?: boolean;
+  activeSessionId?: string | null;
 }
 
 /**
@@ -20,12 +21,15 @@ export function DashboardProgramCta({
   navigation,
   locale,
   mobile = false,
+  activeSessionId = null,
 }: DashboardProgramCtaProps): ReactElement {
   const t = useTranslations('Dashboard');
 
-  const startHref = navigation.nextWorkoutDayId
-    ? `/${locale}/workouts/prepare?dayId=${navigation.nextWorkoutDayId}`
-    : `/${locale}/workouts/start`;
+  const startHref = activeSessionId
+    ? `/${locale}/workouts/${activeSessionId}`
+    : navigation.nextWorkoutDayId
+      ? `/${locale}/workouts/prepare?dayId=${navigation.nextWorkoutDayId}`
+      : `/${locale}/workouts/start`;
 
   const body = (
     <div className="flex flex-col gap-4">
@@ -54,9 +58,11 @@ export function DashboardProgramCta({
       </div>
       <Button asChild className={cn(mobile ? 'min-h-12 w-full' : undefined)}>
         <Link href={startHref}>
-          {navigation.nextDayLabel
-            ? t('startDayCta', { day: navigation.nextDayLabel })
-            : t('startWorkoutCta')}
+          {activeSessionId
+            ? t('resumeWorkoutCta')
+            : navigation.nextDayLabel
+              ? t('startDayCta', { day: navigation.nextDayLabel })
+              : t('startWorkoutCta')}
           <ArrowRight aria-hidden className="ml-2 h-4 w-4" />
         </Link>
       </Button>

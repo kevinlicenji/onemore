@@ -295,6 +295,13 @@ export async function getWorkoutSessionClient(
   return remote;
 }
 
+/**
+ * Persists in-progress session edits locally without syncing to the server.
+ */
+export async function persistWorkoutSessionDraft(session: WorkoutSessionDetail): Promise<void> {
+  await offlineDb.sessions.put(session);
+}
+
 async function applyLocalSetUpdate(
   sessionId: string,
   payload: UpsertSetLogInput,

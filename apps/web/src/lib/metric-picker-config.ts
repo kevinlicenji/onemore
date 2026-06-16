@@ -13,6 +13,17 @@ export const METRIC_REST_MIN = 0;
 export const METRIC_REST_MAX = 150;
 export const METRIC_REST_STEP = 5;
 
+export function buildWeightWheelValuesAround(centerKg: number, span = 40): number[] {
+  const step = METRIC_WEIGHT_STEP;
+  const min = Math.max(METRIC_WEIGHT_MIN, roundWeightStep(centerKg - span));
+  const max = Math.min(METRIC_WEIGHT_MAX, roundWeightStep(centerKg + span));
+  return buildNumericWheelValues(min, max, step);
+}
+
+function roundWeightStep(value: number): number {
+  return Math.round(value / METRIC_WEIGHT_STEP) * METRIC_WEIGHT_STEP;
+}
+
 export const WEIGHT_WHEEL_VALUES = buildNumericWheelValues(
   METRIC_WEIGHT_MIN,
   METRIC_WEIGHT_MAX,

@@ -36,6 +36,7 @@ export interface GymActiveWorkoutViewProps {
   performanceFeedbackBySetId: Record<string, SetPerformanceFeedback>;
   actualRestBySetId: Record<string, number>;
   loading: boolean;
+  syncingSetId?: string | null;
   error: string | null;
   notesModalOpen: boolean;
   notesSaving: boolean;
@@ -63,6 +64,7 @@ export interface GymActiveWorkoutViewProps {
     skipSet: string;
     finishWorkout: string;
     abandon: string;
+    abandonConfirm: string;
     notesPlaceholder: string;
     notesModalTitle: string;
     saveNotes: string;
@@ -135,6 +137,7 @@ export function GymActiveWorkoutView({
   performanceFeedbackBySetId,
   actualRestBySetId,
   loading,
+  syncingSetId = null,
   error,
   notesModalOpen,
   notesSaving,
@@ -160,6 +163,7 @@ export function GymActiveWorkoutView({
 }: GymActiveWorkoutViewProps): React.ReactElement {
   const reducedMotion = useReducedMotion();
   const [transitionDirection, setTransitionDirection] = useState(0);
+  const [showLastExecution, setShowLastExecution] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(() =>
     getWorkoutElapsedSeconds(session.startedAt),
   );
@@ -195,7 +199,7 @@ export function GymActiveWorkoutView({
   );
 
   const swipeHandlers = useHorizontalSwipe({
-    enabled: !loading && restTimerContext === null,
+    enabled: syncingSetId === null && restTimerContext === null,
     onSwipe: (direction) => {
       if (direction === 'left') {
         navigateExercise(exerciseIndex + 1);
@@ -235,6 +239,7 @@ export function GymActiveWorkoutView({
               <PrCelebration records={newPrs} variant="gym" onDismiss={onDismissPr} />
             ) : null}
             <CardioRestTimer
+              compact
               locale={locale}
               nextSetLabel={labels.nextSet}
               rpe={restTimerContext.rpe}
@@ -268,7 +273,7 @@ export function GymActiveWorkoutView({
                   <Button
                     aria-label={labels.homeLabel}
                     className="min-h-11 min-w-11 px-0"
-                    disabled={loading}
+                    disabled={syncingSetId !== null}
                     size="sm"
                     type="button"
                     variant="outline"
@@ -280,14 +285,16 @@ export function GymActiveWorkoutView({
                   </Button>
                   {currentExercise ? (
                     <GymWorkoutMenu
-                      disabled={loading}
+                      disabled={syncingSetId !== null}
                       labels={{
                         menu: labels.exerciseActionsMenu,
                         notes: labels.menuNotes,
                         skipExercise: labels.skipExercise,
                         finishWorkout: labels.finishWorkout,
                         abandon: labels.abandon,
+                        abandonConfirm: labels.abandonConfirm,
                         addSet: labels.addSet,
+                        cancel: labels.cancel,
                       }}
                       showAddSet={shouldOfferAddSet(currentExercise)}
                       showSkipExercise={currentExercise.status !== 'skipped'}
@@ -319,31 +326,44 @@ export function GymActiveWorkoutView({
                   </div>
 
                   {currentExercise.status !== 'skipped' && currentExercise.previousExecution ? (
-                    <div className="mt-2 rounded-xl border border-foreground/15 bg-muted/30 px-3 py-2 text-sm">
-                      <p className="text-foreground">
-                        <span className="font-semibold">{labels.lastExecutionLabel}: </span>
-                        {formatLastExecutionLine(
-                          currentExercise.previousExecution.setsCount,
-                          currentExercise.previousExecution.reps,
-                          currentExercise.previousExecution.weightKg,
-                          labels.failureReps,
-                        )}
-                        {currentExercise.previousExecution.completedAt ? (
-                          <span className="text-muted-foreground">
-                            {' '}
-                            ·{' '}
-                            {formatRelativeDaysAgo(
-                              currentExercise.previousExecution.completedAt,
-                              locale,
-                              {
-                                today: labels.lastExecutionToday,
-                                yesterday: labels.lastExecutionYesterday,
-                                daysAgo: labels.formatDaysAgo,
-                              },
+                    <div className="mt-2">
+                      <button
+                        className="text-xs font-medium text-primary"
+                        type="button"
+                        onClick={() => {
+                          setShowLastExecution((value) => !value);
+                        }}
+                      >
+                        {labels.lastExecutionLabel}
+                        {showLastExecution ? ' ▴' : ' ▾'}
+                      </button>
+                      {showLastExecution ? (
+                        <div className="mt-1 rounded-xl border border-foreground/15 bg-muted/30 px-3 py-2 text-sm">
+                          <p className="text-foreground">
+                            {formatLastExecutionLine(
+                              currentExercise.previousExecution.setsCount,
+                              currentExercise.previousExecution.reps,
+                              currentExercise.previousExecution.weightKg,
+                              labels.failureReps,
                             )}
-                          </span>
-                        ) : null}
-                      </p>
+                            {currentExercise.previousExecution.completedAt ? (
+                              <span className="text-muted-foreground">
+                                {' '}
+                                ·{' '}
+                                {formatRelativeDaysAgo(
+                                  currentExercise.previousExecution.completedAt,
+                                  locale,
+                                  {
+                                    today: labels.lastExecutionToday,
+                                    yesterday: labels.lastExecutionYesterday,
+                                    daysAgo: labels.formatDaysAgo,
+                                  },
+                                )}
+                              </span>
+                            ) : null}
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
 
@@ -356,12 +376,16 @@ export function GymActiveWorkoutView({
                       .map((exercise, index) => (exercise.status === 'skipped' ? index : -1))
                       .filter((index) => index >= 0)}
                     total={session.exercises.length}
+                    onSelectIndex={navigateExercise}
                   />
-                  <div className="mt-2 flex items-center justify-end gap-1">
+                  <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                    {labels.swipeHint}
+                  </p>
+                  <div className="mt-1 flex items-center justify-end gap-1">
                     <Button
                       aria-label={labels.prevExercise}
-                      className="min-h-10 min-w-10 px-0"
-                      disabled={exerciseIndex === 0 || loading}
+                      className="min-h-11 min-w-11 px-0"
+                      disabled={exerciseIndex === 0 || syncingSetId !== null}
                       size="sm"
                       type="button"
                       variant="outline"
@@ -374,7 +398,9 @@ export function GymActiveWorkoutView({
                     <Button
                       aria-label={labels.nextExercise}
                       className="min-h-10 min-w-10 px-0"
-                      disabled={exerciseIndex >= session.exercises.length - 1 || loading}
+                      disabled={
+                        exerciseIndex >= session.exercises.length - 1 || syncingSetId !== null
+                      }
                       size="sm"
                       type="button"
                       variant="outline"
@@ -437,6 +463,7 @@ export function GymActiveWorkoutView({
                             rirLabel: labels.rirLabel,
                           }}
                           loading={loading}
+                          syncingSetId={syncingSetId}
                           performanceFeedbackBySetId={performanceFeedbackBySetId}
                           restTimerContext={restTimerContext}
                           onSkipSet={onSkipSet}
@@ -475,7 +502,7 @@ export function GymActiveWorkoutView({
                   <p className="text-sm font-medium">{labels.addExercise}</p>
                   <ExerciseSearchCombobox
                     accessToken={accessToken}
-                    disabled={loading}
+                    disabled={syncingSetId !== null}
                     locale={locale}
                     noResultsLabel={labels.searchNoResults}
                     placeholder={labels.searchExercises}
@@ -510,7 +537,9 @@ export function GymActiveWorkoutView({
                       >
                         <Button
                           className="min-h-14 w-full text-lg font-semibold"
-                          disabled={loading || !canCompleteWorkoutSet(activeSet.reps)}
+                          disabled={
+                            syncingSetId === activeSet.id || !canCompleteWorkoutSet(activeSet.reps)
+                          }
                           type="button"
                           onClick={() => {
                             handleCompleteSet(activeSet.id, activeSet.setNumber);
@@ -541,18 +570,31 @@ export function GymActiveWorkoutView({
                       <p className="mb-3 text-center text-sm font-medium text-muted-foreground">
                         {labels.addSetPrompt}
                       </p>
-                      <Button
-                        className="min-h-14 w-full text-lg font-semibold"
-                        disabled={loading}
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          triggerHaptic('light');
-                          onAddSet();
-                        }}
-                      >
-                        {labels.addSet}
-                      </Button>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          className="min-h-14 w-full text-lg font-semibold"
+                          disabled={loading}
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic('light');
+                            onFinishWorkout();
+                          }}
+                        >
+                          {labels.finishWorkout}
+                        </Button>
+                        <Button
+                          className="min-h-12 w-full"
+                          disabled={loading}
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            triggerHaptic('light');
+                            onAddSet();
+                          }}
+                        >
+                          {labels.addSet}
+                        </Button>
+                      </div>
                     </motion.div>
                   );
                 })()}

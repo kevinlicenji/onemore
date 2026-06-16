@@ -77,7 +77,7 @@ export function DashboardSupplementsToday({
         </div>
         <Link
           className={cn(
-            'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gym-separator bg-background text-primary transition-transform active:scale-95',
+            'flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gym-separator bg-background text-primary transition-transform active:scale-95',
             mobile && 'shadow-sm',
           )}
           href={`/${locale}/supplements`}
@@ -117,7 +117,7 @@ export function DashboardSupplementsToday({
           <p className="text-sm font-medium text-foreground">{t('dashboardEmptyTitle')}</p>
           <p className="mt-1 text-xs text-muted-foreground">{t('dashboardEmptyBody')}</p>
           <Link
-            className="mt-3 inline-flex min-h-9 items-center justify-center rounded-full bg-primary px-4 text-xs font-medium text-primary-foreground"
+            className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-4 text-xs font-medium text-primary-foreground"
             href={`/${locale}/supplements`}
           >
             {t('dashboardLogCta')}
