@@ -46,6 +46,8 @@ function makeSession(
           setNumber: index + 1,
           weightKg: null,
           reps: null,
+          rpe: null,
+          rir: null,
           isWarmup: set.isWarmup ?? false,
           isCompleted: set.isCompleted,
           isSkipped: false,

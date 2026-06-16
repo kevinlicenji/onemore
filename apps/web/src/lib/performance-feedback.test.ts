@@ -60,6 +60,8 @@ function buildSession(
           setNumber: index + 1,
           weightKg: set.weightKg,
           reps: set.reps,
+          rpe: null,
+          rir: null,
           isWarmup: false,
           isCompleted: true,
           isSkipped: false,

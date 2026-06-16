@@ -51,6 +51,8 @@ function makeSet(
   return {
     weightKg: null,
     reps: null,
+    rpe: null,
+    rir: null,
     isWarmup: false,
     isCompleted: false,
     isSkipped: false,
