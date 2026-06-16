@@ -1,11 +1,9 @@
 'use client';
 
 import { cn } from '@onemore/ui';
-import { motion } from 'motion/react';
 import type { ReactElement } from 'react';
 
 import { GymCompletedCheck } from '@/components/gym-ui/gym-completed-check';
-import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
 interface GymExerciseProgressProps {
   total: number;
@@ -35,8 +33,6 @@ export function GymExerciseProgress({
   className,
   onSelectIndex,
 }: GymExerciseProgressProps): ReactElement {
-  const reducedMotion = useReducedMotion();
-
   if (total <= 0) {
     return <div className={className} />;
   }

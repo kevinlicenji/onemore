@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 
 import { GymCompletedCheck } from '@/components/gym-ui/gym-completed-check';
-import { Button, cn } from '@onemore/ui';
+import { Button } from '@onemore/ui';
 import { NumberStepper } from '@/components/number-stepper';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import {
