@@ -95,6 +95,14 @@ export default function SupplementsPage(): React.ReactElement {
   const [yesterdayRepeatable, setYesterdayRepeatable] = useState(false);
   const [savingRepeat, setSavingRepeat] = useState(false);
 
+  const recentlyLoggedNames = useMemo(() => {
+    return new Set(trendItems.map((t) => t.name));
+  }, [trendItems]);
+
+  useEffect(() => {
+    setShowUnlogged(false);
+  }, [date]);
+
   const logBySupplementId = useMemo(() => {
     const map = new Map<string, SupplementLogItem>();
     for (const log of logs) {
@@ -122,13 +130,16 @@ export default function SupplementsPage(): React.ReactElement {
         ),
       );
 
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0] ?? '';
-      const yesterdayTrend = trend.find((d) => d.date === yesterdayStr);
-      setYesterdayRepeatable(
-        yesterdayTrend !== undefined && yesterdayTrend.hasLogged && logsResponse.logs.length === 0,
-      );
+      const isToday = date === todayDateString();
+      if (isToday && logsResponse.logs.length === 0) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0] ?? '';
+        const hasYesterdayLogs = trend.some((d) => d.date === yesterdayStr && d.hasLogged);
+        setYesterdayRepeatable(hasYesterdayLogs);
+      } else {
+        setYesterdayRepeatable(false);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loadError'));
     } finally {
@@ -435,8 +446,12 @@ export default function SupplementsPage(): React.ReactElement {
   );
 
   function renderSupplementList(): React.ReactElement {
-    const loggedItems = items.filter((s) => s.everLogged || logBySupplementId.has(s.id));
-    const unloggedItems = items.filter((s) => !s.everLogged && !logBySupplementId.has(s.id));
+    const loggedItems = items.filter(
+      (s) => recentlyLoggedNames.has(s.name) || logBySupplementId.has(s.id),
+    );
+    const unloggedItems = items.filter(
+      (s) => !recentlyLoggedNames.has(s.name) && !logBySupplementId.has(s.id),
+    );
     const visibleItems = showUnlogged ? items : loggedItems;
 
     return (
