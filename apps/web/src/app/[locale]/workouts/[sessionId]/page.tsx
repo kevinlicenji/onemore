@@ -145,7 +145,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     if (exerciseIndex < 0 || exerciseIndex >= session.exercises.length) {
       return null;
     }
-    return session.exercises[exerciseIndex]!;
+    return session.exercises[exerciseIndex] as (typeof session.exercises)[number];
   }, [session, exerciseIndex]);
 
   useEffect(() => {

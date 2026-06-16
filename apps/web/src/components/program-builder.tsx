@@ -307,7 +307,7 @@ export function ProgramBuilder({
             targetSets: row.targetSets,
             targetReps: row.targetReps,
             restSeconds: row.restSeconds,
-            weightPrescriptionMode: row.weightPrescriptionMode ?? 'absolute',
+            weightPrescriptionMode: row.weightPrescriptionMode,
             ...(row.weightPrescriptionMode === 'percent_of_max' && row.targetPercentOfMax != null
               ? { targetPercentOfMax: row.targetPercentOfMax }
               : row.targetWeightKg !== null

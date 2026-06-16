@@ -12,9 +12,9 @@ export function formatPrescribedWeight(
 ): string {
   if (
     prescriptionMode?.weightPrescriptionMode === 'percent_of_max' &&
-    prescriptionMode?.targetPercentOfMax != null
+    prescriptionMode.targetPercentOfMax != null
   ) {
-    return `${prescriptionMode.targetPercentOfMax}%`;
+    return `${String(prescriptionMode.targetPercentOfMax)}%`;
   }
   if (targetWeightKg !== null) {
     return String(targetWeightKg);
