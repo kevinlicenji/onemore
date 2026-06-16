@@ -1,7 +1,4 @@
-import {
-  insertManualMaxSchema,
-  resolvePendingMaxSchema,
-} from '@onemore/shared';
+import { insertManualMaxSchema, resolvePendingMaxSchema } from '@onemore/shared';
 import { Router } from 'express';
 
 import { HttpError } from '../../lib/errors.js';

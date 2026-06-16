@@ -194,11 +194,7 @@ export class MaxValuesService {
   /**
    * Resolve a pending max proposal.
    */
-  async resolvePending(
-    userId: string,
-    logId: string,
-    action: 'APPROVE' | 'REJECT',
-  ): Promise<void> {
+  async resolvePending(userId: string, logId: string, action: 'APPROVE' | 'REJECT'): Promise<void> {
     const log = await this.prisma.maxHistoryLog.findUnique({
       where: { id: logId },
     });
@@ -248,10 +244,7 @@ export class MaxValuesService {
   /**
    * Get history logs for an exercise (for charts).
    */
-  async getHistory(
-    userId: string,
-    exerciseId: string,
-  ): Promise<MaxHistoryLogWithExercise[]> {
+  async getHistory(userId: string, exerciseId: string): Promise<MaxHistoryLogWithExercise[]> {
     const rows = await this.prisma.maxHistoryLog.findMany({
       where: {
         userId,

@@ -2,12 +2,7 @@ import { z } from 'zod';
 
 export const maxSourceSchema = z.enum(['MANUAL', 'AUTOMATIC_APPROVED']);
 
-export const logStatusSchema = z.enum([
-  'PENDING_APPROVAL',
-  'APPROVED',
-  'REJECTED',
-  'MANUAL_ENTRY',
-]);
+export const logStatusSchema = z.enum(['PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'MANUAL_ENTRY']);
 
 export const userExerciseMaxSchema = z.object({
   id: z.string().uuid(),
@@ -59,11 +54,7 @@ export type MaxSource = z.infer<typeof maxSourceSchema>;
 export type LogStatus = z.infer<typeof logStatusSchema>;
 export type UserExerciseMax = z.infer<typeof userExerciseMaxSchema>;
 export type MaxHistoryLog = z.infer<typeof maxHistoryLogSchema>;
-export type UserExerciseMaxWithExercise = z.infer<
-  typeof userExerciseMaxWithExerciseSchema
->;
-export type MaxHistoryLogWithExercise = z.infer<
-  typeof maxHistoryLogWithExerciseSchema
->;
+export type UserExerciseMaxWithExercise = z.infer<typeof userExerciseMaxWithExerciseSchema>;
+export type MaxHistoryLogWithExercise = z.infer<typeof maxHistoryLogWithExerciseSchema>;
 export type InsertManualMaxInput = z.infer<typeof insertManualMaxSchema>;
 export type ResolvePendingMaxInput = z.infer<typeof resolvePendingMaxSchema>;

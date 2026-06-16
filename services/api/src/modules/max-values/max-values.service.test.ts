@@ -275,7 +275,11 @@ describe('MaxValuesService', () => {
           source: 'MANUAL',
           createdAt: new Date('2026-01-01'),
           updatedAt: new Date('2026-06-01'),
-          exercise: { id: 'ex-1', slug: 'bench-press', names: { en: 'Bench Press', it: 'Panca Piana' } },
+          exercise: {
+            id: 'ex-1',
+            slug: 'bench-press',
+            names: { en: 'Bench Press', it: 'Panca Piana' },
+          },
         },
       ]);
       const service = new MaxValuesService(prisma as never);
@@ -437,9 +441,9 @@ describe('MaxValuesService', () => {
       prisma.maxHistoryLog.findUnique.mockResolvedValue(null);
       const service = new MaxValuesService(prisma as never);
 
-      await expect(
-        service.resolvePending('user-1', 'log-999', 'APPROVE'),
-      ).rejects.toThrow('Pending log not found');
+      await expect(service.resolvePending('user-1', 'log-999', 'APPROVE')).rejects.toThrow(
+        'Pending log not found',
+      );
     });
 
     it('throws 404 when log belongs to another user', async () => {
@@ -451,9 +455,9 @@ describe('MaxValuesService', () => {
       });
       const service = new MaxValuesService(prisma as never);
 
-      await expect(
-        service.resolvePending('user-1', 'log-1', 'APPROVE'),
-      ).rejects.toThrow('Pending log not found');
+      await expect(service.resolvePending('user-1', 'log-1', 'APPROVE')).rejects.toThrow(
+        'Pending log not found',
+      );
     });
 
     it('throws 409 when log is not pending', async () => {
@@ -465,9 +469,9 @@ describe('MaxValuesService', () => {
       });
       const service = new MaxValuesService(prisma as never);
 
-      await expect(
-        service.resolvePending('user-1', 'log-1', 'APPROVE'),
-      ).rejects.toThrow('Log is not pending approval');
+      await expect(service.resolvePending('user-1', 'log-1', 'APPROVE')).rejects.toThrow(
+        'Log is not pending approval',
+      );
     });
   });
 
