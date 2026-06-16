@@ -34,10 +34,12 @@ describe('SyncService', () => {
       getSession: vi.fn(),
     };
     const prDetection = { evaluateCompletedSet: vi.fn(() => Promise.resolve([])) };
+    const maxValuesService = { evaluateSet: vi.fn(() => Promise.resolve(null)) };
     const service = new SyncService(
       prisma as never,
       workoutsService as never,
       prDetection as never,
+      maxValuesService as never,
     );
 
     const result = await service.processBatch('user-1', 'idem-1', {

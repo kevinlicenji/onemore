@@ -16,6 +16,7 @@ import { randomUUID } from 'node:crypto';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
+import type { MaxValuesService } from '../max-values/max-values.service.js';
 import type { PrDetectionService } from '../progress/pr-detection.service.js';
 
 interface PreviousSetValues {
@@ -37,10 +38,12 @@ export class WorkoutsService {
   /**
    * @param prisma - Database client.
    * @param prDetection - Personal record evaluator on set completion.
+   * @param maxValuesService - Max values evaluator for 1RM proposals.
    */
   constructor(
     private readonly prisma: PrismaClient,
     private readonly prDetection: PrDetectionService,
+    private readonly maxValuesService: MaxValuesService,
   ) {}
 
   /**
@@ -253,6 +256,8 @@ export class WorkoutsService {
           setNumber: input.setNumber,
           weightKg: input.weightKg,
           reps: input.reps,
+          rpe: input.rpe,
+          rir: input.rir,
           isWarmup: input.isWarmup,
           isCompleted: input.isCompleted,
           isSkipped: input.isSkipped,
@@ -262,6 +267,8 @@ export class WorkoutsService {
         update: {
           weightKg: input.weightKg,
           reps: input.reps,
+          rpe: input.rpe,
+          rir: input.rir,
           isWarmup: input.isWarmup,
           isCompleted: input.isCompleted,
           isSkipped: input.isSkipped,
@@ -296,6 +303,17 @@ export class WorkoutsService {
           isWarmup: input.isWarmup,
           isCompleted: input.isCompleted,
           sessionId,
+          achievedAt: new Date(input.clientTimestamp),
+        });
+
+        await this.maxValuesService.evaluateSet(tx, {
+          userId,
+          exerciseLibraryId: execution.exerciseLibraryId,
+          weightKg: input.weightKg ?? 0,
+          reps: input.reps ?? 0,
+          rpe: input.rpe,
+          rir: input.rir,
+          isWarmup: input.isWarmup,
           achievedAt: new Date(input.clientTimestamp),
         });
       }
@@ -1040,6 +1058,8 @@ export class WorkoutsService {
           setNumber: number;
           weightKg: { toString(): string } | null;
           reps: number | null;
+          rpe: { toString(): string } | null;
+          rir: number | null;
           isWarmup: boolean;
           isCompleted: boolean;
           isSkipped: boolean;
@@ -1090,6 +1110,8 @@ export class WorkoutsService {
             setNumber: set.setNumber,
             weightKg: set.weightKg ? Number(set.weightKg) : null,
             reps: set.reps,
+            rpe: set.rpe ? Number(set.rpe) : null,
+            rir: set.rir,
             isWarmup: set.isWarmup,
             isCompleted: set.isCompleted,
             isSkipped: set.isSkipped,

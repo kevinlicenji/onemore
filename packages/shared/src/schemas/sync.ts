@@ -35,6 +35,8 @@ export const syncSetLogPayloadSchema = z.object({
   setNumber: z.number().int().min(1).max(30),
   weightKg: z.number().min(0).max(500).nullable().optional(),
   reps: z.number().int().min(0).max(100).nullable().optional(),
+  rpe: z.number().min(1).max(10).nullable().optional(),
+  rir: z.number().int().min(0).max(10).nullable().optional(),
   isWarmup: z.boolean().default(false),
   isCompleted: z.boolean().default(false),
   isSkipped: z.boolean().default(false),

@@ -39,3 +39,4 @@ export * from './schemas/settings.js';
 export * from './schemas/gdpr.js';
 export * from './schemas/supplement.js';
 export * from './analytics/events.js';
+export * from './schemas/max-values.js';

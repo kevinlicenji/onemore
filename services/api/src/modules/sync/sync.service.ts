@@ -8,6 +8,7 @@ import { normalizeMuscleTags } from '@onemore/shared';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
+import type { MaxValuesService } from '../max-values/max-values.service.js';
 import type { PrDetectionService } from '../progress/pr-detection.service.js';
 import type { WorkoutsService } from '../workouts/workouts.service.js';
 import { shouldAcceptSessionUpdate, shouldAcceptSetLogUpdate } from './sync-merge.js';
@@ -27,6 +28,7 @@ export class SyncService {
     private readonly prisma: PrismaClient,
     private readonly workoutsService: WorkoutsService,
     private readonly prDetection: PrDetectionService,
+    private readonly maxValuesService: MaxValuesService,
   ) {}
 
   /**
@@ -315,6 +317,8 @@ export class SyncService {
         setNumber: payload.setNumber,
         weightKg: payload.weightKg,
         reps: payload.reps,
+        rpe: payload.rpe,
+        rir: payload.rir,
         isWarmup: payload.isWarmup,
         isCompleted: payload.isCompleted,
         isSkipped: payload.isSkipped,
@@ -324,6 +328,8 @@ export class SyncService {
       update: {
         weightKg: payload.weightKg,
         reps: payload.reps,
+        rpe: payload.rpe,
+        rir: payload.rir,
         isWarmup: payload.isWarmup,
         isCompleted: payload.isCompleted,
         isSkipped: payload.isSkipped,
@@ -359,6 +365,17 @@ export class SyncService {
         isWarmup: payload.isWarmup,
         isCompleted: payload.isCompleted,
         sessionId: execution.workoutSessionId,
+        achievedAt: incomingTimestamp,
+      });
+
+      await this.maxValuesService.evaluateSet(tx, {
+        userId,
+        exerciseLibraryId: execution.exerciseLibraryId,
+        weightKg: payload.weightKg ?? 0,
+        reps: payload.reps ?? 0,
+        rpe: payload.rpe,
+        rir: payload.rir,
+        isWarmup: payload.isWarmup,
         achievedAt: incomingTimestamp,
       });
     }

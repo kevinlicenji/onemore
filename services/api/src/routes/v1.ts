@@ -38,6 +38,8 @@ import { createSyncRouter } from './sync.routes.js';
 import { createWorkoutsRouter } from './workouts.routes.js';
 import { createUsersRouter } from './users.routes.js';
 import { createSupplementsRouter } from '../modules/supplements/supplements.router.js';
+import { MaxValuesService } from '../modules/max-values/max-values.service.js';
+import { createMaxValuesRouter } from '../modules/max-values/max-values.router.js';
 
 export interface V1RouterDeps {
   env: Env;
@@ -60,8 +62,9 @@ export function createV1Router(deps: V1RouterDeps): Router {
   const programsService = new ProgramsService(prisma);
   const supplementsService = new SupplementsService(prisma);
   const prDetection = new PrDetectionService();
-  const workoutsService = new WorkoutsService(prisma, prDetection);
-  const syncService = new SyncService(prisma, workoutsService, prDetection);
+  const maxValuesService = new MaxValuesService(prisma);
+  const workoutsService = new WorkoutsService(prisma, prDetection, maxValuesService);
+  const syncService = new SyncService(prisma, workoutsService, prDetection, maxValuesService);
   const historyService = new HistoryService(prisma, workoutsService);
   const analyticsService = new AnalyticsService(prisma, workoutsService, prDetection);
 
@@ -101,6 +104,8 @@ export function createV1Router(deps: V1RouterDeps): Router {
   router.use('/exercises', authenticate, createExercisesRouter(exercisesService));
 
   router.use('/supplements', authenticate, createSupplementsRouter(supplementsService));
+
+  router.use('/max-values', authenticate, createMaxValuesRouter(maxValuesService));
 
   router.use('/programs', authenticate, createProgramsRouter(programsService));
 

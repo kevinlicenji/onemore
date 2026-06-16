@@ -21,7 +21,8 @@ function createMockPrisma() {
 describe('WorkoutsService', () => {
   it('returns empty next workout when no assignment exists', async () => {
     const prisma = createMockPrisma();
-    const service = new WorkoutsService(prisma as never, new PrDetectionService());
+    const maxValuesService = { evaluateSet: vi.fn(() => Promise.resolve(null)) };
+    const service = new WorkoutsService(prisma as never, new PrDetectionService(), maxValuesService as never);
 
     const preview = await service.getNextWorkoutPreview('user-1');
 
@@ -32,7 +33,8 @@ describe('WorkoutsService', () => {
 
   it('returns null when no active session exists', async () => {
     const prisma = createMockPrisma();
-    const service = new WorkoutsService(prisma as never, new PrDetectionService());
+    const maxValuesService = { evaluateSet: vi.fn(() => Promise.resolve(null)) };
+    const service = new WorkoutsService(prisma as never, new PrDetectionService(), maxValuesService as never);
 
     const session = await service.getActiveSession('user-1');
 
