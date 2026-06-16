@@ -39,7 +39,11 @@ interface GymExerciseSetsProps {
   };
   formatSetLabel: (setNumber: number) => string;
   onSkipSet: (setId: string, setNumber: number) => void;
-  onUpdateSetValue: (setId: string, field: 'weightKg' | 'reps' | 'rir', value: number | null) => void;
+  onUpdateSetValue: (
+    setId: string,
+    field: 'weightKg' | 'reps' | 'rir',
+    value: number | null,
+  ) => void;
 }
 
 const activeSetTransition = {

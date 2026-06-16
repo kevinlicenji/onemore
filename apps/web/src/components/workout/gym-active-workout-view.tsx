@@ -87,7 +87,11 @@ export interface GymActiveWorkoutViewProps {
   onSelectExerciseToAdd: (exerciseLibraryId: string) => void;
   onCompleteSet: (setId: string, setNumber: number) => void;
   onSkipSet: (setId: string, setNumber: number) => void;
-  onUpdateSetValue: (setId: string, field: 'weightKg' | 'reps' | 'rir', value: number | null) => void;
+  onUpdateSetValue: (
+    setId: string,
+    field: 'weightKg' | 'reps' | 'rir',
+    value: number | null,
+  ) => void;
   onAddSet: () => void;
   onSkipExercise: () => void;
   onOpenNotes: () => void;

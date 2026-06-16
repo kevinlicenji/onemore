@@ -1,6 +1,10 @@
 'use client';
 
-import type { PendingMaxProposal, PersonalRecordSummary, WorkoutSessionDetail } from '@onemore/shared';
+import type {
+  PendingMaxProposal,
+  PersonalRecordSummary,
+  WorkoutSessionDetail,
+} from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';

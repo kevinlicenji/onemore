@@ -177,9 +177,7 @@ export default function MaxValuesPage(): React.ReactElement {
                   {active.map((item) => (
                     <GymListRow
                       key={item.id}
-                      subtitle={
-                        item.source === 'MANUAL' ? t('sourceManual') : t('sourceApproved')
-                      }
+                      subtitle={item.source === 'MANUAL' ? t('sourceManual') : t('sourceApproved')}
                       title={getExerciseDisplayName({ names: item.exercise.names }, locale)}
                       trailing={
                         <span className="text-sm font-semibold tabular-nums">{item.weight} kg</span>
@@ -205,7 +203,9 @@ export default function MaxValuesPage(): React.ReactElement {
                     showMuscleFilter={false}
                     onSelect={(exercise) => {
                       setManualExerciseId(exercise.id);
-                      setManualExerciseName(getExerciseDisplayName({ names: exercise.names }, locale));
+                      setManualExerciseName(
+                        getExerciseDisplayName({ names: exercise.names }, locale),
+                      );
                     }}
                   />
                 ) : null}

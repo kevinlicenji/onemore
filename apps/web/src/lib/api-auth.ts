@@ -958,9 +958,7 @@ export async function abandonWorkoutSession(
   return response.json() as Promise<WorkoutSessionDetail>;
 }
 
-export async function fetchMaxValues(
-  accessToken: string,
-): Promise<UserExerciseMaxWithExercise[]> {
+export async function fetchMaxValues(accessToken: string): Promise<UserExerciseMaxWithExercise[]> {
   const response = await fetch(`${API_BASE_URL}/api/v1/max-values`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     credentials: 'include',
