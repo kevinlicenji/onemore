@@ -329,6 +329,8 @@ model ProgramExercise {
   targetSets         Int             @map("target_sets")
   targetReps         Int             @map("target_reps")
   targetWeightKg     Decimal?        @map("target_weight_kg") @db.Decimal(8, 2)
+  weightPrescriptionMode String @default("absolute") @map("weight_prescription_mode")
+  targetPercentOfMax Int?           @map("target_percent_of_max")
   restSeconds        Int             @map("rest_seconds")
   targetRpe          Decimal?        @map("target_rpe") @db.Decimal(3, 1)
   targetRir          Int?            @map("target_rir")

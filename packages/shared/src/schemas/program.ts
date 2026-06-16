@@ -4,6 +4,7 @@ import { difficultyLevelSchema } from '../constants/difficulty-level.js';
 import { muscleGroupSchema } from './exercise.js';
 import { localizedTextSchema } from '../constants/template-meta.js';
 import { trainingGoalSchema } from './user.js';
+import { weightPrescriptionModeSchema } from './workout.js';
 
 export const programExerciseInputSchema = z.object({
   exerciseLibraryId: z.string().uuid(),
@@ -11,6 +12,8 @@ export const programExerciseInputSchema = z.object({
   targetReps: z.number().int().min(-1).max(120),
   restSeconds: z.number().int().min(0).max(600),
   targetWeightKg: z.number().positive().max(500).optional(),
+  weightPrescriptionMode: weightPrescriptionModeSchema.default('absolute'),
+  targetPercentOfMax: z.number().int().min(1).max(100).optional(),
   coachNote: z.string().max(500).optional(),
 });
 
@@ -52,6 +55,8 @@ export const programExerciseSchema = z.object({
   targetReps: z.number().int(),
   restSeconds: z.number().int(),
   targetWeightKg: z.number().nullable(),
+  weightPrescriptionMode: weightPrescriptionModeSchema.default('absolute'),
+  targetPercentOfMax: z.number().int().min(1).max(100).nullable(),
   coachNote: z.string().nullable(),
   exercise: z.object({
     id: z.string().uuid(),

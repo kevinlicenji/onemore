@@ -3,7 +3,19 @@ import { formatTargetRepsLabel } from '@onemore/shared';
 /**
  * Formatting helpers for prescribed and logged workout sets.
  */
-export function formatPrescribedWeight(targetWeightKg: number | null): string {
+export function formatPrescribedWeight(
+  targetWeightKg: number | null,
+  prescriptionMode?: {
+    weightPrescriptionMode?: string | null;
+    targetPercentOfMax?: number | null;
+  } | null,
+): string {
+  if (
+    prescriptionMode?.weightPrescriptionMode === 'percent_of_max' &&
+    prescriptionMode.targetPercentOfMax != null
+  ) {
+    return `${String(prescriptionMode.targetPercentOfMax)}%`;
+  }
   if (targetWeightKg !== null) {
     return String(targetWeightKg);
   }
@@ -11,17 +23,27 @@ export function formatPrescribedWeight(targetWeightKg: number | null): string {
 }
 
 /**
- * @returns Prescription line such as `10 x 60kg (90')`.
+ * @returns Prescription line such as `10 x 60kg (90')` or `10 @ 85% (90')`.
  */
 export function formatSetPrescriptionLine(
   targetReps: number,
   targetWeightKg: number | null,
   restSeconds: number,
   failureLabel = 'Cedimento',
+  prescriptionMode?: {
+    weightPrescriptionMode?: string | null;
+    targetPercentOfMax?: number | null;
+  } | null,
 ): string {
   const repsPart = formatTargetRepsLabel(targetReps, failureLabel);
-  const weightPart = targetWeightKg !== null ? `${String(targetWeightKg)}kg` : '—';
-  return `${repsPart} x ${weightPart} (${String(restSeconds)}')`;
+  const isPercent = prescriptionMode?.weightPrescriptionMode === 'percent_of_max';
+  const weightPart = isPercent
+    ? formatPrescribedWeight(targetWeightKg, prescriptionMode)
+    : targetWeightKg !== null
+      ? `${String(targetWeightKg)}kg`
+      : '—';
+  const joiner = isPercent ? ' @ ' : ' x ';
+  return `${repsPart}${joiner}${weightPart} (${String(restSeconds)}')`;
 }
 
 /**
@@ -67,7 +89,7 @@ export function formatLastExecutionLine(
 }
 
 /**
- * @returns Compact prescription for set header such as `5 x 15 (90')`.
+ * @returns Compact prescription for set header such as `5 x 15 x 60kg (90')` or `5 x 10 @ 85% (90')`.
  */
 export function formatSetTargetInline(
   targetSets: number,
@@ -75,10 +97,20 @@ export function formatSetTargetInline(
   targetWeightKg: number | null,
   restSeconds: number,
   failureLabel = 'Cedimento',
+  prescriptionMode?: {
+    weightPrescriptionMode?: string | null;
+    targetPercentOfMax?: number | null;
+  } | null,
 ): string {
   const repsPart = formatTargetRepsLabel(targetReps, failureLabel);
-  const weightPart = targetWeightKg !== null ? `${String(targetWeightKg)}kg` : '—';
-  return `${String(targetSets)} x ${repsPart} x ${weightPart} (${String(restSeconds)}')`;
+  const isPercent = prescriptionMode?.weightPrescriptionMode === 'percent_of_max';
+  const weightPart = isPercent
+    ? formatPrescribedWeight(targetWeightKg, prescriptionMode)
+    : targetWeightKg !== null
+      ? `${String(targetWeightKg)}kg`
+      : '—';
+  const joiner = isPercent ? ' @ ' : ' x ';
+  return `${String(targetSets)} x ${repsPart}${joiner}${weightPart} (${String(restSeconds)}')`;
 }
 
 /**

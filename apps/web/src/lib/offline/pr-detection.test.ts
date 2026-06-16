@@ -50,6 +50,8 @@ function buildSession(sets: WorkoutSessionDetail['exercises'][0]['sets']): Worko
           targetWeightKg: 100,
           restSeconds: 120,
           coachNote: null,
+          weightPrescriptionMode: 'absolute',
+          targetPercentOfMax: undefined,
         },
         exercise: {
           id: exerciseLibraryId,

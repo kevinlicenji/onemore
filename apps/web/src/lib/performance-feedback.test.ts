@@ -46,6 +46,8 @@ function buildSession(
           targetWeightKg: 80,
           restSeconds: 90,
           coachNote: null,
+          weightPrescriptionMode: 'absolute',
+          targetPercentOfMax: undefined,
         },
         exercise: {
           id: exerciseLibraryId,

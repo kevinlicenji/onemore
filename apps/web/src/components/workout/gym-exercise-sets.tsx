@@ -159,6 +159,10 @@ export function GymExerciseSets({
                     prescription.targetWeightKg,
                     prescription.restSeconds,
                     labels.failureReps,
+                    {
+                      weightPrescriptionMode: prescription.weightPrescriptionMode,
+                      targetPercentOfMax: prescription.targetPercentOfMax,
+                    },
                   )}
                 </p>
               ) : null}
@@ -257,6 +261,10 @@ export function GymExerciseSets({
                     prescription.targetWeightKg,
                     prescription.restSeconds,
                     labels.failureReps,
+                    {
+                      weightPrescriptionMode: prescription.weightPrescriptionMode,
+                      targetPercentOfMax: prescription.targetPercentOfMax,
+                    },
                   )}
                 </span>
               )}

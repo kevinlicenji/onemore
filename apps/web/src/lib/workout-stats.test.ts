@@ -28,6 +28,8 @@ const baseSession: WorkoutSessionDetail = {
         targetWeightKg: 60,
         restSeconds: 90,
         coachNote: null,
+        weightPrescriptionMode: 'absolute',
+        targetPercentOfMax: undefined,
       },
       exercise: {
         id: '550e8400-e29b-41d4-a716-446655440002',

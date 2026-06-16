@@ -524,6 +524,10 @@ export class ProgramsService {
               targetSets: exercise.targetSets,
               targetReps: exercise.targetReps,
               targetWeightKg: exercise.targetWeightKg,
+              weightPrescriptionMode: exercise.weightPrescriptionMode as
+                | 'absolute'
+                | 'percent_of_max',
+              targetPercentOfMax: exercise.targetPercentOfMax ?? null,
               restSeconds: exercise.restSeconds,
               targetRpe: exercise.targetRpe,
               targetRir: exercise.targetRir,
@@ -593,6 +597,8 @@ export class ProgramsService {
             targetReps: exercise.targetReps,
             restSeconds: exercise.restSeconds,
             targetWeightKg: exercise.targetWeightKg,
+            weightPrescriptionMode: exercise.weightPrescriptionMode,
+            targetPercentOfMax: exercise.targetPercentOfMax ?? null,
             coachNote: exercise.coachNote,
           },
         });
@@ -677,6 +683,8 @@ export class ProgramsService {
             restSeconds: number;
             targetWeightKg: { toString(): string } | null;
             coachNote: string | null;
+            weightPrescriptionMode: string | null;
+            targetPercentOfMax: number | null;
             exerciseLibrary: {
               id: string;
               slug: string;
@@ -708,6 +716,10 @@ export class ProgramsService {
             targetReps: exercise.targetReps,
             restSeconds: exercise.restSeconds,
             targetWeightKg: exercise.targetWeightKg ? Number(exercise.targetWeightKg) : null,
+            weightPrescriptionMode: exercise.weightPrescriptionMode as
+              | 'absolute'
+              | 'percent_of_max',
+            targetPercentOfMax: exercise.targetPercentOfMax ?? null,
             coachNote: exercise.coachNote,
             exercise: {
               id: exercise.exerciseLibrary.id,

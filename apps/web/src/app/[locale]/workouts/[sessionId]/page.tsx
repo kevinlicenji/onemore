@@ -142,7 +142,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     if (!session || session.exercises.length === 0) {
       return null;
     }
-    return session.exercises[exerciseIndex] ?? session.exercises[0] ?? null;
+    if (exerciseIndex < 0 || exerciseIndex >= session.exercises.length) {
+      return null;
+    }
+    return session.exercises[exerciseIndex] as (typeof session.exercises)[number];
   }, [session, exerciseIndex]);
 
   useEffect(() => {
@@ -914,6 +917,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                               prescription.targetWeightKg,
                               prescription.restSeconds,
                               t('failureReps'),
+                              {
+                                weightPrescriptionMode: prescription.weightPrescriptionMode,
+                                targetPercentOfMax: prescription.targetPercentOfMax,
+                              },
                             )}
                           </p>
                         )}
@@ -999,6 +1006,11 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                                 prescription.targetReps,
                                 prescription.targetWeightKg,
                                 prescription.restSeconds,
+                                t('failureReps'),
+                                {
+                                  weightPrescriptionMode: prescription.weightPrescriptionMode,
+                                  targetPercentOfMax: prescription.targetPercentOfMax,
+                                },
                               )}
                             </p>
                           )}

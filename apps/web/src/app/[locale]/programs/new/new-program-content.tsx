@@ -56,6 +56,8 @@ export function NewProgramPageContent(): React.ReactElement {
               targetReps: row.targetReps,
               restSeconds: row.restSeconds,
               targetWeightKg: row.targetWeightKg,
+              weightPrescriptionMode: row.weightPrescriptionMode,
+              targetPercentOfMax: row.targetPercentOfMax ?? null,
             })),
           })),
         );

@@ -9,6 +9,8 @@ export interface BuilderExercise {
   targetReps: number;
   restSeconds: number;
   targetWeightKg: number | null;
+  weightPrescriptionMode: 'absolute' | 'percent_of_max';
+  targetPercentOfMax: number | null;
 }
 
 export interface BuilderDay {

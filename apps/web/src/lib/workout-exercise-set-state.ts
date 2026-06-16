@@ -80,9 +80,11 @@ export function buildExerciseSetViewState({
     if (previousWeight !== null && previousWeight !== undefined) {
       return String(previousWeight);
     }
-    return formatPrescribedWeight(prescription.targetWeightKg) === '—'
-      ? labels.placeholderWeight
-      : formatPrescribedWeight(prescription.targetWeightKg);
+    const formatted = formatPrescribedWeight(prescription.targetWeightKg, {
+      weightPrescriptionMode: prescription.weightPrescriptionMode,
+      targetPercentOfMax: prescription.targetPercentOfMax,
+    });
+    return formatted === '—' ? labels.placeholderWeight : formatted;
   }
 
   const completedSets = exercise.sets.filter((item) => item.isCompleted || item.isSkipped);
@@ -149,6 +151,7 @@ export function resolveDefaultReps(
 
 /**
  * Numeric default weight (kg) for the active set when not yet edited.
+ * Returns null for percent_of_max so athletes enter their actual kg in the moment.
  */
 export function resolveDefaultWeightKg(
   exercise: WorkoutExerciseDetail,
@@ -160,6 +163,9 @@ export function resolveDefaultWeightKg(
   },
 ): number | null {
   if (exercise.exercise.isBodyweight) {
+    return null;
+  }
+  if (exercise.prescription.weightPrescriptionMode === 'percent_of_max') {
     return null;
   }
   const viewState = buildExerciseSetViewState({

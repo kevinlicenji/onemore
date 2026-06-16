@@ -98,6 +98,8 @@ async function buildLocalProgrammedSession(
           targetWeightKg: item.targetWeightKg,
           restSeconds: item.restSeconds,
           coachNote: item.coachNote,
+          weightPrescriptionMode: item.weightPrescriptionMode,
+          targetPercentOfMax: item.targetPercentOfMax ?? null,
         },
         exercise: item.exercise,
         previousSet: previousByExercise.get(item.exerciseLibraryId) ?? null,
@@ -478,6 +480,8 @@ export async function addWorkoutExerciseClient(
       targetWeightKg: null,
       restSeconds: payload.restSeconds,
       coachNote: null,
+      weightPrescriptionMode: 'absolute' as 'absolute' | 'percent_of_max',
+      targetPercentOfMax: null,
     },
     exercise: {
       id: exercise.id,
