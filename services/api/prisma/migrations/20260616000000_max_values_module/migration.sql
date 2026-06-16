@@ -1,7 +1,7 @@
--- Drop search_vector column (removed from schema)
-ALTER TABLE "exercise_library" DROP COLUMN IF EXISTS "search_vector";
-DROP FUNCTION IF EXISTS exercise_library_search_vector_update;
+-- Drop search_vector column and its dependencies (removed from schema)
 DROP TRIGGER IF EXISTS exercise_library_search_vector_trigger ON "exercise_library";
+DROP FUNCTION IF EXISTS exercise_library_search_vector_update CASCADE;
+ALTER TABLE "exercise_library" DROP COLUMN IF EXISTS "search_vector";
 
 -- Create enum types for max values module
 CREATE TYPE "MaxSource" AS ENUM ('MANUAL', 'AUTOMATIC_APPROVED');
