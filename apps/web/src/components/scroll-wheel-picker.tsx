@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { clampWheelIndex, scrollTopForIndex, snapIndexFromScroll } from '@/lib/scroll-wheel-snap';
-import { getWheelItemStyle } from '@/lib/wheel-picker-style';
+import { getWheelItemStyle, type WheelPickerSize } from '@/lib/wheel-picker-style';
 
-export type ScrollWheelPickerSize = 'default' | 'workout';
+export type ScrollWheelPickerSize = WheelPickerSize;
 
 interface WheelLayoutPreset {
   itemHeight: number;
@@ -25,11 +25,11 @@ const WHEEL_LAYOUT: Record<ScrollWheelPickerSize, WheelLayoutPreset> = {
     gradientHeightClass: 'h-20',
   },
   workout: {
-    itemHeight: 44,
-    visibleHeight: 190,
+    itemHeight: 48,
+    visibleHeight: 240,
     paddingRows: 2,
-    highlightHeightClass: 'h-11',
-    gradientHeightClass: 'h-20',
+    highlightHeightClass: 'h-12',
+    gradientHeightClass: 'h-24',
   },
 };
 
@@ -201,7 +201,7 @@ export function ScrollWheelPicker<T extends string | number>({
         >
           {options.map((option, index) => {
             const distance = index - centerIndexFloat;
-            const style = getWheelItemStyle(distance);
+            const style = getWheelItemStyle(distance, size);
             const isSelected = option.value === value;
             return (
               <button

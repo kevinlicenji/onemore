@@ -2,7 +2,7 @@
 
 import type { SupplementListItem, SupplementLogItem } from '@onemore/shared';
 import { Button, Input } from '@onemore/ui';
-import { ChevronLeft, ChevronRight, Pill, Plus, Settings } from 'lucide-react';
+import { Pill, Plus, Settings } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -82,6 +82,9 @@ export default function SupplementsPage(): React.ReactElement {
   } | null>(null);
   const [logWheelValue, setLogWheelValue] = useState(0);
   const [showUnlogged, setShowUnlogged] = useState(false);
+  const [trendItems, setTrendItems] = useState<{ date: string; name: string; amount: number }[]>(
+    [],
+  );
 
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddSearch, setQuickAddSearch] = useState('');
@@ -91,8 +94,6 @@ export default function SupplementsPage(): React.ReactElement {
 
   const [yesterdayRepeatable, setYesterdayRepeatable] = useState(false);
   const [savingRepeat, setSavingRepeat] = useState(false);
-
-  const selectedDate = useMemo(() => new Date(date + 'T12:00:00.000Z'), [date]);
 
   const logBySupplementId = useMemo(() => {
     const map = new Map<string, SupplementLogItem>();
@@ -115,6 +116,11 @@ export default function SupplementsPage(): React.ReactElement {
       setItems(supplements);
       setLogs(logsResponse.logs);
       setLogDates(new Set(trend.filter((d) => d.hasLogged).map((d) => d.date)));
+      setTrendItems(
+        trend.flatMap((d) =>
+          d.items.map((item) => ({ date: d.date, name: item.name, amount: item.amount })),
+        ),
+      );
 
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
@@ -133,12 +139,6 @@ export default function SupplementsPage(): React.ReactElement {
   useEffect(() => {
     void loadData();
   }, [loadData]);
-
-  function goTo(delta: number): void {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + delta);
-    setDate(d.toISOString().split('T')[0] ?? '');
-  }
 
   function resetForm(): void {
     setFormName('');
@@ -209,8 +209,17 @@ export default function SupplementsPage(): React.ReactElement {
 
   function openLog(supplement: SupplementListItem): void {
     const existing = logBySupplementId.get(supplement.id) ?? null;
+    let defaultAmount = existing?.amount ?? 0;
+    if (!existing) {
+      const previous = trendItems
+        .filter((t) => t.name === supplement.name && t.date < date)
+        .sort((a, b) => b.date.localeCompare(a.date));
+      if (previous.length > 0) {
+        defaultAmount = previous[0]?.amount ?? 0;
+      }
+    }
     setLogTarget({ supplement, existingLog: existing });
-    setLogWheelValue(existing?.amount ?? 0);
+    setLogWheelValue(defaultAmount);
   }
 
   function closeLog(): void {
@@ -294,8 +303,12 @@ export default function SupplementsPage(): React.ReactElement {
   }
 
   function selectQuickAddSupplement(supplement: SupplementListItem): void {
+    const previous = trendItems
+      .filter((t) => t.name === supplement.name && t.date < date)
+      .sort((a, b) => b.date.localeCompare(a.date));
+    const defaultAmount = previous.length > 0 ? (previous[0]?.amount ?? 0) : 0;
     setQuickAddSupplement(supplement);
-    setQuickAddAmount(0);
+    setQuickAddAmount(defaultAmount);
     setQuickAddStep('amount');
   }
 
@@ -374,42 +387,6 @@ export default function SupplementsPage(): React.ReactElement {
     </div>
   );
 
-  const dateNav = (
-    <div className="flex items-center justify-center gap-3">
-      <button
-        aria-label="Previous day"
-        className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
-        type="button"
-        onClick={() => {
-          goTo(-1);
-        }}
-      >
-        <ChevronLeft className="h-5 w-5" />
-      </button>
-      <label className="flex items-center gap-1 text-sm font-medium">
-        <input
-          className="appearance-none bg-transparent text-center text-sm font-medium text-foreground outline-none [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-          type="date"
-          value={date}
-          onChange={(e) => {
-            const val = e.target.value;
-            if (val) setDate(val);
-          }}
-        />
-      </label>
-      <button
-        aria-label="Next day"
-        className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
-        type="button"
-        onClick={() => {
-          goTo(1);
-        }}
-      >
-        <ChevronRight className="h-5 w-5" />
-      </button>
-    </div>
-  );
-
   return (
     <RequireAuth>
       <AdaptivePageShell
@@ -433,10 +410,7 @@ export default function SupplementsPage(): React.ReactElement {
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex flex-col gap-4">
-                  {dateNav}
-                  {renderSupplementList()}
-                </div>
+                <div className="flex flex-col gap-4">{renderSupplementList()}</div>
               </div>
             </>
           ) : (
@@ -447,7 +421,6 @@ export default function SupplementsPage(): React.ReactElement {
                 selectedDate={date}
                 onSelectDate={setDate}
               />
-              {dateNav}
               {renderSupplementList()}
             </>
           )}
@@ -518,7 +491,7 @@ export default function SupplementsPage(): React.ReactElement {
                     }}
                     trailing={
                       <span className="tabular-nums text-muted-foreground">
-                        {log ? String(log.amount) + ' ' + log.supplementUnit : '\u2014'}
+                        {log ? String(log.amount) + ' ' + log.supplementUnit : ''}
                       </span>
                     }
                   />
@@ -558,6 +531,7 @@ export default function SupplementsPage(): React.ReactElement {
               label=""
               options={wheelOptions}
               showLabel={false}
+              size="workout"
               value={logWheelValue}
               onChange={(v) => {
                 setLogWheelValue(v);
@@ -755,6 +729,7 @@ export default function SupplementsPage(): React.ReactElement {
                 label=""
                 options={wheelOptions}
                 showLabel={false}
+                size="workout"
                 value={quickAddAmount}
                 onChange={(v) => {
                   setQuickAddAmount(v);
