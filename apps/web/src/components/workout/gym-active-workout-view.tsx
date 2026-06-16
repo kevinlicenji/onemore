@@ -71,6 +71,7 @@ export interface GymActiveWorkoutViewProps {
     placeholderReps: string;
     placeholderWeight: string;
     failureReps: string;
+    rirLabel: string;
     prevExercise: string;
     nextExercise: string;
     swipeHint: string;
@@ -86,7 +87,7 @@ export interface GymActiveWorkoutViewProps {
   onSelectExerciseToAdd: (exerciseLibraryId: string) => void;
   onCompleteSet: (setId: string, setNumber: number) => void;
   onSkipSet: (setId: string, setNumber: number) => void;
-  onUpdateSetValue: (setId: string, field: 'weightKg' | 'reps', value: number | null) => void;
+  onUpdateSetValue: (setId: string, field: 'weightKg' | 'reps' | 'rir', value: number | null) => void;
   onAddSet: () => void;
   onSkipExercise: () => void;
   onOpenNotes: () => void;
@@ -429,7 +430,7 @@ export function GymActiveWorkoutView({
                             placeholderReps: labels.placeholderReps,
                             placeholderWeight: labels.placeholderWeight,
                             failureReps: labels.failureReps,
-                            previousSetLabel: labels.previousSetLabel,
+                            rirLabel: labels.rirLabel,
                           }}
                           loading={loading}
                           performanceFeedbackBySetId={performanceFeedbackBySetId}

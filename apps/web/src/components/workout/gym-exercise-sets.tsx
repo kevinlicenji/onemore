@@ -18,6 +18,7 @@ import {
   formatSetTargetInline,
 } from '@/lib/workout-set-display';
 import { SetPerformanceBadge } from '@/components/workout/set-performance-badge';
+import { RirSelector } from '@/components/workout/rir-selector';
 import type { SetPerformanceFeedback } from '@/lib/performance-feedback';
 
 interface GymExerciseSetsProps {
@@ -34,11 +35,11 @@ interface GymExerciseSetsProps {
     placeholderReps: string;
     placeholderWeight: string;
     failureReps: string;
-    previousSetLabel: string;
+    rirLabel: string;
   };
   formatSetLabel: (setNumber: number) => string;
   onSkipSet: (setId: string, setNumber: number) => void;
-  onUpdateSetValue: (setId: string, field: 'weightKg' | 'reps', value: number | null) => void;
+  onUpdateSetValue: (setId: string, field: 'weightKg' | 'reps' | 'rir', value: number | null) => void;
 }
 
 const activeSetTransition = {
@@ -204,6 +205,23 @@ export function GymExerciseSets({
                 />
               ) : null}
             </div>
+
+            {!setState.activeSet.isWarmup ? (
+              <div className="mt-4">
+                <RirSelector
+                  disabled={loading}
+                  label={labels.rirLabel}
+                  value={setState.activeSet.rir}
+                  onChange={(rir) => {
+                    const activeSet = setState.activeSet;
+                    if (!activeSet) {
+                      return;
+                    }
+                    onUpdateSetValue(activeSet.id, 'rir', rir);
+                  }}
+                />
+              </div>
+            ) : null}
           </motion.div>
         )}
       </AnimatePresence>

@@ -634,11 +634,13 @@ model Supplement {
   protein     Float          @default(0)
   carbs       Float          @default(0)
   fat         Float          @default(0)
+  deletedAt   DateTime?      @map("deleted_at")
   logs        SupplementLog[]
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
 
   @@index([userId])
+  @@index([deletedAt])
   @@map("supplement")
 }
 
@@ -654,6 +656,7 @@ model SupplementLog {
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
 
+  @@unique([userId, supplementId, date], name: "user_supplement_date")
   @@index([userId, date(sort: Desc)])
   @@index([supplementId])
   @@map("supplement_log")

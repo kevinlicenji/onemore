@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { computeE1rm } from '../pr/e1rm.js';
 import {
   classifyPerformanceFeedback,
   computePerformanceDeltaPercent,
@@ -7,19 +8,17 @@ import {
 } from './performance-e1rm.js';
 
 describe('computePerformanceE1rm', () => {
-  it('uses Brzycki for reps up to 10', () => {
-    expect(computePerformanceE1rm(100, 5)).toBeCloseTo(100 * (36 / 32), 2);
-    expect(computePerformanceE1rm(100, 10)).toBeCloseTo(100 * (36 / 27), 2);
-  });
-
-  it('uses Epley for reps above 10', () => {
-    expect(computePerformanceE1rm(100, 11)).toBeCloseTo(100 * (1 + 11 / 30), 2);
-    expect(computePerformanceE1rm(80, 12)).toBeCloseTo(80 * (1 + 12 / 30), 2);
+  it('matches canonical computeE1rm (Epley ≤10, Brzycki 11–15)', () => {
+    expect(computePerformanceE1rm(100, 5)).toBe(computeE1rm(100, 5));
+    expect(computePerformanceE1rm(100, 10)).toBe(computeE1rm(100, 10));
+    expect(computePerformanceE1rm(100, 11)).toBe(computeE1rm(100, 11));
+    expect(computePerformanceE1rm(80, 12)).toBe(computeE1rm(80, 12));
   });
 
   it('returns null for invalid inputs', () => {
     expect(computePerformanceE1rm(0, 5)).toBeNull();
     expect(computePerformanceE1rm(100, 0)).toBeNull();
+    expect(computePerformanceE1rm(100, 16)).toBeNull();
   });
 });
 

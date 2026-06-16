@@ -32,6 +32,10 @@ export async function buildGdprExportBundle(
       personalRecords: { include: { exerciseLibrary: true } },
       bodyWeightLogs: true,
       programs: true,
+      userExerciseMaxes: { include: { exercise: true } },
+      maxHistoryLogs: { include: { exercise: true } },
+      supplements: true,
+      supplementLogs: { include: { supplement: true } },
     },
   });
 
@@ -42,7 +46,7 @@ export async function buildGdprExportBundle(
   const safeUser = user;
 
   const payload = {
-    exportVersion: '1',
+    exportVersion: '2',
     exportedAt: new Date().toISOString(),
     user: {
       id: safeUser.id,
@@ -81,6 +85,8 @@ export async function buildGdprExportBundle(
           setNumber: set.setNumber,
           weightKg: set.weightKg !== null ? Number(set.weightKg) : null,
           reps: set.reps,
+          rpe: set.rpe,
+          rir: set.rir,
           isCompleted: set.isCompleted,
           clientTimestamp: set.clientTimestamp.toISOString(),
         })),
@@ -92,6 +98,33 @@ export async function buildGdprExportBundle(
       reps: record.reps,
       value: Number(record.value),
       achievedAt: record.achievedAt.toISOString(),
+    })),
+    userExerciseMaxes: safeUser.userExerciseMaxes.map((max) => ({
+      exerciseSlug: max.exercise.slug,
+      weightKg: max.weight,
+      source: max.source,
+      updatedAt: max.updatedAt.toISOString(),
+    })),
+    maxHistoryLogs: safeUser.maxHistoryLogs.map((log) => ({
+      exerciseSlug: log.exercise.slug,
+      weightKg: log.weight,
+      reps: log.reps,
+      calculated1RM: log.calculated1RM,
+      status: log.status,
+      date: log.date.toISOString(),
+    })),
+    supplements: safeUser.supplements.map((supplement) => ({
+      id: supplement.id,
+      name: supplement.name,
+      brand: supplement.brand,
+      unit: supplement.unit,
+      createdAt: supplement.createdAt.toISOString(),
+    })),
+    supplementLogs: safeUser.supplementLogs.map((log) => ({
+      supplementName: log.supplement.name,
+      amount: log.amount,
+      notes: log.notes,
+      date: log.date.toISOString(),
     })),
     bodyWeightLogs: safeUser.bodyWeightLogs.map((log) => ({
       weightKg: Number(log.weightKg),

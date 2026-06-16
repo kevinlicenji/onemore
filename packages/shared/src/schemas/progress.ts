@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { pendingMaxProposalSchema } from './max-values.js';
 import { workoutSessionDetailSchema } from './workout.js';
 
 export const prTypeSchema = z.enum(['weight_pr', 'volume_pr', 'e1rm_pr']);
@@ -17,6 +18,7 @@ export const personalRecordSummarySchema = z.object({
 export const upsertSetResponseSchema = z.object({
   session: workoutSessionDetailSchema,
   personalRecords: z.array(personalRecordSummarySchema),
+  pendingMaxProposal: pendingMaxProposalSchema.nullable().optional(),
 });
 
 export type PrType = z.infer<typeof prTypeSchema>;

@@ -14,6 +14,7 @@ function createMockPrisma() {
     },
     supplementLog: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
@@ -134,7 +135,7 @@ describe('SupplementsService', () => {
   describe('update', () => {
     it('clones global supplement silently', async () => {
       const prisma = createMockPrisma();
-      prisma.supplement.findUnique = vi.fn(() =>
+      prisma.supplement.findFirst = vi.fn(() =>
         Promise.resolve({
           id: 'sup-global',
           name: { it: 'Vecchia', en: 'Old' },
@@ -145,6 +146,7 @@ describe('SupplementsService', () => {
           protein: 0,
           carbs: 0,
           fat: 0,
+          deletedAt: null,
         }),
       );
       prisma.supplement.create = vi.fn(() =>
@@ -181,7 +183,7 @@ describe('SupplementsService', () => {
 
     it('updates own supplement directly', async () => {
       const prisma = createMockPrisma();
-      prisma.supplement.findUnique = vi.fn(() =>
+      prisma.supplement.findFirst = vi.fn(() =>
         Promise.resolve({
           id: 'sup-own',
           name: { it: 'Vecchia', en: 'Old' },
@@ -192,6 +194,7 @@ describe('SupplementsService', () => {
           protein: 0,
           carbs: 0,
           fat: 0,
+          deletedAt: null,
         }),
       );
       prisma.supplement.update = vi.fn(() =>
@@ -233,6 +236,7 @@ describe('SupplementsService', () => {
         Promise.resolve({
           id: 'sup-1',
           userId: 'user-1',
+          deletedAt: null,
         }),
       );
       prisma.supplement.delete = vi.fn(() => Promise.resolve({}));
@@ -290,6 +294,7 @@ describe('SupplementsService', () => {
       prisma.supplement.findFirst = vi.fn(() =>
         Promise.resolve({ id: 'sup-1', userId: null, name: { it: 'X', en: 'X' }, unit: 'g' }),
       );
+      prisma.supplementLog.findFirst = vi.fn(() => Promise.resolve(null));
       prisma.supplementLog.create = vi.fn(() =>
         Promise.resolve({
           id: 'log-1',
@@ -376,8 +381,9 @@ describe('SupplementsService', () => {
   describe('repeatYesterday', () => {
     it('copies yesterday logs to today', async () => {
       const prisma = createMockPrisma();
-      prisma.supplementLog.findMany = vi.fn(() =>
-        Promise.resolve([
+      prisma.supplementLog.findMany = vi
+        .fn()
+        .mockResolvedValueOnce([
           {
             id: 'log-y-1',
             supplementId: 'sup-1',
@@ -387,15 +393,26 @@ describe('SupplementsService', () => {
             createdAt: new Date('2026-06-14'),
             supplement: { name: { it: 'X', en: 'X' }, unit: 'g' },
           },
-        ]),
-      );
+        ])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([
+          {
+            id: 'log-new',
+            supplementId: 'sup-1',
+            amount: 5,
+            notes: 'test',
+            date: new Date('2026-06-15T00:00:00.000Z'),
+            createdAt: new Date('2026-06-15'),
+            supplement: { name: { it: 'X', en: 'X' }, unit: 'g' },
+          },
+        ]);
       prisma.supplementLog.create = vi.fn(() =>
         Promise.resolve({
           id: 'log-new',
           supplementId: 'sup-1',
           amount: 5,
           notes: 'test',
-          date: new Date('2026-06-15'),
+          date: new Date('2026-06-15T00:00:00.000Z'),
           createdAt: new Date('2026-06-15'),
           supplement: { name: { it: 'X', en: 'X' }, unit: 'g' },
         }),

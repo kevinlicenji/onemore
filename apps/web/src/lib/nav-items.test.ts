@@ -9,10 +9,11 @@ describe('gym navigation', () => {
     expect(items.find((item) => item.prominent)?.labelKey).toBe('navWorkout');
   });
 
-  it('exposes exercises and settings in the more menu', () => {
+  it('exposes exercises, max values, supplements and settings in the more menu', () => {
     const items = buildGymMoreNavItems('it');
     expect(items.map((item) => item.labelKey)).toEqual([
       'navExercises',
+      'navMaxValues',
       'navSupplements',
       'navSettings',
     ]);
@@ -20,6 +21,7 @@ describe('gym navigation', () => {
 
   it('detects more-menu routes', () => {
     expect(isGymMoreRouteActive('exercises')).toBe(true);
+    expect(isGymMoreRouteActive('max-values')).toBe(true);
     expect(isGymMoreRouteActive('supplements')).toBe(true);
     expect(isGymMoreRouteActive('settings')).toBe(true);
     expect(isGymMoreRouteActive('dashboard')).toBe(false);

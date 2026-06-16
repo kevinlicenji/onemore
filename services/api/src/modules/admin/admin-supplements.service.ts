@@ -12,7 +12,7 @@ export class AdminSupplementsService {
 
   async list(): Promise<AdminSupplement[]> {
     const rows = await this.prisma.supplement.findMany({
-      where: { userId: null },
+      where: { userId: null, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     return rows.map((r) => this.toAdminSupplement(r));
@@ -55,12 +55,15 @@ export class AdminSupplementsService {
 
   async delete(supplementId: string): Promise<void> {
     const existing = await this.requireGlobal(supplementId);
-    await this.prisma.supplement.delete({ where: { id: existing.id } });
+    await this.prisma.supplement.update({
+      where: { id: existing.id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   private async requireGlobal(supplementId: string) {
     const supp = await this.prisma.supplement.findFirst({
-      where: { id: supplementId, userId: null },
+      where: { id: supplementId, userId: null, deletedAt: null },
     });
     if (!supp) {
       throw new HttpError(404, 'Global supplement not found', 'SUPPLEMENT_NOT_FOUND');
@@ -72,6 +75,7 @@ export class AdminSupplementsService {
     id: string;
     name: unknown;
     unit: string;
+    deletedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
   }): AdminSupplement {
@@ -79,7 +83,7 @@ export class AdminSupplementsService {
       id: row.id,
       name: row.name as AdminSupplement['name'],
       unit: row.unit as AdminSupplement['unit'],
-      deletedAt: null,
+      deletedAt: row.deletedAt?.toISOString() ?? null,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     };

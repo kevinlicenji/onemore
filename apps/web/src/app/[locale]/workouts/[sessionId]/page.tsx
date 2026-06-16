@@ -1,6 +1,6 @@
 'use client';
 
-import type { PersonalRecordSummary, WorkoutSessionDetail } from '@onemore/shared';
+import type { PendingMaxProposal, PersonalRecordSummary, WorkoutSessionDetail } from '@onemore/shared';
 import { Button } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -12,7 +12,9 @@ import { ExerciseActionsMenu } from '@/components/exercise-actions-menu';
 import { ExerciseNotesModal } from '@/components/exercise-notes-modal';
 import { ExerciseSearchCombobox } from '@/components/exercise-search-combobox';
 import { MetricInput } from '@/components/metric-input';
+import { MaxProposalBanner } from '@/components/max-values/max-proposal-banner';
 import { PrCelebration } from '@/components/pr-celebration';
+import { RirSelector } from '@/components/workout/rir-selector';
 import { CardioRestTimer } from '@/components/workout/cardio-rest-timer';
 import { SetPerformanceBadge } from '@/components/workout/set-performance-badge';
 import { RequireAuth } from '@/components/require-auth';
@@ -68,6 +70,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newPrs, setNewPrs] = useState<PersonalRecordSummary[]>([]);
+  const [pendingMaxProposal, setPendingMaxProposal] = useState<PendingMaxProposal | null>(null);
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [notesSaving, setNotesSaving] = useState(false);
   const [activeSetId, setActiveSetId] = useState<string | null>(null);
@@ -183,6 +186,8 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           setNumber,
           weightKg: set.weightKg,
           reps: set.reps,
+          rpe: set.rpe,
+          rir: set.rir,
           isCompleted: true,
           isSkipped: false,
           isFailed: false,
@@ -203,6 +208,10 @@ export default function ActiveWorkoutPage(): React.ReactElement {
             value: record.value,
           });
         }
+      }
+
+      if (result.pendingMaxProposal) {
+        setPendingMaxProposal(result.pendingMaxProposal);
       }
       await refreshPendingCount();
 
@@ -286,7 +295,11 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     }
   }
 
-  function updateSetValue(setId: string, field: 'weightKg' | 'reps', value: number | null): void {
+  function updateSetValue(
+    setId: string,
+    field: 'weightKg' | 'reps' | 'rir',
+    value: number | null,
+  ): void {
     if (!session || !currentExercise) {
       return;
     }
@@ -523,6 +536,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
     placeholderReps: t('placeholderReps'),
     placeholderWeight: t('placeholderWeight'),
     failureReps: t('failureReps'),
+    rirLabel: t('rirLabel'),
     prevExercise: t('prevExercise'),
     nextExercise: t('nextExercise'),
     swipeHint: t('swipeHint'),
@@ -538,6 +552,17 @@ export default function ActiveWorkoutPage(): React.ReactElement {
   if (!isDesktop) {
     return (
       <RequireAuth>
+        {pendingMaxProposal ? (
+          <div className="px-4 pt-4">
+            <MaxProposalBanner
+              locale={locale}
+              proposal={pendingMaxProposal}
+              onDismiss={() => {
+                setPendingMaxProposal(null);
+              }}
+            />
+          </div>
+        ) : null}
         <GymActiveWorkoutView
           accessToken={accessToken}
           actualRestBySetId={actualRestBySetId}
@@ -614,6 +639,15 @@ export default function ActiveWorkoutPage(): React.ReactElement {
           }}
         />
       )}
+      {pendingMaxProposal ? (
+        <MaxProposalBanner
+          locale={locale}
+          proposal={pendingMaxProposal}
+          onDismiss={() => {
+            setPendingMaxProposal(null);
+          }}
+        />
+      ) : null}
       <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 p-6 pb-24">
         <div>
           <h1 className="text-xl font-bold">{session.workoutDayLabel ?? t('freeWorkoutTitle')}</h1>
@@ -821,6 +855,19 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                           }}
                         />
                       </div>
+
+                      {!activeSet.isWarmup ? (
+                        <div className="mt-3">
+                          <RirSelector
+                            disabled={loading}
+                            label={t('rirLabel')}
+                            value={activeSet.rir}
+                            onChange={(rir) => {
+                              updateSetValue(activeSet.id, 'rir', rir);
+                            }}
+                          />
+                        </div>
+                      ) : null}
 
                       <div className="mt-4 flex items-center justify-between gap-2">
                         <Button

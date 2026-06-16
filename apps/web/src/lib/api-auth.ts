@@ -10,6 +10,10 @@ import type {
   CreateProgramInput,
   DataExportJob,
   ExerciseListItem,
+  InsertManualMaxInput,
+  MaxHistoryLogWithExercise,
+  ResolvePendingMaxInput,
+  UserExerciseMaxWithExercise,
   HistoryListQuery,
   HistoryListResponse,
   NextWorkoutPreview,
@@ -952,4 +956,79 @@ export async function abandonWorkoutSession(
     throw await parseApiError(response, 'Failed to abandon workout');
   }
   return response.json() as Promise<WorkoutSessionDetail>;
+}
+
+export async function fetchMaxValues(
+  accessToken: string,
+): Promise<UserExerciseMaxWithExercise[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/max-values`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load max values');
+  }
+  const data = (await response.json()) as { maxValues: UserExerciseMaxWithExercise[] };
+  return data.maxValues;
+}
+
+export async function fetchPendingMaxValues(
+  accessToken: string,
+): Promise<MaxHistoryLogWithExercise[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/max-values/pending`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load pending max values');
+  }
+  const data = (await response.json()) as { pending: MaxHistoryLogWithExercise[] };
+  return data.pending;
+}
+
+export async function insertManualMaxValue(
+  accessToken: string,
+  payload: InsertManualMaxInput,
+): Promise<UserExerciseMaxWithExercise> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/max-values/manual`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to save max value');
+  }
+  return response.json() as Promise<UserExerciseMaxWithExercise>;
+}
+
+export async function resolvePendingMaxValue(
+  accessToken: string,
+  logId: string,
+  payload: ResolvePendingMaxInput,
+): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/max-values/pending/${logId}/resolve`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to resolve max proposal');
+  }
+}
+
+export async function fetchMaxValueHistory(
+  accessToken: string,
+  exerciseId: string,
+): Promise<MaxHistoryLogWithExercise[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/max-values/history/${exerciseId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw await parseApiError(response, 'Failed to load max value history');
+  }
+  const data = (await response.json()) as { history: MaxHistoryLogWithExercise[] };
+  return data.history;
 }

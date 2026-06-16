@@ -1,6 +1,6 @@
 'use client';
 
-import type { TodaySupplementsResponse } from '@onemore/shared';
+import type { TodaySupplementsResponse, UserExerciseMaxWithExercise } from '@onemore/shared';
 import { Skeleton, cn } from '@onemore/ui';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { RequireAuth } from '@/components/require-auth';
 import { ActiveWorkoutBanner } from '@/components/active-workout-banner';
+import { DashboardMaxValues } from '@/components/dashboard/dashboard-max-values';
 import { DashboardMonthlySets } from '@/components/dashboard/dashboard-monthly-sets';
 import { DashboardPrMonthBadge } from '@/components/dashboard/dashboard-pr-month-badge';
 import { DashboardProgramCta } from '@/components/dashboard/dashboard-program-cta';
@@ -23,7 +24,7 @@ import { SyncStatusBadge } from '@/components/sync-status-badge';
 import { useDashboardKpis } from '@/hooks/use-dashboard-kpis';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useMotivationalLine } from '@/hooks/use-motivational-line';
-import { fetchTodaySupplements } from '@/lib/api-auth';
+import { fetchMaxValues, fetchPendingMaxValues, fetchTodaySupplements } from '@/lib/api-auth';
 
 export default function DashboardPage(): React.ReactElement {
   const t = useTranslations('Dashboard');
@@ -34,11 +35,19 @@ export default function DashboardPage(): React.ReactElement {
   const isDesktop = useIsDesktop();
   const { dashboard } = useDashboardKpis(locale);
   const [todaySupplements, setTodaySupplements] = useState<TodaySupplementsResponse | null>(null);
+  const [maxValues, setMaxValues] = useState<UserExerciseMaxWithExercise[]>([]);
+  const [pendingMaxCount, setPendingMaxCount] = useState(0);
 
   useEffect(() => {
     if (!accessToken) return;
     void fetchTodaySupplements(accessToken, locale)
       .then(setTodaySupplements)
+      .catch(() => {});
+    void Promise.all([fetchMaxValues(accessToken), fetchPendingMaxValues(accessToken)])
+      .then(([active, pending]) => {
+        setMaxValues(active);
+        setPendingMaxCount(pending.length);
+      })
       .catch(() => {});
   }, [accessToken, locale]);
 
@@ -127,6 +136,11 @@ export default function DashboardPage(): React.ReactElement {
                     totalCount={todaySupplements.totalCount}
                   />
                 ) : null}
+                <DashboardMaxValues
+                  locale={locale}
+                  maxValues={maxValues}
+                  pendingCount={pendingMaxCount}
+                />
               </>
             ) : (
               <>
@@ -146,6 +160,12 @@ export default function DashboardPage(): React.ReactElement {
                     totalCount={todaySupplements.totalCount}
                   />
                 ) : null}
+                <DashboardMaxValues
+                  locale={locale}
+                  maxValues={maxValues}
+                  mobile
+                  pendingCount={pendingMaxCount}
+                />
               </>
             )}
             {!hasActivity ? emptyState : null}

@@ -1,6 +1,8 @@
+import { computeE1rm } from '../pr/e1rm.js';
+
 /**
- * Estimated 1RM for in-workout performance feedback (spec formulas).
- * Brzycki for reps ≤ 10; Epley for reps > 10.
+ * Estimated 1RM for in-workout performance feedback (Algorithm Spec §2).
+ * Delegates to the canonical {@link computeE1rm} implementation.
  */
 
 /**
@@ -11,18 +13,7 @@
  * @returns Estimated 1RM in kg, or null when not computable.
  */
 export function computePerformanceE1rm(weightKg: number, reps: number): number | null {
-  if (weightKg <= 0 || reps <= 0) {
-    return null;
-  }
-
-  if (reps <= 10) {
-    if (reps >= 37) {
-      return null;
-    }
-    return weightKg * (36 / (37 - reps));
-  }
-
-  return weightKg * (1 + reps / 30);
+  return computeE1rm(weightKg, reps);
 }
 
 /**

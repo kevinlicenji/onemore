@@ -209,6 +209,23 @@ export class MaxValuesService {
 
     if (action === 'APPROVE') {
       await this.prisma.$transaction(async (tx) => {
+        const currentMax = await tx.userExerciseMax.findUnique({
+          where: {
+            userId_exerciseId: {
+              userId,
+              exerciseId: log.exerciseId,
+            },
+          },
+        });
+
+        if (currentMax && log.calculated1RM <= currentMax.weight) {
+          await tx.maxHistoryLog.update({
+            where: { id: logId },
+            data: { status: 'REJECTED' },
+          });
+          throw new HttpError(409, 'Max proposal is stale', 'MAX_PROPOSAL_STALE');
+        }
+
         await tx.maxHistoryLog.update({
           where: { id: logId },
           data: { status: 'APPROVED' },

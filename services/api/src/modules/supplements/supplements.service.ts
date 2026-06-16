@@ -20,6 +20,19 @@ function dateString(d: Date): string {
   return d.toISOString().split('T')[0] ?? '';
 }
 
+/**
+ * Normalize supplement log dates to UTC midnight for deduplication.
+ */
+function normalizeSupplementLogDate(isoDate: string): Date {
+  const day = isoDate.split('T')[0] ?? isoDate;
+  return new Date(`${day}T00:00:00.000Z`);
+}
+
+const activeSupplementFilter = (userId: string): Prisma.SupplementWhereInput => ({
+  deletedAt: null,
+  OR: [{ userId: null }, { userId }],
+});
+
 export class SupplementsService {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -39,7 +52,7 @@ export class SupplementsService {
         _count: true,
       }),
       this.prisma.supplement.findMany({
-        where: { OR: [{ userId: null }, { userId }] },
+        where: activeSupplementFilter(userId),
         orderBy: { createdAt: 'desc' },
       }),
     ]);
@@ -66,7 +79,7 @@ export class SupplementsService {
     const supplement = await this.prisma.supplement.findFirst({
       where: {
         id: supplementId,
-        OR: [{ userId: null }, { userId }],
+        ...activeSupplementFilter(userId),
       },
     });
 
@@ -128,8 +141,8 @@ export class SupplementsService {
     input: UpdateSupplementInput,
     locale: string,
   ): Promise<SupplementDetail> {
-    const existing = await this.prisma.supplement.findUnique({
-      where: { id: supplementId },
+    const existing = await this.prisma.supplement.findFirst({
+      where: { id: supplementId, deletedAt: null },
     });
 
     if (!existing) {
@@ -202,7 +215,7 @@ export class SupplementsService {
       where: { id: supplementId },
     });
 
-    if (!existing || existing.userId !== userId) {
+    if (!existing || existing.userId !== userId || existing.deletedAt !== null) {
       throw new HttpError(404, 'Supplement not found', 'SUPPLEMENT_NOT_FOUND');
     }
 
@@ -267,7 +280,7 @@ export class SupplementsService {
     const supplement = await this.prisma.supplement.findFirst({
       where: {
         id: input.supplementId,
-        OR: [{ userId: null }, { userId }],
+        ...activeSupplementFilter(userId),
       },
     });
 
@@ -275,18 +288,38 @@ export class SupplementsService {
       throw new HttpError(404, 'Supplement not found', 'SUPPLEMENT_NOT_FOUND');
     }
 
-    const log = await this.prisma.supplementLog.create({
-      data: {
+    const logDate = normalizeSupplementLogDate(input.date);
+    const existingLog = await this.prisma.supplementLog.findFirst({
+      where: {
         userId,
         supplementId: input.supplementId,
-        amount: input.amount,
-        notes: input.notes ?? null,
-        date: new Date(input.date),
-      },
-      include: {
-        supplement: { select: { name: true, unit: true } },
+        date: logDate,
       },
     });
+
+    const log = existingLog
+      ? await this.prisma.supplementLog.update({
+          where: { id: existingLog.id },
+          data: {
+            amount: input.amount,
+            notes: input.notes ?? null,
+          },
+          include: {
+            supplement: { select: { name: true, unit: true } },
+          },
+        })
+      : await this.prisma.supplementLog.create({
+          data: {
+            userId,
+            supplementId: input.supplementId,
+            amount: input.amount,
+            notes: input.notes ?? null,
+            date: logDate,
+          },
+          include: {
+            supplement: { select: { name: true, unit: true } },
+          },
+        });
 
     return {
       id: log.id,
@@ -318,8 +351,7 @@ export class SupplementsService {
       data: {
         amount: input.amount,
         notes: input.notes,
-        date: input.date ? new Date(input.date) : undefined,
-        supplementId: input.supplementId,
+        date: input.date ? normalizeSupplementLogDate(input.date) : undefined,
       },
       include: {
         supplement: { select: { name: true, unit: true } },
@@ -375,10 +407,23 @@ export class SupplementsService {
       },
     });
 
-    const dayStart = new Date(todayStart);
+    const dayStart = normalizeSupplementLogDate(todayStart);
+
+    const existingToday = await this.prisma.supplementLog.findMany({
+      where: {
+        userId,
+        date: dayStart,
+      },
+      select: { supplementId: true },
+    });
+    const existingSupplementIds = new Set(existingToday.map((log) => log.supplementId));
 
     const createdLogs = [];
     for (const log of yesterdayLogs) {
+      if (existingSupplementIds.has(log.supplementId)) {
+        continue;
+      }
+
       const newLog = await this.prisma.supplementLog.create({
         data: {
           userId,
@@ -392,11 +437,23 @@ export class SupplementsService {
         },
       });
       createdLogs.push(newLog);
+      existingSupplementIds.add(log.supplementId);
     }
+
+    const allTodayLogs = await this.prisma.supplementLog.findMany({
+      where: {
+        userId,
+        date: dayStart,
+      },
+      include: {
+        supplement: { select: { name: true, unit: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
 
     return {
       date: date.split('T')[0] ?? '',
-      logs: createdLogs.map((log) => ({
+      logs: allTodayLogs.map((log) => ({
         id: log.id,
         supplementId: log.supplementId,
         supplementName: flattenName(log.supplement.name as SupplementName, locale),
@@ -406,7 +463,7 @@ export class SupplementsService {
         date: log.date.toISOString(),
         createdAt: log.createdAt.toISOString(),
       })),
-      totalCount: createdLogs.length,
+      totalCount: allTodayLogs.length,
     };
   }
 

@@ -35,8 +35,11 @@ export const SupplementLogBaseSchema = z.object({
 export const CreateSupplementLogInputSchema = SupplementLogBaseSchema;
 export type CreateSupplementLogInput = z.infer<typeof CreateSupplementLogInputSchema>;
 
-export const UpdateSupplementLogInputSchema = SupplementLogBaseSchema.partial().extend({
+export const UpdateSupplementLogInputSchema = z.object({
   id: z.string().uuid(),
+  amount: z.number().positive().optional(),
+  notes: z.string().max(500).optional().nullable(),
+  date: z.string().datetime({ offset: true }).optional(),
 });
 export type UpdateSupplementLogInput = z.infer<typeof UpdateSupplementLogInputSchema>;
 

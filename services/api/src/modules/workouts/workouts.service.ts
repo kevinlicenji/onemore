@@ -16,7 +16,7 @@ import { randomUUID } from 'node:crypto';
 import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { HttpError } from '../../lib/errors.js';
-import type { MaxValuesService } from '../max-values/max-values.service.js';
+import type { MaxValuesService, PendingApprovalResult } from '../max-values/max-values.service.js';
 import type { PrDetectionService } from '../progress/pr-detection.service.js';
 
 interface PreviousSetValues {
@@ -241,6 +241,7 @@ export class WorkoutsService {
     }
 
     let personalRecords: UpsertSetResponse['personalRecords'] = [];
+    const evaluationResult: { pending: PendingApprovalResult | null } = { pending: null };
 
     await this.prisma.$transaction(async (tx) => {
       await tx.setLog.upsert({
@@ -306,7 +307,7 @@ export class WorkoutsService {
           achievedAt: new Date(input.clientTimestamp),
         });
 
-        await this.maxValuesService.evaluateSet(tx, {
+        evaluationResult.pending = await this.maxValuesService.evaluateSet(tx, {
           userId,
           exerciseLibraryId: execution.exerciseLibraryId,
           weightKg: input.weightKg ?? 0,
@@ -320,7 +321,25 @@ export class WorkoutsService {
     });
 
     const updatedSession = await this.getSession(userId, sessionId);
-    return { session: updatedSession, personalRecords };
+
+    let pendingMaxProposal: UpsertSetResponse['pendingMaxProposal'] = null;
+    const rawPending = evaluationResult.pending;
+    if (rawPending) {
+      const matchedExercise = updatedSession.exercises.find(
+        (item) => item.exerciseLibraryId === rawPending.exerciseId,
+      );
+      const names = matchedExercise?.exercise.names;
+      pendingMaxProposal = {
+        logId: rawPending.logId,
+        exerciseId: rawPending.exerciseId,
+        exerciseName: names?.en ?? '',
+        weight: rawPending.weight,
+        reps: rawPending.reps,
+        calculated1RM: rawPending.calculated1RM,
+      };
+    }
+
+    return { session: updatedSession, personalRecords, pendingMaxProposal };
   }
 
   /**

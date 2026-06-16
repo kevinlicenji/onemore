@@ -50,6 +50,15 @@ export const resolvePendingMaxSchema = z.object({
   action: z.enum(['APPROVE', 'REJECT']),
 });
 
+export const pendingMaxProposalSchema = z.object({
+  logId: z.string().uuid(),
+  exerciseId: z.string().uuid(),
+  exerciseName: z.string(),
+  weight: z.number(),
+  reps: z.number().int(),
+  calculated1RM: z.number(),
+});
+
 export type MaxSource = z.infer<typeof maxSourceSchema>;
 export type LogStatus = z.infer<typeof logStatusSchema>;
 export type UserExerciseMax = z.infer<typeof userExerciseMaxSchema>;
@@ -58,3 +67,4 @@ export type UserExerciseMaxWithExercise = z.infer<typeof userExerciseMaxWithExer
 export type MaxHistoryLogWithExercise = z.infer<typeof maxHistoryLogWithExerciseSchema>;
 export type InsertManualMaxInput = z.infer<typeof insertManualMaxSchema>;
 export type ResolvePendingMaxInput = z.infer<typeof resolvePendingMaxSchema>;
+export type PendingMaxProposal = z.infer<typeof pendingMaxProposalSchema>;

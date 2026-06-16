@@ -314,6 +314,8 @@ async function applyLocalSetUpdate(
             ...set,
             weightKg: payload.weightKg ?? set.weightKg,
             reps: payload.reps ?? set.reps,
+            rpe: payload.rpe ?? set.rpe,
+            rir: payload.rir ?? set.rir,
             isCompleted: payload.isCompleted,
             isSkipped: payload.isSkipped,
             isFailed: payload.isFailed,

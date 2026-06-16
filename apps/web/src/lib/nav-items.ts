@@ -10,6 +10,7 @@ export interface NavItem {
     | 'navHistory'
     | 'navExercises'
     | 'navSupplements'
+    | 'navMaxValues'
     | 'navSettings';
   icon: LucideIcon;
   match: (route: string) => boolean;
@@ -51,6 +52,12 @@ export function buildNavItems(locale: string): NavItem[] {
       match: (route) => route === 'exercises',
     },
     {
+      href: `/${locale}/max-values`,
+      labelKey: 'navMaxValues',
+      icon: Dumbbell,
+      match: (route) => route === 'max-values' || route.startsWith('max-values/'),
+    },
+    {
       href: `/${locale}/supplements`,
       labelKey: 'navSupplements',
       icon: Pill,
@@ -83,7 +90,7 @@ export interface GymPrimaryNavItem {
 
 export interface GymMoreNavItem {
   href: string;
-  labelKey: 'navExercises' | 'navSupplements' | 'navSettings';
+  labelKey: 'navExercises' | 'navSupplements' | 'navMaxValues' | 'navSettings';
   icon: LucideIcon;
   match: (route: string) => boolean;
 }
@@ -133,6 +140,12 @@ export function buildGymMoreNavItems(locale: string): GymMoreNavItem[] {
       match: (route) => route === 'exercises',
     },
     {
+      href: `/${locale}/max-values`,
+      labelKey: 'navMaxValues',
+      icon: Dumbbell,
+      match: (route) => route === 'max-values' || route.startsWith('max-values/'),
+    },
+    {
       href: `/${locale}/supplements`,
       labelKey: 'navSupplements',
       icon: Pill,
@@ -150,6 +163,8 @@ export function buildGymMoreNavItems(locale: string): GymMoreNavItem[] {
 export function isGymMoreRouteActive(route: string): boolean {
   return (
     route === 'exercises' ||
+    route === 'max-values' ||
+    route.startsWith('max-values/') ||
     route === 'supplements' ||
     route.startsWith('supplements/') ||
     route === 'settings'
