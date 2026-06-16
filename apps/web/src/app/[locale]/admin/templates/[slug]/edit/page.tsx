@@ -70,6 +70,8 @@ export default function AdminEditTemplatePage(): React.ReactElement {
               targetReps: row.targetReps,
               restSeconds: row.restSeconds,
               targetWeightKg: row.targetWeightKg,
+              weightPrescriptionMode: row.weightPrescriptionMode ?? 'absolute',
+              targetPercentOfMax: row.targetPercentOfMax ?? null,
             })),
           })),
         );

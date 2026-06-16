@@ -23,6 +23,8 @@ function makeExercise(overrides: Partial<WorkoutExerciseDetail> = {}): WorkoutEx
       targetWeightKg: 60,
       restSeconds: 90,
       coachNote: null,
+      weightPrescriptionMode: 'absolute',
+      targetPercentOfMax: undefined,
     },
     previousSet: { weightKg: 55, reps: 10 },
     sets: [

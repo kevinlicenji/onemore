@@ -33,6 +33,8 @@ function makeSession(
           targetWeightKg: 60,
           restSeconds: 90,
           coachNote: null,
+          weightPrescriptionMode: 'absolute',
+          targetPercentOfMax: undefined,
         },
         exercise: {
           id: 'lib-1',

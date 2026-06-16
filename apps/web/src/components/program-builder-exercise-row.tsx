@@ -85,6 +85,8 @@ export function ProgramBuilderExerciseRow({
               exercise.targetWeightKg,
               exercise.restSeconds,
               labels.failureReps,
+              exercise.weightPrescriptionMode,
+              exercise.targetPercentOfMax,
             )}
           </p>
         </div>
@@ -132,14 +134,76 @@ export function ProgramBuilderExerciseRow({
               onUpdate('targetReps', value ?? 8);
             }}
           />
-          <MetricInput
-            kind="weight"
-            label={labels.targetWeight}
-            value={exercise.targetWeightKg}
-            onChange={(value) => {
-              onUpdate('targetWeightKg', value);
-            }}
-          />
+          <div className="col-span-2 flex gap-2">
+            <button
+              className={`min-h-9 flex-1 rounded-md border text-xs font-medium transition-colors ${
+                exercise.weightPrescriptionMode === 'absolute'
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-input bg-background text-muted-foreground'
+              }`}
+              type="button"
+              onClick={() => {
+                onUpdate('weightPrescriptionMode', 'absolute');
+                onUpdate('targetPercentOfMax', null);
+              }}
+            >
+              Carico Fisso (kg)
+            </button>
+            <button
+              className={`min-h-9 flex-1 rounded-md border text-xs font-medium transition-colors ${
+                exercise.weightPrescriptionMode === 'percent_of_max'
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-input bg-background text-muted-foreground'
+              }`}
+              type="button"
+              onClick={() => {
+                onUpdate('weightPrescriptionMode', 'percent_of_max');
+              }}
+            >
+              % del Massimale
+            </button>
+          </div>
+          {exercise.weightPrescriptionMode === 'absolute' ? (
+            <MetricInput
+              kind="weight"
+              label={labels.targetWeight}
+              value={exercise.targetWeightKg}
+              onChange={(value) => {
+                onUpdate('targetWeightKg', value);
+              }}
+            />
+          ) : (
+            <label className="flex flex-col gap-2 text-xs">
+              <span>{labels.targetWeight}</span>
+              <div className="relative">
+                <input
+                  aria-label={labels.targetWeight}
+                  className="min-h-11 w-full rounded-md border bg-background px-3 pr-7 text-sm"
+                  inputMode="numeric"
+                  max={120}
+                  min={1}
+                  placeholder="80"
+                  type="number"
+                  value={exercise.targetPercentOfMax ?? ''}
+                  onChange={(event) => {
+                    const raw = event.target.value;
+                    if (raw === '') {
+                      onUpdate('targetPercentOfMax', null);
+                      onUpdate('targetWeightKg', null);
+                      return;
+                    }
+                    const parsed = Number(raw);
+                    if (!Number.isNaN(parsed)) {
+                      onUpdate('targetPercentOfMax', Math.min(120, Math.max(1, Math.round(parsed))));
+                    }
+                  }}
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  %
+                </span>
+              </div>
+            </label>
+          )}
           <MetricInput
             kind="rest"
             label={labels.restSeconds}

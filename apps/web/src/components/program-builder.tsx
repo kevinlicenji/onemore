@@ -146,7 +146,11 @@ export function ProgramBuilder({
               targetSets: draft.targetSets,
               targetReps: draft.targetReps,
               restSeconds: draft.restSeconds,
-              targetWeightKg: draft.targetWeightKg,
+              targetWeightKg:
+                draft.weightPrescriptionMode === 'percent_of_max' ? null : draft.targetWeightKg,
+              weightPrescriptionMode: draft.weightPrescriptionMode,
+              targetPercentOfMax:
+                draft.weightPrescriptionMode === 'percent_of_max' ? draft.targetPercentOfMax : null,
             },
           ],
         });
@@ -303,7 +307,12 @@ export function ProgramBuilder({
             targetSets: row.targetSets,
             targetReps: row.targetReps,
             restSeconds: row.restSeconds,
-            ...(row.targetWeightKg !== null ? { targetWeightKg: row.targetWeightKg } : {}),
+            weightPrescriptionMode: row.weightPrescriptionMode ?? 'absolute',
+            ...(row.weightPrescriptionMode === 'percent_of_max' && row.targetPercentOfMax != null
+              ? { targetPercentOfMax: row.targetPercentOfMax }
+              : row.targetWeightKg !== null
+                ? { targetWeightKg: row.targetWeightKg }
+                : {}),
           })),
         })),
       });
@@ -337,6 +346,8 @@ export function ProgramBuilder({
                 dragOverlay.exercise.targetWeightKg,
                 dragOverlay.exercise.restSeconds,
                 t('failureReps'),
+                dragOverlay.exercise.weightPrescriptionMode,
+                dragOverlay.exercise.targetPercentOfMax,
               )}
             </p>
           </div>,

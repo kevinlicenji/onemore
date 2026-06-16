@@ -63,6 +63,8 @@ export function ProgramDayList({
                       row.targetWeightKg,
                       row.restSeconds,
                       t('failureReps'),
+                      row.weightPrescriptionMode,
+                      row.targetPercentOfMax,
                     )}
                   </p>
                   {row.coachNote && (

@@ -914,6 +914,7 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                               prescription.targetWeightKg,
                               prescription.restSeconds,
                               t('failureReps'),
+                              { weightPrescriptionMode: prescription.weightPrescriptionMode, targetPercentOfMax: prescription.targetPercentOfMax },
                             )}
                           </p>
                         )}
@@ -999,6 +1000,8 @@ export default function ActiveWorkoutPage(): React.ReactElement {
                                 prescription.targetReps,
                                 prescription.targetWeightKg,
                                 prescription.restSeconds,
+                                t('failureReps'),
+                                { weightPrescriptionMode: prescription.weightPrescriptionMode, targetPercentOfMax: prescription.targetPercentOfMax },
                               )}
                             </p>
                           )}

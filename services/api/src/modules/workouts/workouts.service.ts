@@ -377,6 +377,8 @@ export class WorkoutsService {
       targetWeightKg: null,
       restSeconds: input.restSeconds,
       coachNote: null,
+      weightPrescriptionMode: 'absolute',
+      targetPercentOfMax: null,
     };
 
     const previous = await this.loadPreviousSetValues(userId, [exercise.id]);
@@ -781,6 +783,8 @@ export class WorkoutsService {
             : null,
           restSeconds: programExercise.restSeconds,
           coachNote: programExercise.coachNote,
+          weightPrescriptionMode: (programExercise.weightPrescriptionMode ?? 'absolute') as 'absolute' | 'percent_of_max',
+          targetPercentOfMax: programExercise.targetPercentOfMax ?? null,
         };
 
         const execution = await tx.exerciseExecution.create({
@@ -810,6 +814,8 @@ export class WorkoutsService {
     targetWeightKg: { toString(): string } | null;
     restSeconds: number;
     coachNote: string | null;
+    weightPrescriptionMode: string | null;
+    targetPercentOfMax: number | null;
     exerciseLibrary: { id: string; slug: string; names: unknown; isBodyweight: boolean };
   }) {
     return {
@@ -821,6 +827,8 @@ export class WorkoutsService {
       targetWeightKg: item.targetWeightKg ? Number(item.targetWeightKg) : null,
       restSeconds: item.restSeconds,
       coachNote: item.coachNote,
+      weightPrescriptionMode: (item.weightPrescriptionMode ?? 'absolute') as 'absolute' | 'percent_of_max',
+      targetPercentOfMax: item.targetPercentOfMax ?? null,
       exercise: {
         id: item.exerciseLibrary.id,
         slug: item.exerciseLibrary.slug,

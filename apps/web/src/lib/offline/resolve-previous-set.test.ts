@@ -42,6 +42,8 @@ describe('findPreviousSetInSessions', () => {
               targetWeightKg: null,
               restSeconds: 90,
               coachNote: null,
+              weightPrescriptionMode: 'absolute',
+              targetPercentOfMax: undefined,
             },
             exercise: {
               id: exerciseId,
@@ -84,6 +86,8 @@ describe('findPreviousSetInSessions', () => {
               targetWeightKg: null,
               restSeconds: 90,
               coachNote: null,
+              weightPrescriptionMode: 'absolute',
+              targetPercentOfMax: undefined,
             },
             exercise: {
               id: exerciseId,
@@ -136,6 +140,8 @@ describe('findPreviousSetInSessions', () => {
               targetWeightKg: null,
               restSeconds: 90,
               coachNote: null,
+              weightPrescriptionMode: 'absolute',
+              targetPercentOfMax: undefined,
             },
             exercise: {
               id: exerciseId,
@@ -199,6 +205,8 @@ describe('findPreviousSetInSessions', () => {
               targetWeightKg: null,
               restSeconds: 90,
               coachNote: null,
+              weightPrescriptionMode: 'absolute',
+              targetPercentOfMax: undefined,
             },
             exercise: {
               id: exerciseId,

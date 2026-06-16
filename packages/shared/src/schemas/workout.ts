@@ -14,12 +14,16 @@ export const exerciseExecutionStatusSchema = z.enum([
   'skipped',
 ]);
 
+export const weightPrescriptionModeSchema = z.enum(['absolute', 'percent_of_max']);
+
 export const prescriptionSnapshotSchema = z.object({
   targetSets: z.number().int(),
   targetReps: z.number().int(),
   targetWeightKg: z.number().nullable(),
   restSeconds: z.number().int(),
   coachNote: z.string().nullable(),
+  weightPrescriptionMode: weightPrescriptionModeSchema.default('absolute'),
+  targetPercentOfMax: z.number().int().min(1).max(100).nullable().optional(),
 });
 
 export const startWorkoutSessionSchema = z.object({
@@ -135,6 +139,8 @@ export const nextWorkoutDayExerciseSchema = z.object({
   targetSets: z.number().int(),
   targetReps: z.number().int(),
   targetWeightKg: z.number().nullable(),
+  weightPrescriptionMode: weightPrescriptionModeSchema.default('absolute'),
+  targetPercentOfMax: z.number().int().min(1).max(100).nullable().optional(),
   restSeconds: z.number().int(),
   coachNote: z.string().nullable(),
   exercise: z.object({
