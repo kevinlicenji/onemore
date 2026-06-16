@@ -5,9 +5,15 @@ import { formatTargetRepsLabel } from '@onemore/shared';
  */
 export function formatPrescribedWeight(
   targetWeightKg: number | null,
-  prescriptionMode?: { weightPrescriptionMode?: string | null; targetPercentOfMax?: number | null } | null,
+  prescriptionMode?: {
+    weightPrescriptionMode?: string | null;
+    targetPercentOfMax?: number | null;
+  } | null,
 ): string {
-  if (prescriptionMode?.weightPrescriptionMode === 'percent_of_max' && prescriptionMode?.targetPercentOfMax != null) {
+  if (
+    prescriptionMode?.weightPrescriptionMode === 'percent_of_max' &&
+    prescriptionMode?.targetPercentOfMax != null
+  ) {
     return `${prescriptionMode.targetPercentOfMax}%`;
   }
   if (targetWeightKg !== null) {
@@ -24,7 +30,10 @@ export function formatSetPrescriptionLine(
   targetWeightKg: number | null,
   restSeconds: number,
   failureLabel = 'Cedimento',
-  prescriptionMode?: { weightPrescriptionMode?: string | null; targetPercentOfMax?: number | null } | null,
+  prescriptionMode?: {
+    weightPrescriptionMode?: string | null;
+    targetPercentOfMax?: number | null;
+  } | null,
 ): string {
   const repsPart = formatTargetRepsLabel(targetReps, failureLabel);
   const isPercent = prescriptionMode?.weightPrescriptionMode === 'percent_of_max';
@@ -88,7 +97,10 @@ export function formatSetTargetInline(
   targetWeightKg: number | null,
   restSeconds: number,
   failureLabel = 'Cedimento',
-  prescriptionMode?: { weightPrescriptionMode?: string | null; targetPercentOfMax?: number | null } | null,
+  prescriptionMode?: {
+    weightPrescriptionMode?: string | null;
+    targetPercentOfMax?: number | null;
+  } | null,
 ): string {
   const repsPart = formatTargetRepsLabel(targetReps, failureLabel);
   const isPercent = prescriptionMode?.weightPrescriptionMode === 'percent_of_max';

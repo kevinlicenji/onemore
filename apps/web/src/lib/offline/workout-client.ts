@@ -98,7 +98,9 @@ async function buildLocalProgrammedSession(
           targetWeightKg: item.targetWeightKg,
           restSeconds: item.restSeconds,
           coachNote: item.coachNote,
-          weightPrescriptionMode: (item.weightPrescriptionMode ?? 'absolute') as 'absolute' | 'percent_of_max',
+          weightPrescriptionMode: (item.weightPrescriptionMode ?? 'absolute') as
+            | 'absolute'
+            | 'percent_of_max',
           targetPercentOfMax: item.targetPercentOfMax ?? null,
         },
         exercise: item.exercise,

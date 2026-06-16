@@ -194,7 +194,10 @@ export function ProgramBuilderExerciseRow({
                     }
                     const parsed = Number(raw);
                     if (!Number.isNaN(parsed)) {
-                      onUpdate('targetPercentOfMax', Math.min(120, Math.max(1, Math.round(parsed))));
+                      onUpdate(
+                        'targetPercentOfMax',
+                        Math.min(120, Math.max(1, Math.round(parsed))),
+                      );
                     }
                   }}
                 />

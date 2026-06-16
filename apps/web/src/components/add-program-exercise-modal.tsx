@@ -67,7 +67,9 @@ export function AddProgramExerciseModal({
   const [targetReps, setTargetReps] = useState(8);
   const [restSeconds, setRestSeconds] = useState(90);
   const [targetWeightKg, setTargetWeightKg] = useState<number | null>(null);
-  const [weightPrescriptionMode, setWeightPrescriptionMode] = useState<'absolute' | 'percent_of_max'>('absolute');
+  const [weightPrescriptionMode, setWeightPrescriptionMode] = useState<
+    'absolute' | 'percent_of_max'
+  >('absolute');
   const [targetPercentOfMax, setTargetPercentOfMax] = useState<number | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 

@@ -783,7 +783,9 @@ export class WorkoutsService {
             : null,
           restSeconds: programExercise.restSeconds,
           coachNote: programExercise.coachNote,
-          weightPrescriptionMode: (programExercise.weightPrescriptionMode ?? 'absolute') as 'absolute' | 'percent_of_max',
+          weightPrescriptionMode: (programExercise.weightPrescriptionMode ?? 'absolute') as
+            | 'absolute'
+            | 'percent_of_max',
           targetPercentOfMax: programExercise.targetPercentOfMax ?? null,
         };
 
@@ -827,7 +829,9 @@ export class WorkoutsService {
       targetWeightKg: item.targetWeightKg ? Number(item.targetWeightKg) : null,
       restSeconds: item.restSeconds,
       coachNote: item.coachNote,
-      weightPrescriptionMode: (item.weightPrescriptionMode ?? 'absolute') as 'absolute' | 'percent_of_max',
+      weightPrescriptionMode: (item.weightPrescriptionMode ?? 'absolute') as
+        | 'absolute'
+        | 'percent_of_max',
       targetPercentOfMax: item.targetPercentOfMax ?? null,
       exercise: {
         id: item.exerciseLibrary.id,

@@ -86,20 +86,7 @@ export async function flushSyncQueue(accessToken: string): Promise<SyncBatchResp
 
   let lastError: Error | null = null;
 
-  for (const row of rows) {
-    if (row.attempts >= MAX_SYNC_ATTEMPTS) {
-      continue;
-    }
-  }
-
-  const attemptRows = rows.filter((row) => row.attempts < MAX_SYNC_ATTEMPTS);
-  if (attemptRows.length === 0) {
-    return null;
-  }
-
-  const maxAttempts = Math.max(...attemptRows.map((r) => r.attempts));
-
-  for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+  for (let attempt = 0; attempt < MAX_SYNC_ATTEMPTS; attempt++) {
     if (!isBrowserOnline()) {
       return null;
     }
@@ -136,7 +123,7 @@ export async function flushSyncQueue(accessToken: string): Promise<SyncBatchResp
       }));
       await offlineDb.syncQueue.bulkPut(rowsToUpdate);
 
-      if (attempt < maxAttempts) {
+      if (attempt < MAX_SYNC_ATTEMPTS - 1) {
         const delay = calculateBackoff(attempt);
         await sleep(delay);
         continue;

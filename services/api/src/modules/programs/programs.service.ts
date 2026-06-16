@@ -524,7 +524,9 @@ export class ProgramsService {
               targetSets: exercise.targetSets,
               targetReps: exercise.targetReps,
               targetWeightKg: exercise.targetWeightKg,
-            weightPrescriptionMode: (exercise.weightPrescriptionMode ?? 'absolute') as 'absolute' | 'percent_of_max',
+              weightPrescriptionMode: (exercise.weightPrescriptionMode ?? 'absolute') as
+                | 'absolute'
+                | 'percent_of_max',
               targetPercentOfMax: exercise.targetPercentOfMax ?? null,
               restSeconds: exercise.restSeconds,
               targetRpe: exercise.targetRpe,
@@ -714,14 +716,18 @@ export class ProgramsService {
             targetReps: exercise.targetReps,
             restSeconds: exercise.restSeconds,
             targetWeightKg: exercise.targetWeightKg ? Number(exercise.targetWeightKg) : null,
-            weightPrescriptionMode: (exercise.weightPrescriptionMode ?? 'absolute') as 'absolute' | 'percent_of_max',
+            weightPrescriptionMode: (exercise.weightPrescriptionMode ?? 'absolute') as
+              | 'absolute'
+              | 'percent_of_max',
             targetPercentOfMax: exercise.targetPercentOfMax ?? null,
             coachNote: exercise.coachNote,
             exercise: {
               id: exercise.exerciseLibrary.id,
               slug: exercise.exerciseLibrary.slug,
               names: exercise.exerciseLibrary.names as { en: string; it?: string },
-              primaryMuscles: normalizeMuscleTags(exercise.exerciseLibrary.primaryMuscles as string[]),
+              primaryMuscles: normalizeMuscleTags(
+                exercise.exerciseLibrary.primaryMuscles as string[],
+              ),
             },
           }));
 

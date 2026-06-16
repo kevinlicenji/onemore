@@ -192,7 +192,9 @@ export class AdminTemplatesService {
         targetReps: row.targetReps,
         restSeconds: row.restSeconds,
         targetWeightKg: row.targetWeightKg ? Number(row.targetWeightKg) : undefined,
-        weightPrescriptionMode: (row.weightPrescriptionMode ?? 'absolute') as 'absolute' | 'percent_of_max',
+        weightPrescriptionMode: (row.weightPrescriptionMode ?? 'absolute') as
+          | 'absolute'
+          | 'percent_of_max',
         targetPercentOfMax: row.targetPercentOfMax ?? undefined,
         coachNote: row.coachNote ?? undefined,
       })),
@@ -362,7 +364,9 @@ export class AdminTemplatesService {
           targetReps: row.targetReps,
           restSeconds: row.restSeconds,
           targetWeightKg: row.targetWeightKg ? Number(row.targetWeightKg) : null,
-          weightPrescriptionMode: (row.weightPrescriptionMode ?? 'absolute') as 'absolute' | 'percent_of_max',
+          weightPrescriptionMode: (row.weightPrescriptionMode ?? 'absolute') as
+            | 'absolute'
+            | 'percent_of_max',
           targetPercentOfMax: row.targetPercentOfMax ?? null,
           coachNote: row.coachNote,
           exercise: {
