@@ -18,6 +18,7 @@ interface SupplementCalendarProps {
   logDates: Set<string>;
   onSelectDate: (date: string) => void;
   locale: string;
+  todayDateKey?: string;
 }
 
 function weekdayLabels(locale: string): string[] {
@@ -30,8 +31,9 @@ function buildMonthDays(
   month: number,
   logDates: Set<string>,
   selectedDate: string,
+  todayDateKey: string,
 ): CalendarDay[] {
-  const today = new Date().toISOString().split('T')[0] ?? '';
+  const today = todayDateKey;
   const days: CalendarDay[] = [];
 
   const firstDay = new Date(year, month, 1);
@@ -131,19 +133,21 @@ export function SupplementCalendar({
   logDates,
   onSelectDate,
   locale,
+  todayDateKey,
 }: SupplementCalendarProps): React.ReactElement {
+  const today = todayDateKey ?? new Date().toISOString().split('T')[0] ?? '';
   const selected = useMemo(() => new Date(selectedDate + 'T12:00:00.000Z'), [selectedDate]);
   const currentYear = selected.getFullYear();
   const currentMonth = selected.getMonth();
 
   const weeks = useMemo(() => {
-    const days = buildMonthDays(currentYear, currentMonth, logDates, selectedDate);
+    const days = buildMonthDays(currentYear, currentMonth, logDates, selectedDate, today);
     const result: CalendarDay[][] = [];
     for (let i = 0; i < days.length; i += 7) {
       result.push(days.slice(i, i + 7));
     }
     return result;
-  }, [currentYear, currentMonth, logDates, selectedDate]);
+  }, [currentYear, currentMonth, logDates, selectedDate, today]);
 
   function goMonth(delta: number): void {
     const d = new Date(currentYear, currentMonth + delta, 1);

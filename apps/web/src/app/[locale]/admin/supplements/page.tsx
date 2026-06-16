@@ -13,6 +13,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { GymActionSheet } from '@/components/gym-ui/gym-action-sheet';
 import { GymAdaptiveOverlay } from '@/components/gym-ui/gym-adaptive-overlay';
 import { GymEmptyState } from '@/components/gym-ui/gym-empty-state';
 import { GymListGroup } from '@/components/gym-ui/gym-list-group';
@@ -48,6 +49,7 @@ export default function AdminSupplementsPage(): React.ReactElement {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<AdminSupplement | null>(null);
   const [form, setForm] = useState<AdminCreateSupplement>(emptyForm);
+  const [deleteTarget, setDeleteTarget] = useState<AdminSupplement | null>(null);
 
   const load = useCallback(async (): Promise<void> => {
     if (!accessToken) return;
@@ -108,12 +110,13 @@ export default function AdminSupplementsPage(): React.ReactElement {
     }
   }
 
-  async function handleDelete(supplement: AdminSupplement): Promise<void> {
-    if (!accessToken) return;
+  async function handleDelete(): Promise<void> {
+    if (!accessToken || !deleteTarget) return;
     setSaving(true);
     setError(null);
     try {
-      await deleteAdminSupplement(accessToken, supplement.id);
+      await deleteAdminSupplement(accessToken, deleteTarget.id);
+      setDeleteTarget(null);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('saveError'));
@@ -227,7 +230,7 @@ export default function AdminSupplementsPage(): React.ReactElement {
                       type="button"
                       variant="destructive"
                       onClick={() => {
-                        void handleDelete(supplement);
+                        setDeleteTarget(supplement);
                       }}
                     >
                       {t('delete')}
@@ -255,6 +258,21 @@ export default function AdminSupplementsPage(): React.ReactElement {
       >
         {editorBody}
       </GymAdaptiveOverlay>
+
+      <GymActionSheet
+        cancelLabel={t('cancel')}
+        confirmLabel={t('delete')}
+        destructive
+        loading={saving}
+        open={deleteTarget !== null}
+        title={t('deleteSupplementConfirm')}
+        onCancel={() => {
+          setDeleteTarget(null);
+        }}
+        onConfirm={() => {
+          void handleDelete();
+        }}
+      />
     </RequireAdmin>
   );
 }

@@ -486,7 +486,9 @@
     "noLastWorkout": "—",
     "settingsLink": "Settings",
     "historyLink": "Workout history",
-    "loadError": "Could not load dashboard."
+    "loadError": "Could not load dashboard.",
+    "recentPrsTitle": "Recent personal records",
+    "recentPrsLink": "View history"
   },
   "History": {
     "title": "Workout history",
@@ -886,6 +888,7 @@
     "statusUnknown": "Unknown",
     "exercisesEmpty": "No exercises in catalog.",
     "supplementsEmpty": "No supplements in catalog.",
+    "deleteSupplementConfirm": "Delete this global supplement? Users will no longer see it in the catalog.",
     "templatesEmpty": "No templates yet.",
     "slug": "Slug",
     "displayNameEn": "Display name (EN)",
@@ -980,7 +983,18 @@
     "manageSupplements": "Manage supplements",
     "repeatYesterday": "Repeat yesterday",
     "repeatDayBefore": "Repeat day before",
-    "noLogsForDay": "No supplements logged for this day."
+    "noLogsForDay": "No supplements logged for this day.",
+    "dashboardCardTitle": "Supplements today",
+    "dashboardCardSubtitle": "Daily intake tracker",
+    "dashboardLoggedToday": "logged",
+    "dashboardEmptyTitle": "Nothing logged yet",
+    "dashboardEmptyBody": "Track protein, creatine, and the rest of your stack in seconds.",
+    "dashboardLogCta": "Log a supplement",
+    "dashboardMoreCount": "+{count} more logged today",
+    "dashboardOpenLibrary": "Open supplement library",
+    "globalCloneHint": "A personal copy was created. Your past logs still reference the catalog item.",
+    "logNotes": "Notes (optional)",
+    "logNotesPlaceholder": "e.g. post-workout, with breakfast…"
   },
   "Gym": {
     "releaseToRefresh": "Release to refresh",

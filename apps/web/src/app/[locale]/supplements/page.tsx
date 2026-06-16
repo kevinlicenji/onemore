@@ -32,9 +32,12 @@ import {
   updateSupplement,
   updateSupplementLog,
 } from '@/lib/api-auth';
+import { getTodayDateKey, supplementLogIsoForDateKey } from '@/lib/supplement-date';
 
-function todayDateString(): string {
-  return new Date().toISOString().split('T')[0] ?? '';
+function previousDateKey(dateKey: string): string {
+  const date = new Date(dateKey + 'T12:00:00.000Z');
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().split('T')[0] ?? dateKey;
 }
 
 function wheelValuesForUnit(unit: string): number[] {
@@ -56,17 +59,20 @@ function wheelValuesForUnit(unit: string): number[] {
 
 export default function SupplementsPage(): React.ReactElement {
   const t = useTranslations('Supplements');
-  const { accessToken } = useAuth();
+  const { accessToken, profile } = useAuth();
   const params = useParams();
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const isDesktop = useIsDesktop();
+  const timezone = profile?.timezone ?? 'Europe/Rome';
+  const todayKey = getTodayDateKey(timezone);
 
-  const [date, setDate] = useState(() => todayDateString());
+  const [date, setDate] = useState(() => getTodayDateKey('Europe/Rome'));
   const [items, setItems] = useState<SupplementListItem[]>([]);
   const [logs, setLogs] = useState<SupplementLogItem[]>([]);
   const [logDates, setLogDates] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const trendDays = 60;
 
@@ -81,6 +87,7 @@ export default function SupplementsPage(): React.ReactElement {
     existingLog: SupplementLogItem | null;
   } | null>(null);
   const [logWheelValue, setLogWheelValue] = useState(0);
+  const [logNotes, setLogNotes] = useState('');
   const [showUnlogged, setShowUnlogged] = useState(false);
   const [trendItems, setTrendItems] = useState<{ date: string; name: string; amount: number }[]>(
     [],
@@ -124,9 +131,7 @@ export default function SupplementsPage(): React.ReactElement {
         ),
       );
 
-      const prevDate = new Date(date + 'T12:00:00.000Z');
-      prevDate.setDate(prevDate.getDate() - 1);
-      const prevDateStr = prevDate.toISOString().split('T')[0] ?? '';
+      const prevDateStr = previousDateKey(date);
       const hasPrevLogs = trend.some((d) => d.date === prevDateStr && d.hasLogged);
       setYesterdayRepeatable(hasPrevLogs && logsResponse.logs.length === 0);
     } catch (err) {
@@ -178,7 +183,10 @@ export default function SupplementsPage(): React.ReactElement {
         fat: 0,
       };
       if (editingItem) {
-        await updateSupplement(accessToken, editingItem.id, payload);
+        const result = await updateSupplement(accessToken, editingItem.id, payload);
+        if (editingItem.isGlobal && result.id !== editingItem.id) {
+          setInfoMessage(t('globalCloneHint'));
+        }
       } else {
         await createSupplement(accessToken, payload);
       }
@@ -220,6 +228,7 @@ export default function SupplementsPage(): React.ReactElement {
     }
     setLogTarget({ supplement, existingLog: existing });
     setLogWheelValue(defaultAmount);
+    setLogNotes(existing?.notes ?? '');
   }
 
   function closeLog(): void {
@@ -241,13 +250,14 @@ export default function SupplementsPage(): React.ReactElement {
         await updateSupplementLog(accessToken, logTarget.existingLog.id, {
           id: logTarget.existingLog.id,
           amount: logWheelValue,
+          notes: logNotes.trim() || null,
         });
       } else {
         await createSupplementLog(accessToken, {
           supplementId: logTarget.supplement.id,
           amount: logWheelValue,
-          notes: null,
-          date: date + 'T00:00:00.000Z',
+          notes: logNotes.trim() || null,
+          date: supplementLogIsoForDateKey(date),
         });
       }
       closeLog();
@@ -279,7 +289,7 @@ export default function SupplementsPage(): React.ReactElement {
     setSavingRepeat(true);
     setError(null);
     try {
-      await repeatYesterdaySupplements(accessToken, date + 'T00:00:00.000Z');
+      await repeatYesterdaySupplements(accessToken, supplementLogIsoForDateKey(date));
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loadError'));
@@ -327,6 +337,7 @@ export default function SupplementsPage(): React.ReactElement {
                   locale={locale}
                   logDates={logDates}
                   selectedDate={date}
+                  todayDateKey={todayKey}
                   onSelectDate={setDate}
                 />
               </div>
@@ -340,6 +351,7 @@ export default function SupplementsPage(): React.ReactElement {
                 locale={locale}
                 logDates={logDates}
                 selectedDate={date}
+                todayDateKey={todayKey}
                 onSelectDate={setDate}
               />
               {renderSupplementList()}
@@ -366,6 +378,11 @@ export default function SupplementsPage(): React.ReactElement {
     return (
       <>
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        {infoMessage ? (
+          <p className="rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-800 dark:text-emerald-200">
+            {infoMessage}
+          </p>
+        ) : null}
 
         {loading ? (
           <CardGridSkeleton count={isDesktop ? 6 : 4} columns="2" />
@@ -399,7 +416,7 @@ export default function SupplementsPage(): React.ReactElement {
                   void handleRepeatYesterday();
                 }}
               >
-                {date === todayDateString() ? t('repeatYesterday') : t('repeatDayBefore')}
+                {date === todayKey ? t('repeatYesterday') : t('repeatDayBefore')}
               </Button>
             )}
 
@@ -463,6 +480,17 @@ export default function SupplementsPage(): React.ReactElement {
             />
             <span className="text-sm text-muted-foreground">{logTarget?.supplement.unit}</span>
           </div>
+          <label className="flex w-full flex-col gap-1 text-xs text-muted-foreground">
+            {t('logNotes')}
+            <Input
+              className="min-h-11"
+              placeholder={t('logNotesPlaceholder')}
+              value={logNotes}
+              onChange={(e) => {
+                setLogNotes(e.target.value);
+              }}
+            />
+          </label>
           {logTarget?.existingLog ? (
             <Button
               className="min-h-11 w-full"
@@ -545,7 +573,7 @@ export default function SupplementsPage(): React.ReactElement {
               </label>
             </div>
           </div>
-          {editingItem ? (
+          {editingItem && !editingItem.isGlobal ? (
             <Button
               className="min-h-11 w-full"
               disabled={saving}

@@ -48,9 +48,7 @@ import { EXERCISE_CATALOG_LIMIT } from '@onemore/shared';
 
 import { API_BASE_URL } from '@/lib/api-config';
 
-function todayDateString(): string {
-  return new Date().toISOString().split('T')[0] ?? '';
-}
+import { getLocalDateKey, localDateKeyToUtcEnd, localDateKeyToUtcStart } from '@onemore/shared';
 
 interface ApiErrorBody {
   error?: { message?: string; code?: string };
@@ -687,11 +685,12 @@ export async function deleteSupplement(accessToken: string, supplementId: string
 export async function fetchTodaySupplements(
   accessToken: string,
   locale?: string,
+  timezone = 'Europe/Rome',
 ): Promise<TodaySupplementsResponse> {
-  const today = todayDateString();
+  const today = getLocalDateKey(new Date(), timezone);
   const params = new URLSearchParams({
-    from: today + 'T00:00:00.000Z',
-    to: today + 'T23:59:59.999Z',
+    from: localDateKeyToUtcStart(today),
+    to: localDateKeyToUtcEnd(today),
     limit: '50',
   });
   if (locale) params.set('locale', locale);

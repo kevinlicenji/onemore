@@ -14,6 +14,7 @@ import { DashboardMaxValues } from '@/components/dashboard/dashboard-max-values'
 import { DashboardMonthlySets } from '@/components/dashboard/dashboard-monthly-sets';
 import { DashboardPrMonthBadge } from '@/components/dashboard/dashboard-pr-month-badge';
 import { DashboardProgramCta } from '@/components/dashboard/dashboard-program-cta';
+import { DashboardRecentPrs } from '@/components/dashboard/dashboard-recent-prs';
 import { DashboardSupplementsToday } from '@/components/dashboard/dashboard-supplements-today';
 import { DashboardVolumeCompare } from '@/components/dashboard/dashboard-volume-compare';
 import { DashboardWeekTracker } from '@/components/dashboard/dashboard-week-tracker';
@@ -34,22 +35,41 @@ export default function DashboardPage(): React.ReactElement {
   const locale = typeof params.locale === 'string' ? params.locale : 'it';
   const isDesktop = useIsDesktop();
   const { dashboard } = useDashboardKpis(locale);
+  const timezone = profile?.timezone ?? 'Europe/Rome';
+
   const [todaySupplements, setTodaySupplements] = useState<TodaySupplementsResponse | null>(null);
+  const [supplementsLoading, setSupplementsLoading] = useState(true);
+  const [supplementsError, setSupplementsError] = useState<string | null>(null);
   const [maxValues, setMaxValues] = useState<UserExerciseMaxWithExercise[]>([]);
   const [pendingMaxCount, setPendingMaxCount] = useState(0);
+  const [maxValuesError, setMaxValuesError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!accessToken) return;
-    void fetchTodaySupplements(accessToken, locale)
+    if (!accessToken) {
+      return;
+    }
+
+    setSupplementsLoading(true);
+    setSupplementsError(null);
+    void fetchTodaySupplements(accessToken, locale, timezone)
       .then(setTodaySupplements)
-      .catch(() => {});
+      .catch((err: unknown) => {
+        setSupplementsError(err instanceof Error ? err.message : t('loadError'));
+      })
+      .finally(() => {
+        setSupplementsLoading(false);
+      });
+
     void Promise.all([fetchMaxValues(accessToken), fetchPendingMaxValues(accessToken)])
       .then(([active, pending]) => {
         setMaxValues(active);
         setPendingMaxCount(pending.length);
+        setMaxValuesError(null);
       })
-      .catch(() => {});
-  }, [accessToken, locale]);
+      .catch((err: unknown) => {
+        setMaxValuesError(err instanceof Error ? err.message : t('loadError'));
+      });
+  }, [accessToken, locale, t, timezone]);
 
   useEffect(() => {
     if (!isLoading && profile && !profile.onboardingCompletedAt) {
@@ -81,6 +101,26 @@ export default function DashboardPage(): React.ReactElement {
       </Link>
     </div>
   ) : null;
+
+  const supplementsCard = (
+    <DashboardSupplementsToday
+      error={supplementsError}
+      loading={supplementsLoading}
+      locale={locale}
+      logs={todaySupplements?.logs ?? []}
+      mobile={!isDesktop}
+      totalCount={todaySupplements?.totalCount ?? 0}
+    />
+  );
+
+  const maxValuesCard = (
+    <DashboardMaxValues
+      locale={locale}
+      maxValues={maxValues}
+      mobile={!isDesktop}
+      pendingCount={pendingMaxCount}
+    />
+  );
 
   return (
     <RequireAuth>
@@ -129,18 +169,14 @@ export default function DashboardPage(): React.ReactElement {
                   <DashboardPrMonthBadge count={dashboard.monthlyStats.personalRecordsCount} />
                   <DashboardMonthlySets count={dashboard.monthlyStats.completedSetsCount} />
                 </StatGrid>
-                {todaySupplements ? (
-                  <DashboardSupplementsToday
-                    locale={locale}
-                    logs={todaySupplements.logs}
-                    totalCount={todaySupplements.totalCount}
-                  />
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {supplementsCard}
+                  {maxValuesCard}
+                </div>
+                {maxValuesError ? (
+                  <p className="text-sm text-destructive">{maxValuesError}</p>
                 ) : null}
-                <DashboardMaxValues
-                  locale={locale}
-                  maxValues={maxValues}
-                  pendingCount={pendingMaxCount}
-                />
+                <DashboardRecentPrs locale={locale} records={dashboard.recentPersonalRecords} />
               </>
             ) : (
               <>
@@ -152,19 +188,15 @@ export default function DashboardPage(): React.ReactElement {
                   />
                   <DashboardMonthlySets count={dashboard.monthlyStats.completedSetsCount} mobile />
                 </GymStatGrid>
-                {todaySupplements ? (
-                  <DashboardSupplementsToday
-                    locale={locale}
-                    logs={todaySupplements.logs}
-                    mobile
-                    totalCount={todaySupplements.totalCount}
-                  />
+                {supplementsCard}
+                {maxValuesCard}
+                {maxValuesError ? (
+                  <p className="text-sm text-destructive">{maxValuesError}</p>
                 ) : null}
-                <DashboardMaxValues
+                <DashboardRecentPrs
                   locale={locale}
-                  maxValues={maxValues}
                   mobile
-                  pendingCount={pendingMaxCount}
+                  records={dashboard.recentPersonalRecords}
                 />
               </>
             )}

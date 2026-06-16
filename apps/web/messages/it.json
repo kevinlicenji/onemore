@@ -486,7 +486,9 @@
     "noLastWorkout": "—",
     "settingsLink": "Impostazioni",
     "historyLink": "Storico workout",
-    "loadError": "Impossibile caricare la dashboard."
+    "loadError": "Impossibile caricare la dashboard.",
+    "recentPrsTitle": "Record personali recenti",
+    "recentPrsLink": "Vedi storico"
   },
   "History": {
     "title": "Storico workout",
@@ -886,6 +888,7 @@
     "statusUnknown": "Sconosciuto",
     "exercisesEmpty": "Nessun esercizio nel catalogo.",
     "supplementsEmpty": "Nessun integratore nel catalogo.",
+    "deleteSupplementConfirm": "Eliminare questo integratore globale? Gli utenti non lo vedranno più nel catalogo.",
     "templatesEmpty": "Nessun template.",
     "slug": "Slug",
     "displayNameEn": "Nome visualizzato (EN)",
@@ -980,7 +983,18 @@
     "manageSupplements": "Gestisci integratori",
     "repeatYesterday": "Ripeti ieri",
     "repeatDayBefore": "Ripeti giorno prima",
-    "noLogsForDay": "Nessun integratore registrato per questo giorno."
+    "noLogsForDay": "Nessun integratore registrato per questo giorno.",
+    "dashboardCardTitle": "Integratori di oggi",
+    "dashboardCardSubtitle": "Tracciamento giornaliero",
+    "dashboardLoggedToday": "registrati",
+    "dashboardEmptyTitle": "Nessun log oggi",
+    "dashboardEmptyBody": "Tieni traccia di proteine, creatina e tutto il tuo stack in pochi secondi.",
+    "dashboardLogCta": "Registra integratore",
+    "dashboardMoreCount": "+{count} altri registrati oggi",
+    "dashboardOpenLibrary": "Apri libreria integratori",
+    "globalCloneHint": "È stata creata una copia personale. I log precedenti restano collegati alla voce del catalogo.",
+    "logNotes": "Note (opzionale)",
+    "logNotesPlaceholder": "es. post-workout, a colazione…"
   },
   "Gym": {
     "releaseToRefresh": "Rilascia per aggiornare",

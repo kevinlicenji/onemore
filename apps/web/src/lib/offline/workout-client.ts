@@ -33,6 +33,7 @@ import { generateClientUuid } from '@/lib/generate-client-uuid';
 import { isInvalidAccessTokenError, refreshAccessToken } from '@/lib/refresh-access-token';
 
 import { persistPersonalRecords, upsertCompletedSessionSummary } from './dashboard-store';
+import { detectOfflinePersonalRecords } from './pr-detection';
 import { offlineDb } from './db';
 import { purgeInProgressSessions, purgeLocalSession } from './session-cleanup';
 import { loadPreviousExecutionsMap, loadPreviousSetsMap } from './resolve-previous-set';
@@ -338,7 +339,16 @@ async function applyLocalSetUpdate(
 
   const updatedSession: WorkoutSessionDetail = { ...session, exercises: updatedExercises };
   await offlineDb.sessions.put(updatedSession);
-  return { session: updatedSession, personalRecords: [] };
+
+  let personalRecords: UpsertSetResponse['personalRecords'] = [];
+  if (payload.isCompleted) {
+    personalRecords = await detectOfflinePersonalRecords(updatedSession, payload);
+    if (personalRecords.length > 0) {
+      await persistPersonalRecords(personalRecords);
+    }
+  }
+
+  return { session: updatedSession, personalRecords };
 }
 
 async function syncSetToServer(
