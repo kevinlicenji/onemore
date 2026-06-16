@@ -65,6 +65,7 @@ export const SupplementListItemSchema = z.object({
   carbs: z.number(),
   fat: z.number(),
   recentLogCount: z.number().int().nonnegative().optional(),
+  everLogged: z.boolean().optional(),
 });
 export type SupplementListItem = z.infer<typeof SupplementListItemSchema>;
 

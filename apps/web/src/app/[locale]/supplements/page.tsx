@@ -81,6 +81,7 @@ export default function SupplementsPage(): React.ReactElement {
     existingLog: SupplementLogItem | null;
   } | null>(null);
   const [logWheelValue, setLogWheelValue] = useState(0);
+  const [showUnlogged, setShowUnlogged] = useState(false);
 
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddSearch, setQuickAddSearch] = useState('');
@@ -461,6 +462,10 @@ export default function SupplementsPage(): React.ReactElement {
   );
 
   function renderSupplementList(): React.ReactElement {
+    const loggedItems = items.filter((s) => s.everLogged || logBySupplementId.has(s.id));
+    const unloggedItems = items.filter((s) => !s.everLogged && !logBySupplementId.has(s.id));
+    const visibleItems = showUnlogged ? items : loggedItems;
+
     return (
       <>
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -502,48 +507,37 @@ export default function SupplementsPage(): React.ReactElement {
             )}
 
             <GymListGroup>
-              {items.map((supplement) => {
+              {visibleItems.map((supplement) => {
                 const log = logBySupplementId.get(supplement.id);
                 return (
                   <GymListRow
                     key={supplement.id}
                     title={supplement.name}
-                    subtitle={supplement.unit}
+                    onClick={() => {
+                      openLog(supplement);
+                    }}
                     trailing={
-                      <div className="flex items-center gap-2">
-                        <span className="min-w-[2ch] text-right tabular-nums text-muted-foreground">
-                          {log ? String(log.amount) : '\u2014'}
-                        </span>
-                        <button
-                          aria-label={t('logAmount')}
-                          className="flex h-8 w-8 items-center justify-center rounded-full border border-gym-separator text-muted-foreground transition-colors active:text-foreground"
-                          type="button"
-                          onClick={() => {
-                            openLog(supplement);
-                          }}
-                        >
-                          {log ? (
-                            <span className="text-sm font-medium">{log.supplementUnit}</span>
-                          ) : (
-                            <Plus className="h-4 w-4" />
-                          )}
-                        </button>
-                        <button
-                          aria-label={t('editTitle')}
-                          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/50 transition-colors active:text-foreground"
-                          type="button"
-                          onClick={() => {
-                            openManage(supplement);
-                          }}
-                        >
-                          <Settings className="h-4 w-4" />
-                        </button>
-                      </div>
+                      <span className="tabular-nums text-muted-foreground">
+                        {log ? String(log.amount) + ' ' + log.supplementUnit : '\u2014'}
+                      </span>
                     }
                   />
                 );
               })}
             </GymListGroup>
+
+            {unloggedItems.length > 0 && !showUnlogged ? (
+              <Button
+                className="min-h-10 w-full gap-1.5 text-xs"
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowUnlogged(true);
+                }}
+              >
+                + {t('addTitle')} ({unloggedItems.length})
+              </Button>
+            ) : null}
           </div>
         )}
       </>
@@ -559,16 +553,18 @@ export default function SupplementsPage(): React.ReactElement {
         onClose={closeLog}
       >
         <div className="flex flex-col items-center gap-4">
-          <p className="text-xs text-muted-foreground">{logTarget?.supplement.unit}</p>
-          <ScrollWheelPicker
-            label=""
-            options={wheelOptions}
-            showLabel={false}
-            value={logWheelValue}
-            onChange={(v) => {
-              setLogWheelValue(v);
-            }}
-          />
+          <div className="flex items-center justify-center gap-3">
+            <ScrollWheelPicker
+              label=""
+              options={wheelOptions}
+              showLabel={false}
+              value={logWheelValue}
+              onChange={(v) => {
+                setLogWheelValue(v);
+              }}
+            />
+            <span className="text-sm text-muted-foreground">{logTarget?.supplement.unit}</span>
+          </div>
           {logTarget?.existingLog ? (
             <Button
               className="min-h-11 w-full"
@@ -754,16 +750,18 @@ export default function SupplementsPage(): React.ReactElement {
           </div>
         ) : (
           <div className="flex flex-col items-center gap-4">
-            <p className="text-xs text-muted-foreground">{quickAddSupplement?.unit}</p>
-            <ScrollWheelPicker
-              label=""
-              options={wheelOptions}
-              showLabel={false}
-              value={quickAddAmount}
-              onChange={(v) => {
-                setQuickAddAmount(v);
-              }}
-            />
+            <div className="flex items-center justify-center gap-3">
+              <ScrollWheelPicker
+                label=""
+                options={wheelOptions}
+                showLabel={false}
+                value={quickAddAmount}
+                onChange={(v) => {
+                  setQuickAddAmount(v);
+                }}
+              />
+              <span className="text-sm text-muted-foreground">{quickAddSupplement?.unit}</span>
+            </div>
             <div className="flex w-full gap-2">
               <Button
                 className="min-h-11 flex-1"

@@ -27,10 +27,15 @@ export class SupplementsService {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const [recentCounts, supplements] = await Promise.all([
+    const [recentCounts, allLogged, supplements] = await Promise.all([
       this.prisma.supplementLog.groupBy({
         by: ['supplementId'],
         where: { userId, date: { gte: thirtyDaysAgo } },
+        _count: true,
+      }),
+      this.prisma.supplementLog.groupBy({
+        by: ['supplementId'],
+        where: { userId },
         _count: true,
       }),
       this.prisma.supplement.findMany({
@@ -40,6 +45,7 @@ export class SupplementsService {
     ]);
 
     const countMap = new Map(recentCounts.map((r) => [r.supplementId, r._count]));
+    const everLoggedSet = new Set(allLogged.map((r) => r.supplementId));
 
     return supplements.map((s) => ({
       id: s.id,
@@ -52,6 +58,7 @@ export class SupplementsService {
       carbs: s.carbs,
       fat: s.fat,
       recentLogCount: countMap.get(s.id) ?? 0,
+      everLogged: everLoggedSet.has(s.id),
     }));
   }
 
