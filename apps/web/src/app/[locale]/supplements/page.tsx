@@ -2,7 +2,7 @@
 
 import type { SupplementListItem, SupplementLogItem } from '@onemore/shared';
 import { Button, Input } from '@onemore/ui';
-import { Pill, Plus, Settings } from 'lucide-react';
+import { Pill, Settings } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -86,12 +86,6 @@ export default function SupplementsPage(): React.ReactElement {
     [],
   );
 
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [quickAddSearch, setQuickAddSearch] = useState('');
-  const [quickAddStep, setQuickAddStep] = useState<'select' | 'amount'>('select');
-  const [quickAddSupplement, setQuickAddSupplement] = useState<SupplementListItem | null>(null);
-  const [quickAddAmount, setQuickAddAmount] = useState(0);
-
   const [yesterdayRepeatable, setYesterdayRepeatable] = useState(false);
   const [savingRepeat, setSavingRepeat] = useState(false);
 
@@ -130,16 +124,11 @@ export default function SupplementsPage(): React.ReactElement {
         ),
       );
 
-      const isToday = date === todayDateString();
-      if (isToday && logsResponse.logs.length === 0) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0] ?? '';
-        const hasYesterdayLogs = trend.some((d) => d.date === yesterdayStr && d.hasLogged);
-        setYesterdayRepeatable(hasYesterdayLogs);
-      } else {
-        setYesterdayRepeatable(false);
-      }
+      const prevDate = new Date(date + 'T12:00:00.000Z');
+      prevDate.setDate(prevDate.getDate() - 1);
+      const prevDateStr = prevDate.toISOString().split('T')[0] ?? '';
+      const hasPrevLogs = trend.some((d) => d.date === prevDateStr && d.hasLogged);
+      setYesterdayRepeatable(hasPrevLogs && logsResponse.logs.length === 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('loadError'));
     } finally {
@@ -299,103 +288,24 @@ export default function SupplementsPage(): React.ReactElement {
     }
   }
 
-  const quickAddFiltered = useMemo(() => {
-    if (!quickAddSearch.trim()) return items;
-    const q = quickAddSearch.toLowerCase();
-    return items.filter((s) => s.name.toLowerCase().includes(q));
-  }, [items, quickAddSearch]);
-
-  function openQuickAdd(): void {
-    setQuickAddSearch('');
-    setQuickAddStep('select');
-    setQuickAddSupplement(null);
-    setQuickAddAmount(0);
-    setQuickAddOpen(true);
-  }
-
-  function selectQuickAddSupplement(supplement: SupplementListItem): void {
-    const previous = trendItems
-      .filter((t) => t.name === supplement.name && t.date < date)
-      .sort((a, b) => b.date.localeCompare(a.date));
-    const defaultAmount = previous.length > 0 ? (previous[0]?.amount ?? 0) : 0;
-    setQuickAddSupplement(supplement);
-    setQuickAddAmount(defaultAmount);
-    setQuickAddStep('amount');
-  }
-
-  async function handleQuickAddSave(): Promise<void> {
-    if (!accessToken || !quickAddSupplement) return;
-    if (quickAddAmount <= 0) {
-      setQuickAddOpen(false);
-      return;
-    }
-    setSaving(true);
-    setError(null);
-    try {
-      await createSupplementLog(accessToken, {
-        supplementId: quickAddSupplement.id,
-        amount: quickAddAmount,
-        notes: null,
-        date: date + 'T00:00:00.000Z',
-      });
-      setQuickAddOpen(false);
-      await loadData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('createError'));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  const wheelValues = logTarget
-    ? wheelValuesForUnit(logTarget.supplement.unit)
-    : quickAddSupplement
-      ? wheelValuesForUnit(quickAddSupplement.unit)
-      : [];
+  const wheelValues = logTarget ? wheelValuesForUnit(logTarget.supplement.unit) : [];
 
   const wheelOptions = wheelValues.map((v) => ({
     value: v,
     label: v % 1 === 0 ? String(v) : v.toFixed(1),
   }));
 
-  const headerActions = isDesktop ? (
-    <div className="flex items-center gap-2">
-      <Button className="min-h-9 gap-1.5" size="sm" type="button" onClick={openQuickAdd}>
-        <Plus className="h-4 w-4" />
-        {t('quickAdd')}
-      </Button>
-      <button
-        aria-label={t('manageSupplements')}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-gym-separator text-muted-foreground transition-colors hover:text-foreground"
-        type="button"
-        onClick={() => {
-          openManage();
-        }}
-      >
-        <Settings className="h-4 w-4" />
-      </button>
-    </div>
-  ) : (
-    <div className="flex items-center gap-1">
-      <button
-        aria-label={t('quickAdd')}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-gym-separator bg-gym-surface text-xl leading-none text-primary shadow-sm transition-transform active:scale-95"
-        type="button"
-        onClick={openQuickAdd}
-      >
-        +
-      </button>
-      <button
-        aria-label={t('manageSupplements')}
-        className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors active:text-foreground"
-        type="button"
-        onClick={() => {
-          openManage();
-        }}
-      >
-        <Settings className="h-5 w-5" />
-      </button>
-    </div>
+  const headerActions = (
+    <button
+      aria-label={t('manageSupplements')}
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-gym-separator bg-gym-surface text-muted-foreground transition-transform active:scale-95"
+      type="button"
+      onClick={() => {
+        openManage();
+      }}
+    >
+      <Settings className="h-5 w-5" />
+    </button>
   );
 
   return (
@@ -441,7 +351,6 @@ export default function SupplementsPage(): React.ReactElement {
       {renderLogOverlay()}
       {renderManageForm()}
       {renderDeleteConfirm()}
-      {renderQuickAdd()}
     </RequireAuth>
   );
 
@@ -490,7 +399,7 @@ export default function SupplementsPage(): React.ReactElement {
                   void handleRepeatYesterday();
                 }}
               >
-                {t('repeatYesterday')}
+                {date === todayDateString() ? t('repeatYesterday') : t('repeatDayBefore')}
               </Button>
             )}
 
@@ -690,94 +599,6 @@ export default function SupplementsPage(): React.ReactElement {
           void handleDeleteSupplement();
         }}
       />
-    );
-  }
-
-  function renderQuickAdd(): React.ReactElement {
-    return (
-      <GymAdaptiveOverlay
-        ariaLabel={t('quickAdd')}
-        open={quickAddOpen}
-        tall
-        title={quickAddStep === 'select' ? t('quickAdd') : (quickAddSupplement?.name ?? '')}
-        onClose={() => {
-          setQuickAddOpen(false);
-        }}
-      >
-        {quickAddStep === 'select' ? (
-          <div className="flex flex-col gap-3">
-            <Input
-              autoFocus
-              className="min-h-11"
-              placeholder={t('searchSupplement')}
-              value={quickAddSearch}
-              onChange={(e) => {
-                setQuickAddSearch(e.target.value);
-              }}
-            />
-            <div className="flex max-h-80 flex-col overflow-y-auto">
-              {quickAddFiltered.length === 0 ? (
-                <p className="py-4 text-center text-xs text-muted-foreground">{t('empty')}</p>
-              ) : (
-                quickAddFiltered.map((supplement) => (
-                  <button
-                    key={supplement.id}
-                    className="flex min-h-11 items-center gap-2 border-b border-gym-separator px-2 text-left text-sm last:border-b-0 hover:bg-muted/50"
-                    type="button"
-                    onClick={() => {
-                      selectQuickAddSupplement(supplement);
-                    }}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{supplement.name}</p>
-                      <p className="text-xs text-muted-foreground">{supplement.unit}</p>
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center justify-center gap-3">
-              <ScrollWheelPicker
-                label=""
-                options={wheelOptions}
-                showLabel={false}
-                size="workout"
-                value={quickAddAmount}
-                onChange={(v) => {
-                  setQuickAddAmount(v);
-                }}
-              />
-              <span className="text-sm text-muted-foreground">{quickAddSupplement?.unit}</span>
-            </div>
-            <div className="flex w-full gap-2">
-              <Button
-                className="min-h-11 flex-1"
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setQuickAddStep('select');
-                  setQuickAddSupplement(null);
-                }}
-              >
-                {t('cancel')}
-              </Button>
-              <Button
-                className="min-h-11 flex-1"
-                disabled={saving || quickAddAmount <= 0}
-                type="button"
-                onClick={() => {
-                  void handleQuickAddSave();
-                }}
-              >
-                {t('save')}
-              </Button>
-            </div>
-          </div>
-        )}
-      </GymAdaptiveOverlay>
     );
   }
 }

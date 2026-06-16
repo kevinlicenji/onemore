@@ -946,6 +946,7 @@
     "searchSupplement": "Cerca integratore…",
     "manageSupplements": "Gestisci integratori",
     "repeatYesterday": "Ripeti ieri",
+    "repeatDayBefore": "Ripeti giorno prima",
     "noLogsForDay": "Nessun integratore registrato per questo giorno."
   },
   "Gym": {

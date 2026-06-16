@@ -946,6 +946,7 @@
     "searchSupplement": "Search supplement…",
     "manageSupplements": "Manage supplements",
     "repeatYesterday": "Repeat yesterday",
+    "repeatDayBefore": "Repeat day before",
     "noLogsForDay": "No supplements logged for this day."
   },
   "Gym": {
