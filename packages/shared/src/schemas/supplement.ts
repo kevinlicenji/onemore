@@ -44,7 +44,7 @@ export const SupplementLogQuerySchema = z.object({
   from: z.string().datetime({ offset: true }).optional(),
   to: z.string().datetime({ offset: true }).optional(),
   supplementId: z.string().uuid().optional(),
-  limit: z.coerce.number().int().positive().max(100).default(50),
+  limit: z.coerce.number().int().positive().max(200).default(50),
   cursor: z.string().optional(),
 });
 export type SupplementLogQuery = z.infer<typeof SupplementLogQuerySchema>;

@@ -939,6 +939,8 @@
     "loadError": "Could not load supplements.",
     "deleteError": "Could not delete supplement.",
     "logAmount": "Amount",
+    "todayLogsTitle": "Today",
+    "noTodayLogs": "No supplements logged today.",
     "quickAdd": "Quick add",
     "quickAddDescription": "Search a supplement and log the amount taken today.",
     "searchSupplement": "Search supplement…",

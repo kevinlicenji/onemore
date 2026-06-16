@@ -939,6 +939,8 @@
     "loadError": "Impossibile caricare gli integratori.",
     "deleteError": "Impossibile eliminare l'integratore.",
     "logAmount": "Quantità",
+    "todayLogsTitle": "Oggi",
+    "noTodayLogs": "Nessun integratore registrato oggi.",
     "quickAdd": "Aggiunta rapida",
     "quickAddDescription": "Cerca un integratore e registra la quantità assunta oggi.",
     "searchSupplement": "Cerca integratore…",
