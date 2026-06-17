@@ -360,13 +360,47 @@ async function applyLocalSetUpdate(
   return { session: updatedSession, personalRecords };
 }
 
+/**
+ * Merge a server session snapshot into the local session, preserving
+ * any exercises or sets that exist locally but have not yet been
+ * persisted on the server (concurrent local changes).
+ */
+async function mergeServerSession(serverSession: WorkoutSessionDetail): Promise<void> {
+  const local = await offlineDb.sessions.get(serverSession.id);
+  if (!local) {
+    await offlineDb.sessions.put(serverSession);
+    return;
+  }
+
+  const mergedExercises = [...serverSession.exercises];
+
+  for (const localExercise of local.exercises) {
+    const serverExercise = mergedExercises.find((e) => e.id === localExercise.id);
+    if (!serverExercise) {
+      mergedExercises.push(localExercise);
+    } else {
+      const serverSetIds = new Set(serverExercise.sets.map((s) => s.id));
+      for (const localSet of localExercise.sets) {
+        if (!serverSetIds.has(localSet.id)) {
+          serverExercise.sets.push(localSet);
+        }
+      }
+    }
+  }
+
+  await offlineDb.sessions.put({
+    ...serverSession,
+    exercises: mergedExercises,
+  });
+}
+
 async function syncSetToServer(
   accessToken: string,
   sessionId: string,
   payload: UpsertSetLogInput,
 ): Promise<UpsertSetResponse> {
   const result = await upsertWorkoutSet(accessToken, sessionId, payload);
-  await offlineDb.sessions.put(result.session);
+  await mergeServerSession(result.session);
   await persistPersonalRecords(result.personalRecords);
   await syncIfOnline(accessToken);
   return result;
@@ -713,7 +747,7 @@ export async function searchExercisesClient(
       (exercise.names.it?.toLowerCase().includes(term) ?? false) ||
       exercise.slug.toLowerCase().includes(term);
     const matchesMuscle =
-      !filters.muscle || exercise.primaryMuscles.includes(filters.muscle as never);
+      !filters.muscle || (exercise.primaryMuscles as string[]).includes(filters.muscle);
     return matchesText && matchesMuscle;
   });
 

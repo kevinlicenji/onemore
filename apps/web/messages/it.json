@@ -606,6 +606,8 @@
     "addExerciseConfirm": "Aggiungi al giorno",
     "searchNoResults": "Nessun esercizio trovato",
     "failureReps": "Cedimento",
+    "weightPrescriptionAbsolute": "Carico Fisso (kg)",
+    "weightPrescriptionPercent": "% del Massimale",
     "programActionsMenu": "Azioni scheda",
     "editExercise": "Modifica esercizio",
     "reorderExercise": "Riordina esercizio",

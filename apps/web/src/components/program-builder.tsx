@@ -500,6 +500,8 @@ export function ProgramBuilder({
           restSeconds: t('restSeconds'),
           targetWeight: t('targetWeight'),
           failureReps: t('failureReps'),
+          weightPrescriptionAbsolute: t('weightPrescriptionAbsolute'),
+          weightPrescriptionPercent: t('weightPrescriptionPercent'),
         }}
         locale={locale}
         open={addModalOpen}

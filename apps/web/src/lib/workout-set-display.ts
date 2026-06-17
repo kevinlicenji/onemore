@@ -29,7 +29,7 @@ export function formatSetPrescriptionLine(
   targetReps: number,
   targetWeightKg: number | null,
   restSeconds: number,
-  failureLabel = 'Cedimento',
+  failureLabel: string,
   prescriptionMode?: {
     weightPrescriptionMode?: string | null;
     targetPercentOfMax?: number | null;
@@ -78,7 +78,7 @@ export function formatLastExecutionLine(
   setsCount: number,
   reps: number | null,
   weightKg: number | null,
-  failureLabel = 'Cedimento',
+  failureLabel: string,
 ): string | null {
   if (setsCount <= 0) {
     return null;
@@ -96,7 +96,7 @@ export function formatSetTargetInline(
   targetReps: number,
   targetWeightKg: number | null,
   restSeconds: number,
-  failureLabel = 'Cedimento',
+  failureLabel: string,
   prescriptionMode?: {
     weightPrescriptionMode?: string | null;
     targetPercentOfMax?: number | null;
