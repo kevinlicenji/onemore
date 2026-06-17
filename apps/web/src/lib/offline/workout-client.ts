@@ -725,6 +725,13 @@ export async function abandonWorkoutSessionClient(
   return updatedSession;
 }
 
+/**
+ * Module-level cache for the offline exercise catalog.
+ * Loaded once from IndexedDB and reused across search calls to avoid
+ * repeated deserialization and GC pressure on mobile.
+ */
+let cachedExercises: ExerciseListItem[] | null = null;
+
 export async function searchExercisesClient(
   accessToken: string,
   query: string,
@@ -738,9 +745,12 @@ export async function searchExercisesClient(
     return sortExercisesByDisplayName(exercises, locale);
   }
 
+  if (!cachedExercises) {
+    cachedExercises = await offlineDb.exercises.toArray();
+  }
+
   const term = query.trim().toLowerCase();
-  const all = await offlineDb.exercises.toArray();
-  const filtered = all.filter((exercise) => {
+  const filtered = cachedExercises.filter((exercise) => {
     const matchesText =
       term.length === 0 ||
       exercise.names.en.toLowerCase().includes(term) ||

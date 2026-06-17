@@ -9,7 +9,7 @@ export const METRIC_REPS_MAX = 25;
 export const METRIC_WEIGHT_MIN = 0;
 export const METRIC_WEIGHT_MAX = 500;
 export const METRIC_WEIGHT_STEP = 0.5;
-export const METRIC_REST_MIN = 0;
+export const METRIC_REST_MIN = 5;
 export const METRIC_REST_MAX = 150;
 export const METRIC_REST_STEP = 5;
 
