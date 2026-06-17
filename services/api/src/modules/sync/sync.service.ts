@@ -195,6 +195,10 @@ export class SyncService {
     });
 
     if (existing && !shouldAcceptSessionUpdate(existing.clientUpdatedAt, incomingUpdatedAt)) {
+      console.warn(
+        `[sync] session conflict — discarding stale update for session ${payload.id}` +
+          ` (server: ${existing.clientUpdatedAt.toISOString()}, incoming: ${incomingUpdatedAt.toISOString()})`,
+      );
       return false;
     }
 
@@ -301,6 +305,11 @@ export class SyncService {
 
     const incomingTimestamp = new Date(payload.clientTimestamp);
     if (existing && !shouldAcceptSetLogUpdate(existing.clientTimestamp, incomingTimestamp)) {
+      console.warn(
+        `[sync] set log conflict — discarding stale update for exercise execution ${payload.exerciseExecutionId}` +
+          ` set ${String(payload.setNumber)}` +
+          ` (server: ${existing.clientTimestamp.toISOString()}, incoming: ${incomingTimestamp.toISOString()})`,
+      );
       return false;
     }
 

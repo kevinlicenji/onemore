@@ -606,6 +606,8 @@
     "addExerciseConfirm": "Add to day",
     "searchNoResults": "No exercises found",
     "failureReps": "Failure",
+    "weightPrescriptionAbsolute": "Fixed weight (kg)",
+    "weightPrescriptionPercent": "% of 1RM",
     "programActionsMenu": "Program actions",
     "editExercise": "Edit exercise",
     "reorderExercise": "Reorder exercise",

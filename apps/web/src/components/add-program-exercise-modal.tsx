@@ -41,6 +41,8 @@ interface AddProgramExerciseModalProps {
     restSeconds: string;
     targetWeight: string;
     failureReps: string;
+    weightPrescriptionAbsolute: string;
+    weightPrescriptionPercent: string;
   };
   translateMuscle: (key: ExerciseListItem['primaryMuscles'][number]) => string;
   onClose: () => void;
@@ -235,7 +237,7 @@ export function AddProgramExerciseModal({
                   setWeightPrescriptionMode('absolute');
                 }}
               >
-                Carico Fisso (kg)
+                {labels.weightPrescriptionAbsolute}
               </button>
               <button
                 className={`min-h-10 flex-1 rounded-md border text-sm font-medium transition-colors ${
@@ -248,7 +250,7 @@ export function AddProgramExerciseModal({
                   setWeightPrescriptionMode('percent_of_max');
                 }}
               >
-                % del Massimale
+                {labels.weightPrescriptionPercent}
               </button>
             </div>
             {weightPrescriptionMode === 'absolute' ? (
